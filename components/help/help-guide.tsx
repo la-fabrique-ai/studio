@@ -812,7 +812,7 @@ export function HelpGuide() {
   -H "Authorization: Bearer $JIROO_TOKEN"`}</code></pre>
           <p className="t-body">
             Les routes, filtres, écritures et erreurs sont décrits dans la référence du dépôt :{" "}
-            <a href="https://github.com/DVLPR-Consulting/jiroo/blob/main/docs/api-v1.md" className="underline underline-offset-4">docs/api-v1.md</a>.
+            <a href="https://github.com/la-fabrique-ai/studio/blob/main/docs/api-v1.md" className="underline underline-offset-4">docs/api-v1.md</a>.
           </p>
         </GuideTopic>
 
@@ -844,7 +844,7 @@ bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
           </p>
           <p className="t-body">
             La configuration et le rôle de chaque outil figurent dans{" "}
-            <a href="https://github.com/DVLPR-Consulting/jiroo/blob/main/docs/mcp.md" className="underline underline-offset-4">docs/mcp.md</a>.
+            <a href="https://github.com/la-fabrique-ai/studio/blob/main/docs/mcp.md" className="underline underline-offset-4">docs/mcp.md</a>.
           </p>
         </GuideTopic>
 
