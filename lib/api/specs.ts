@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { backlogs } from "@/lib/db/schema/domain";
 import { BACKLOG_KEY } from "@/lib/mcp/schemas";
 import { resolveApiBacklog } from "@/lib/services/api-read";
-import { listSpecNodes, SPEC_CONTENT_MAX, SpecRuleError } from "@/lib/services/specs";
+import { getSpecNode, listSpecNodes, specContentSchema, SpecRuleError } from "@/lib/services/specs";
 import { findSpecByPath, flattenSpecTree, SPEC_TITLE_MAX } from "@/lib/specs/tree";
 import { getSpecNodeUseCase } from "@/lib/use-cases/specs";
 
@@ -18,38 +18,46 @@ import { getSpecNodeUseCase } from "@/lib/use-cases/specs";
 
 export const SPEC_ID = z.uuid();
 const title = z.string().trim().min(1).max(SPEC_TITLE_MAX);
-const content = z.string().max(SPEC_CONTENT_MAX);
+const content = specContentSchema;
 const path = z.string().trim().min(1).max(2000);
 
-export const createSpecInput = z.object({
-  /** The parent folder by id, or by title path (`PRD/Stories`); neither: the root. */
-  parentId: SPEC_ID.nullable().optional(),
-  parentPath: path.optional(),
-  kind: z.enum(["folder", "document"]),
+// Field sets shared by REST and MCP; MCP adds the backlog or node the URL
+// carries in REST. Descriptions are read by agents.
+const createFields = {
+  parentId: SPEC_ID.nullable().describe("The parent folder id.").optional(),
+  parentPath: path.describe("Parent folder by title path, such as PRD/Stories. Omit both parents for the root.").optional(),
+  kind: z.enum(["folder", "document"]).describe("folder holds other nodes; document holds Markdown."),
   title,
-  content: content.optional(),
-}).strict().refine((input) => !(input.parentId && input.parentPath), {
-  message: "Indiquez parentId ou parentPath, pas les deux.",
-});
+  content: content.describe("Markdown text of a document.").optional(),
+};
+const oneParent = [
+  (input: { parentId?: string | null; parentPath?: string }) => !(input.parentId && input.parentPath),
+  { message: "Indiquez parentId ou parentPath, pas les deux." },
+] as const;
 
-export const updateSpecInput = z.object({
+const updateFields = {
   title: title.optional(),
-  content: content.optional(),
-  /** The `revision` read with the document; required to change its text. */
-  revision: z.iso.datetime().optional(),
-}).strict()
-  .refine((input) => input.title !== undefined || input.content !== undefined, {
-    message: "Indiquez title ou content.",
-  })
-  .refine((input) => input.content === undefined || input.revision !== undefined, {
-    message: "La révision lue est requise pour modifier le contenu.",
-    path: ["revision"],
-  });
+  content: content.describe("The whole new Markdown text (it replaces the old one).").optional(),
+  revision: z.iso.datetime().describe("The revision returned by get_spec; required with content.").optional(),
+};
+type UpdateShape = { title?: string; content?: string; revision?: string };
+const somethingToUpdate = [
+  (input: UpdateShape) => input.title !== undefined || input.content !== undefined,
+  { message: "Indiquez title ou content." },
+] as const;
+const revisionWithContent = [
+  (input: UpdateShape) => input.content === undefined || input.revision !== undefined,
+  { message: "La révision lue est requise pour modifier le contenu.", path: ["revision"] as PropertyKey[] },
+] as const;
 
-export const moveSpecInput = z.object({
-  parentId: SPEC_ID.nullable(),
-  afterId: SPEC_ID.nullable().optional(),
-}).strict();
+const moveFields = {
+  parentId: SPEC_ID.nullable().describe("The new parent folder; null for the root."),
+  afterId: SPEC_ID.nullable().describe("The sibling to place it after; null for first, absent for last.").optional(),
+};
+
+export const createSpecInput = z.object(createFields).strict().refine(...oneParent);
+export const updateSpecInput = z.object(updateFields).strict().refine(...somethingToUpdate).refine(...revisionWithContent);
+export const moveSpecInput = z.object(moveFields).strict();
 
 export type SpecListEntry = {
   id: string;
@@ -96,9 +104,16 @@ export async function listApiSpecs(actor: Actor, backlogKey: string): Promise<{ 
   };
 }
 
-/** One live node; trashed or unreadable answers « not found ». */
-export async function getApiSpec(actor: Actor, id: string): Promise<SpecNodeView> {
-  const node = await getSpecNodeUseCase(actor, SPEC_ID.parse(id));
+/**
+ * One live node; trashed or unreadable answers « not found ». A caller that
+ * already authorized the node's backlog (a write, a path lookup) passes it,
+ * so a platform administrator's bypass is audited once per request.
+ */
+export async function getApiSpec(actor: Actor, id: string, authorizedBacklogId?: string): Promise<SpecNodeView> {
+  const nodeId = SPEC_ID.parse(id);
+  const node = authorizedBacklogId
+    ? await getSpecNode(authorizedBacklogId, nodeId).then((found) => found && { ...found, backlogId: authorizedBacklogId })
+    : await getSpecNodeUseCase(actor, nodeId);
   if (!node) throw new ResourceNotFoundError("spec_node", id);
   const [nodes, [backlog]] = await Promise.all([
     listSpecNodes(node.backlogId),
@@ -154,33 +169,8 @@ export const getSpecToolInput = z.object({
   message: "Indiquez id, ou backlog et path.",
 });
 
-export const createSpecToolInput = z.object({
-  backlog: SPEC_BACKLOG,
-  parentId: SPEC_NODE_ID.nullable().optional(),
-  parentPath: path.describe("Parent folder by title path, such as PRD/Stories. Omit both parents for the root.").optional(),
-  kind: z.enum(["folder", "document"]).describe("folder holds other nodes; document holds Markdown."),
-  title,
-  content: content.describe("Markdown text of a document.").optional(),
-}).strict().refine((input) => !(input.parentId && input.parentPath), {
-  message: "Indiquez parentId ou parentPath, pas les deux.",
-});
-
-export const updateSpecToolInput = z.object({
-  id: SPEC_NODE_ID,
-  title: title.optional(),
-  content: content.describe("The whole new Markdown text (it replaces the old one).").optional(),
-  revision: z.iso.datetime().describe("The revision returned by get_spec; required with content.").optional(),
-}).strict()
-  .refine((input) => input.title !== undefined || input.content !== undefined, { message: "Indiquez title ou content." })
-  .refine((input) => input.content === undefined || input.revision !== undefined, {
-    message: "La révision lue est requise pour modifier le contenu.",
-    path: ["revision"],
-  });
-
-export const moveSpecToolInput = z.object({
-  id: SPEC_NODE_ID,
-  parentId: SPEC_NODE_ID.nullable().describe("The new parent folder; null for the root."),
-  afterId: SPEC_NODE_ID.nullable().describe("The sibling to place it after; null or absent for first.").optional(),
-}).strict();
-
+export const createSpecToolInput = z.object({ backlog: SPEC_BACKLOG, ...createFields }).strict().refine(...oneParent);
+export const updateSpecToolInput = z.object({ id: SPEC_NODE_ID, ...updateFields }).strict()
+  .refine(...somethingToUpdate).refine(...revisionWithContent);
+export const moveSpecToolInput = z.object({ id: SPEC_NODE_ID, ...moveFields }).strict();
 export const specNodeToolInput = z.object({ id: SPEC_NODE_ID }).strict();

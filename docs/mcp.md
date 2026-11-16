@@ -57,7 +57,7 @@ token), no `resource_metadata` and no authorization server to discover.
 | `get_spec` | read | `{ id }` or `{ backlog, path }` → `{ node }`; a document has `content` and `revision`, a folder `children`. |
 | `create_spec` | write | `{ backlog, kind, title, content?, parentId? \| parentPath? }` → `{ node }`. |
 | `update_spec` | write | `{ id, title?, content?, revision? }` → `{ node }`; `content` needs the `revision` read. |
-| `move_spec` | write | `{ id, parentId, afterId? }` → `{ node }`; `parentId: null` for the root. |
+| `move_spec` | write | `{ id, parentId, afterId? }` → `{ node }`; `parentId: null` for the root, no `afterId` for last. |
 | `delete_spec` | write | `{ id }` → `{ trashedIds }`, the node and its subtree go to the trash. |
 | `restore_spec` | write | `{ id }` → `{ node }`. |
 
@@ -113,8 +113,10 @@ Address a node by `id` or, with `get_spec`, by `backlog` and title `path`
 title wins, siblings sharing a title are refused (use the id). `update_spec`
 replaces the whole text and needs the `revision` returned by `get_spec`; if the
 document was saved since, nothing changes (title included) and the refusal gives
-the current revision to read again. Agent writes refresh the people looking at
-the specifications in Le Studio. Bodies up to 1 MB are accepted.
+the current revision to read again; title and text change in one transaction.
+`move_spec` without `afterId` puts the node last, `afterId: null` first. Agent
+writes refresh the people looking at the specifications in Le Studio. The MCP
+endpoint accepts bodies up to 1 MB; a document holds at most 800 KB of UTF-8.
 
 ```js
 list_specs({ backlog: "CASS" })

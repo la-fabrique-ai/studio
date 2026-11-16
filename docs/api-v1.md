@@ -206,14 +206,17 @@ parent, le nœud va à la racine, en dernier. Seul un document accepte `content`
 exige la `revision` lue. Si le document a été enregistré depuis, la réponse est
 409 avec `currentRevision`, et **rien** n’est modifié, titre compris : relisez,
 fusionnez, renvoyez avec la nouvelle révision (comme la version d’une page
-Confluence). Le déplacement reçoit `{ parentId, afterId? }` (`parentId: null`
-pour la racine, `afterId` absent ou `null` pour la première place) ; un dossier
+Confluence). Le titre et le texte changent dans une même transaction. Envoyer
+`content` à un dossier répond 409. Le déplacement reçoit `{ parentId, afterId? }`
+(`parentId: null` pour la racine ; `afterId: null` pour la première place,
+absent pour la dernière, comme une création) ; un dossier
 ne peut pas entrer dans lui-même. La suppression met le nœud et son sous-arbre à
 la corbeille ; `restore` les ramène, à la racine si le dossier parent est encore
 supprimé.
 
 Les routes de spécifications acceptent un corps JSON jusqu’à **1 Mo** (64 Ko
-ailleurs). Les écritures sont journalisées avec leur origine et le jeton ; elles
+ailleurs) ; un document fait au plus **800 Ko** en UTF-8 (400 en cas de
+dépassement). Les écritures sont journalisées avec leur origine et le jeton ; elles
 rafraîchissent les onglets ouverts sur ces spécifications.
 
 ```sh

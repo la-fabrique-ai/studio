@@ -34,10 +34,9 @@ import { SpecConflictError } from "@/lib/services/specs";
 import {
   createSpecNodeUseCase,
   moveSpecNodeUseCase,
-  renameSpecNodeUseCase,
   restoreSpecNodeUseCase,
   trashSpecNodeUseCase,
-  updateSpecContentUseCase,
+  updateSpecNodeUseCase,
 } from "@/lib/use-cases/specs";
 import {
   addCommentInput,
@@ -361,8 +360,9 @@ export const STUDIO_TOOLS = [
     inputSchema: getSpecToolInput,
     scope: "read",
     async handler({ id, backlog, path }, actor) {
-      const nodeId = id ?? (await findApiSpecIdByPath(actor, backlog!, path!)).id;
-      return { node: await getApiSpec(actor, nodeId) };
+      if (id) return { node: await getApiSpec(actor, id) };
+      const found = await findApiSpecIdByPath(actor, backlog!, path!);
+      return { node: await getApiSpec(actor, found.id, found.backlogId) };
     },
   }),
   define({
@@ -375,7 +375,7 @@ export const STUDIO_TOOLS = [
       const resolved = await resolveApiBacklog(actor.actorId, backlog);
       const parent = parentPath ? await findSpecIdInBacklog(resolved.backlogId, parentPath) : parentId ?? null;
       const node = await createSpecNodeUseCase(actor, { ...input, parentId: parent, backlogId: resolved.backlogId });
-      return { node: await getApiSpec(actor, node.id) };
+      return { node: await getApiSpec(actor, node.id, node.backlogId) };
     },
   }),
   define({
@@ -384,21 +384,20 @@ export const STUDIO_TOOLS = [
     description: "Rename a node and/or replace a document's whole Markdown content. Content needs the revision read with get_spec: if someone saved since, nothing changes and the current revision is returned to read again. Needs write scope and edit_items.",
     inputSchema: updateSpecToolInput,
     scope: "write",
-    async handler({ id, title, content, revision }, actor) {
-      if (content !== undefined) await updateSpecContentUseCase(actor, { id, content, revision: revision! });
-      if (title !== undefined) await renameSpecNodeUseCase(actor, { id, title });
-      return { node: await getApiSpec(actor, id) };
+    async handler(input, actor) {
+      const { backlogId } = await updateSpecNodeUseCase(actor, input);
+      return { node: await getApiSpec(actor, input.id, backlogId) };
     },
   }),
   define({
     name: "move_spec",
     title: "Move specification",
-    description: "Move a node under another folder (or the root with parentId null), after a sibling (afterId) or first. A folder cannot go inside itself. Needs write scope and edit_items.",
+    description: "Move a node under another folder (or the root with parentId null), after a sibling (afterId), first (afterId null) or last (no afterId). A folder cannot go inside itself. Needs write scope and edit_items.",
     inputSchema: moveSpecToolInput,
     scope: "write",
     async handler({ id, parentId, afterId }, actor) {
-      await moveSpecNodeUseCase(actor, { id, parentId, afterId: afterId ?? null });
-      return { node: await getApiSpec(actor, id) };
+      const { backlogId } = await moveSpecNodeUseCase(actor, { id, parentId, afterId });
+      return { node: await getApiSpec(actor, id, backlogId) };
     },
   }),
   define({
@@ -419,8 +418,8 @@ export const STUDIO_TOOLS = [
     inputSchema: specNodeToolInput,
     scope: "write",
     async handler({ id }, actor) {
-      await restoreSpecNodeUseCase(actor, { id });
-      return { node: await getApiSpec(actor, id) };
+      const { backlogId } = await restoreSpecNodeUseCase(actor, { id });
+      return { node: await getApiSpec(actor, id, backlogId) };
     },
   }),
 ] as const satisfies readonly ToolDefinition[];

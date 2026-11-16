@@ -885,7 +885,7 @@ bearer_token_env_var = "STUDIO_TOKEN"`}</code></pre>
           <GuideNote>
             Lire demande le droit de parcourir le backlog ; écrire demande le droit de modifier les items
             et un jeton en <Ui>Lecture et écriture</Ui>. Les pages <Ui>Spécifications</Ui> ouvertes se mettent à jour
-            pendant que l’agent écrit. Un document peut atteindre 1 Mo.
+            pendant que l’agent écrit. Un document peut atteindre 800 Ko.
           </GuideNote>
         </GuideTopic>
 

@@ -96,17 +96,24 @@ describeDb("specifications across REST and MCP with real permissions", () => {
     const noRevision = await patchSpec(request("PATCH", { content: "x" }), byId(node.id));
     expect(noRevision.status).toBe(400);
 
+    const folderId = (await folder.json()).node.id;
+    const onFolder = await patchSpec(request("PATCH", { content: "x", revision: after.revision }), byId(folderId));
+    expect(onFolder.status).toBe(409);
+    expect((await onFolder.json()).detail).toBe("Un dossier n’a pas de contenu : créez un document.");
+
     const journal = await db.select().from(specActivities).where(and(eq(specActivities.nodeId, node.id), eq(specActivities.field, "content")));
     expect(journal).toEqual([expect.objectContaining({ source: "api", tokenId: writer.tokenId })]);
     expect(published).toHaveBeenCalledWith({ kind: "backlog", backlogId: fixture.backlogA.id, actorId: fixture.actorA });
   });
 
   it("accepts a long document up to 1 MB, and no more", async () => {
-    const big = "a".repeat(200 * 1024);
+    const big = "é".repeat(150 * 1024); // 300 KB in UTF-8, far above the old 64 KB cap
     const created = await createSpec(request("POST", { kind: "document", title: "Long", content: big }), byKey(fixture.backlogA.key));
     expect(created.status).toBe(201);
     const tooBig = await createSpec(request("POST", { kind: "document", title: "Trop long", content: "a".repeat(1100 * 1024) }), byKey(fixture.backlogA.key));
     expect(tooBig.status).toBe(413);
+    const overLimit = await createSpec(request("POST", { kind: "document", title: "Trop long", content: "a".repeat(850_000) }), byKey(fixture.backlogA.key));
+    expect(overLimit.status).toBe(400);
   });
 
   it("moves, trashes and restores, and refuses a folder inside itself", async () => {
@@ -148,9 +155,10 @@ describeDb("specifications across REST and MCP with real permissions", () => {
 
     const read = await tool("get_spec", { backlog: fixture.backlogA.key, path: "brief" });
     expect(read.structuredContent).toMatchObject({ node: { id: node.id, content: "v1" } });
+    // One bypass-free read: the path lookup authorizes the backlog once.
 
-    const updated = await tool("update_spec", { id: node.id, content: "v2", revision: node.revision });
-    expect(updated.structuredContent).toMatchObject({ node: { content: "v2" } });
+    const updated = await tool("update_spec", { id: node.id, title: "Brief v2", content: "v2", revision: node.revision });
+    expect(updated.structuredContent).toMatchObject({ node: { content: "v2", title: "Brief v2" } });
     const stale = await tool("update_spec", { id: node.id, content: "v3", revision: node.revision });
     expect(stale.isError).toBe(true);
     expect(stale.content[0]!.text).toContain("Révision actuelle");
@@ -159,6 +167,6 @@ describeDb("specifications across REST and MCP with real permissions", () => {
     expect(journal).toEqual([expect.objectContaining({ source: "mcp", tokenId: writer.tokenId })]);
 
     const listed = await tool("list_specs", { backlog: fixture.backlogA.key });
-    expect((listed.structuredContent as { nodes: { title: string }[] }).nodes.map((n) => n.title)).toContain("Brief");
+    expect((listed.structuredContent as { nodes: { title: string }[] }).nodes.map((n) => n.title)).toContain("Brief v2");
   });
 });
