@@ -115,7 +115,8 @@ replaces the whole text and needs the `revision` returned by `get_spec`; if the
 document was saved since, nothing changes (title included) and the refusal gives
 the current revision to read again; title and text change in one transaction.
 `move_spec` without `afterId` puts the node last, `afterId: null` first. Agent
-writes refresh the people looking at the specifications in Le Studio. The MCP
+writes show the people looking at the backlog in Le Studio a banner offering to
+refresh. The MCP
 endpoint accepts bodies up to 1 MB; a document holds at most 800 KB of UTF-8.
 
 ```js

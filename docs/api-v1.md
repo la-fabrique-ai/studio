@@ -216,8 +216,8 @@ supprimé.
 
 Les routes de spécifications acceptent un corps JSON jusqu’à **1 Mo** (64 Ko
 ailleurs) ; un document fait au plus **800 Ko** en UTF-8 (400 en cas de
-dépassement). Les écritures sont journalisées avec leur origine et le jeton ; elles
-rafraîchissent les onglets ouverts sur ces spécifications.
+dépassement). Les écritures sont journalisées avec leur origine et le jeton ; sur les onglets
+ouverts du backlog, un bandeau propose d’actualiser.
 
 ```sh
 curl "$STUDIO_ORIGIN/api/v1/backlogs/CASS/specs" -H "Authorization: Bearer $STUDIO_TOKEN"
