@@ -14,28 +14,22 @@ FROM deps AS build
 COPY . .
 RUN corepack pnpm build
 
-# Keep tsx in this separate maintenance target; do not ship it with the app.
-# Select one command per run so owner credentials never reach the app container.
-FROM deps AS migrate
+# Maintenance keeps the locked tools and sources; the standalone app is isolated
+# in /app/server so its traced dependencies do not overwrite maintenance tools.
+FROM deps AS runner
 ENV NODE_ENV=production \
-    COREPACK_ENABLE_NETWORK=0
+    COREPACK_ENABLE_NETWORK=0 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
 COPY tsconfig.json ./
 COPY drizzle ./drizzle
 COPY lib ./lib
 COPY scripts/migrate.ts scripts/db-runtime-role.ts scripts/bootstrap-admin.ts ./scripts/
-USER node
-CMD ["corepack", "pnpm", "db:migrate"]
-
-# The default target is the application, with traced dependencies only.
-FROM base AS runner
-ENV NODE_ENV=production \
-    PORT=3000 \
-    HOSTNAME=0.0.0.0
-COPY --from=build --chown=node:node /app/.next/standalone ./
-COPY --from=build --chown=node:node /app/.next/static ./.next/static
-COPY --from=build --chown=node:node /app/public ./public
+COPY --from=build --chown=node:node /app/.next/standalone ./server/
+COPY --from=build --chown=node:node /app/.next/static ./server/.next/static
+COPY --from=build --chown=node:node /app/public ./server/public
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD ["node", "-e", "const request = require('node:http').get({hostname:'127.0.0.1',port:process.env.PORT || 3000,path:'/api/health',timeout:3000}, response => { response.resume(); process.exit(response.statusCode === 200 ? 0 : 1); }); request.on('timeout', () => { request.destroy(); process.exit(1); }); request.on('error', () => process.exit(1));"]
-CMD ["node", "server.js"]
+CMD ["node", "server/server.js"]

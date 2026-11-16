@@ -6,7 +6,7 @@
     "PLATFORM": { "default": "linux/amd64" }
   },
   "group": {
-    "default": { "targets": ["app", "migrate"] }
+    "default": { "targets": ["app"] }
   },
   "target": {
     "common": {
@@ -24,11 +24,6 @@
       "inherits": ["common"],
       "target": "runner",
       "tags": ["ghcr.io/la-fabrique-ai/studio:${VERSION}"]
-    },
-    "migrate": {
-      "inherits": ["common"],
-      "target": "migrate",
-      "tags": ["ghcr.io/la-fabrique-ai/studio-migrate:${VERSION}"]
     }
   }
 }

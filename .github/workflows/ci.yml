@@ -36,7 +36,7 @@ jobs:
       # Known false production paths: better-auth declares optional peer
       # dependencies (vitest, jsdom, drizzle-kit) that `--prod` still reports,
       # e.g. esbuild via drizzle-kit (moderate, below the blocking threshold).
-      # These tools are dev-only in Jiroo and are not shipped at runtime.
+      # The maintenance commands also include the locked development tools.
       - run: pnpm audit --prod --audit-level=high
 
   checks:
@@ -61,20 +61,16 @@ jobs:
       - run: pnpm run ${{ matrix.task }}
 
   docker:
-    name: Docker (${{ matrix.target }})
+    name: Docker (runner)
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [runner, migrate]
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v4
       - uses: docker/build-push-action@v7
         with:
           context: .
-          target: ${{ matrix.target }}
+          target: runner
           push: false
-          cache-from: type=gha,scope=${{ matrix.target }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+          cache-from: type=gha,scope=runner
+          cache-to: type=gha,mode=max,scope=runner

@@ -18,9 +18,9 @@ source "$ROOT_DIR/.bin/shared/commands.sh"
 
 _local_docker_login__help="Log in to ghcr.io (token entered without echo)"
 _local_docker_login() { "$ROOT_DIR/.bin/scripts/docker-login.sh" "$@"; }
-_local_build_image__help="Build images: <X.Y.Z[-prerelease]> <load|push|print> [app|migrate]"
+_local_build_image__help="Build image: <X.Y.Z[-prerelease]> <load|push|print> [app]"
 _local_build_image() { "$ROOT_DIR/.bin/scripts/build-images.sh" "$@"; }
-_local_release_build_local__help="Build local-source images: [version] [load|push|print]; defaults to local version and load"
+_local_release_build_local__help="Build local-source image: [version] [load|push|print]; defaults to local version and load"
 _local_release_build_local() {
   local version="${1:-}"
   local mode="${2:-load}"

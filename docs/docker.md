@@ -1,4 +1,4 @@
-# Docker images
+# Docker image
 
 For the managed local environment and the future app + PostgreSQL VM stack,
 see [infrastructure](../.infra/README.md). For versioned GHCR images and GitHub
@@ -7,19 +7,19 @@ remain useful for standalone builds and maintenance.
 
 Build from a reviewed checkout with Docker. No database, auth secret or dotenv
 file is needed at build time. Corepack reads the pinned pnpm from `package.json`;
-dependencies use the frozen lockfile. Keep the same tag for both targets:
+dependencies use the frozen lockfile. One image contains the app and maintenance:
 
 ```sh
 JIROO_IMAGE_TAG=0.1.0-$(git rev-parse --short HEAD)
 docker build --target runner -t "jiroo:$JIROO_IMAGE_TAG" .
-docker build --target migrate -t "jiroo-migrate:$JIROO_IMAGE_TAG" .
 ```
 
-The default target is `runner`: standalone Next.js, static assets and `public`,
-running as `node` on port 3000. `migrate` also runs as `node`, retaining the locked
-dependencies, including `tsx`, to run the existing maintenance scripts without
-a second compilation pipeline. Its preloaded Corepack cache works offline.
-No maintenance command runs when the application starts.
+The `runner` target runs standalone Next.js as `node` on port 3000 by default.
+The same image retains the locked dependencies (including development tools and
+`tsx`) and maintenance sources. This trades a larger image for reusing the existing
+scripts without a second compilation pipeline. The app lives in `/app/server`;
+maintenance runs from `/app`. The preloaded Corepack cache works offline.
+No maintenance command runs when the application process starts.
 
 ## Connect to PostgreSQL
 
@@ -41,25 +41,25 @@ runtime role. Set `JIROO_RUNTIME_ROLE` to that existing role's name.
 
 ## Migrate, grant and bootstrap
 
-Run migrations manually before starting or updating the application:
+For standalone Docker runs, migrate before starting or updating the application.
+The VM Compose file performs this step through its `migrate` service:
 
 ```sh
-docker run --rm -e DIRECT_DATABASE_URL "jiroo-migrate:$JIROO_IMAGE_TAG"
-docker run --rm -e DIRECT_DATABASE_URL -e JIROO_RUNTIME_ROLE \
-  "jiroo-migrate:$JIROO_IMAGE_TAG" corepack pnpm db:grant-runtime
+docker run --rm --no-healthcheck -e DIRECT_DATABASE_URL "jiroo:$JIROO_IMAGE_TAG" corepack pnpm db:migrate
+docker run --rm --no-healthcheck -e DIRECT_DATABASE_URL -e JIROO_RUNTIME_ROLE \
+  "jiroo:$JIROO_IMAGE_TAG" corepack pnpm db:grant-runtime
 ```
 
-The default maintenance command is `db:migrate`; it refuses a missing direct
-URL. Granting runtime rights is idempotent; repeat it after migrations.
+`db:migrate` refuses a missing direct URL. Granting runtime rights is idempotent; repeat it after migrations.
 
 For the first administrator only, supply the application's `DATABASE_URL`,
 `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` and the three `JIROO_ADMIN_*` variables
 from [First administrator](first-administrator.md), then run:
 
 ```sh
-docker run --rm -e DATABASE_URL -e BETTER_AUTH_SECRET -e BETTER_AUTH_URL \
+docker run --rm --no-healthcheck -e DATABASE_URL -e BETTER_AUTH_SECRET -e BETTER_AUTH_URL \
   -e JIROO_ADMIN_EMAIL -e JIROO_ADMIN_NAME -e JIROO_ADMIN_PASSWORD \
-  "jiroo-migrate:$JIROO_IMAGE_TAG" corepack pnpm db:bootstrap-admin
+  "jiroo:$JIROO_IMAGE_TAG" corepack pnpm db:bootstrap-admin
 unset JIROO_ADMIN_EMAIL JIROO_ADMIN_NAME JIROO_ADMIN_PASSWORD
 ```
 

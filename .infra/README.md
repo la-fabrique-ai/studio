@@ -43,7 +43,8 @@ No seed runs automatically.
 ## Future single-VM deployment
 
 `compose.vm.yml` is a standalone Compose file: one application container and one
-PostgreSQL container on the same Docker network, plus a maintenance profile.
+PostgreSQL container on the same Docker network, plus a one-shot migration
+service using the same application image.
 PostgreSQL has **no published host port**. A host TLS reverse proxy forwards to
 the application's loopback port. No external database service is required.
 
@@ -51,31 +52,43 @@ the application's loopback port. No external database service is required.
    `db:5432` in both URLs, a restricted runtime role for `DATABASE_URL`, and the
    owner for `DIRECT_DATABASE_URL`. Keep passwords URL-encoded; hexadecimal
    passwords avoid escaping issues. Keep `BETTER_AUTH_SECRET` stable.
-2. Fill both image references from the release's `release-manifest.json`, using
-   the digests. Authenticate to GHCR on the VM if the packages are private.
+2. Fill `JIROO_IMAGE` from the release's `release-manifest.json`, using
+   the digest. Authenticate to GHCR on the VM if the packages are private.
 3. Start the database, provision the runtime role using
-   [database roles](../docs/database-roles.md), then run migrations and grants:
+   [database roles](../docs/database-roles.md), then start the application:
 
    ```sh
    docker compose --env-file .infra/.env.vm -f .infra/compose.vm.yml up -d --wait db
-   docker compose --env-file .infra/.env.vm -f .infra/compose.vm.yml run --rm migrate
-   docker compose --env-file .infra/.env.vm -f .infra/compose.vm.yml run --rm migrate corepack pnpm db:grant-runtime
    docker compose --env-file .infra/.env.vm -f .infra/compose.vm.yml up -d --wait app
    ```
 
-4. Bootstrap the first administrator with the maintenance image, following
+4. Bootstrap the first administrator with the same image (`corepack pnpm db:bootstrap-admin`), following
    [the existing guide](../docs/first-administrator.md), and verify `/api/health`.
 
-The app receives neither the owner's URL nor the owner's password. Maintenance
-is explicit, never an application startup action. This is deployment preparation;
+The app receives neither the owner's URL nor the owner's password. Compose runs
+migrations and runtime grants in the `migrate` service and starts
+`app` only after successful completion. The runtime role must already exist;
+a failed migration or grant blocks startup. Maintenance is a separate process,
+never part of the application process. For upgrades, stop the old app and remove
+the completed migration container so the new version always runs its migrations:
+
+```sh
+docker compose --env-file .infra/.env.vm -f .infra/compose.vm.yml pull
+docker compose --env-file .infra/.env.vm -f .infra/compose.vm.yml stop app
+docker compose --env-file .infra/.env.vm -f .infra/compose.vm.yml rm -f migrate
+docker compose --env-file .infra/.env.vm -f .infra/compose.vm.yml up -d --wait app
+```
+
+Back up the database before an upgrade. This is deployment preparation;
 TLS, backups, restore validation and actual VM deployment remain operational
 steps. The volume belongs to Compose project `jiroo`; do not change that project
 name when upgrading. A rollback of an image does not roll back database changes.
 
 ## Releases
 
-See [releases](../docs/releases.md). Application and maintenance images are built
-from the same commit. UI/server/shared extraction remains a separate future change.
+See [releases](../docs/releases.md). One versioned image contains the application
+and maintenance commands. UI/server/shared extraction remains a separate future
+change.
 
 ## Shared tooling
 

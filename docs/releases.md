@@ -10,11 +10,10 @@ managed inside the application. No version is bumped automatically.
 2. In GitHub Actions, run **Prepare release** on `main`, entering exactly that
    version. The selected commit stays fixed throughout the run.
 3. The workflow rejects an existing version tag or release, runs CI (audit,
-   typecheck, lint, unit/component tests and both Docker builds), then publishes:
-   - `ghcr.io/<owner>/<repo>:X.Y.Z` and `:sha-<full-commit>` — application;
-   - `ghcr.io/<owner>/<repo>-migrate:X.Y.Z` and `:sha-<full-commit>` — maintenance.
+   typecheck, lint, unit/component tests and the Docker build), then publishes:
+   - `ghcr.io/<owner>/<repo>:X.Y.Z` and `:sha-<full-commit>` — application and maintenance.
 4. It creates a **draft** release `vX.Y.Z`, with generated PR notes and an attached
-   `release-manifest.json` recording the commit and both image digests.
+   `release-manifest.json` recording the commit and the image digest.
 5. Review and publish the draft in GitHub. Deploy explicitly using the manifest's
    digest references and the [VM instructions](../.infra/README.md).
 
@@ -48,17 +47,16 @@ workflow run is required. Bash 4.4+ is required (Homebrew Bash on macOS).
 # Preview the exact build targets, tags and labels without building or pushing:
 .bin/product build:image 0.1.0-local.1 print
 
-# Build both images and load them into your local Docker engine:
+# Build the image and load them into your local Docker engine:
 .bin/product build:image 0.1.0-local.1 load
 
-# Authenticate, then build and publish both images from this checkout:
+# Authenticate, then build and publish the image from this checkout:
 .bin/product docker:login
 .bin/product release:build:local 0.1.0-local.1 push
 ```
 
-The published references are `ghcr.io/la-fabrique-ai/studio:0.1.0-local.1` and
-`ghcr.io/la-fabrique-ai/studio-migrate:0.1.0-local.1`. `build:image` accepts an
-optional `app` or `migrate` target; both are built by default. `release:build:local`
+The published reference is `ghcr.io/la-fabrique-ai/studio:0.1.0-local.1`.
+`build:image` builds the `app` target, which includes maintenance commands. `release:build:local`
 is a convenience command using the same builder; without arguments it creates
 a timestamped `X.Y.Z-local.YYYYMMDDHHMMSS` version and **loads locally**.
 
@@ -67,7 +65,7 @@ to Docker via stdin). You can alternatively supply `GHCR_USERNAME` and
 `GHCR_TOKEN` in the calling environment. Use a token authorized to publish to
 La Fabrique's GHCR packages. Do not commit it in an env file or pass it as a
 build argument. Publishing images creates the packages even without a GitHub
-Release; set both packages to public in GitHub settings for anonymous pulls.
+Release; set the package to public in GitHub settings for anonymous pulls.
 
 The numeric version base must match `package.json`. Local **pushes require a
 prerelease suffix**, such as `-local.1`, so they cannot replace stable CI images.
@@ -93,8 +91,8 @@ keys and encrypted files first. No Portail vault, account or key is reused.
 
 ## CI scope
 
-Pull requests and pushes to `main` run the existing checks plus Docker builds of
-the `runner` and `migrate` targets, without registry publication. Database suites,
+Pull requests and pushes to `main` run the existing checks plus a Docker build of
+the `runner` target, without registry publication. Database suites,
 Playwright and deployment smoke tests remain separate. A green CI does not prove
 a database upgrade or functional acceptance.
 

@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
-version="${1:?Usage: build-images.sh <version> <load|push|print> [app|migrate]}"
+version="${1:?Usage: build-images.sh <version> <load|push|print> [app]}"
 mode="${2:?Choose load, push or print}"
 shift 2
 
@@ -27,9 +27,9 @@ if [[ "${version%%-*}" != "$package_version" ]]; then
   echo "Version base must match package.json ($package_version)." >&2
   exit 1
 fi
-if [[ $# -eq 0 ]]; then set -- app migrate; fi
+if [[ $# -eq 0 ]]; then set -- app; fi
 for target in "$@"; do
-  case "$target" in app|migrate) ;; *) echo "Unknown target: $target (use app or migrate)." >&2; exit 1 ;; esac
+  case "$target" in app) ;; *) echo "Unknown target: $target (use app)." >&2; exit 1 ;; esac
 done
 
 export VERSION="$version"
@@ -46,5 +46,5 @@ if [[ "$mode" == push && "$version" != *-* ]]; then
   exit 1
 fi
 
-printf 'Studio images: %s (%s, %s, local changes: %s)\n' "$VERSION" "$mode" "$PLATFORM" "$SOURCE_DIRTY" >&2
+printf 'Studio image: %s (%s, %s, local changes: %s)\n' "$VERSION" "$mode" "$PLATFORM" "$SOURCE_DIRTY" >&2
 docker buildx bake --file "$ROOT_DIR/docker-bake.json" "--$mode" "$@"

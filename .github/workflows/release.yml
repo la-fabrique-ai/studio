@@ -86,29 +86,12 @@ jobs:
             org.opencontainers.image.version=${{ needs.version.outputs.version }}
             org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha,scope=runner
-      - name: Publish maintenance image
-        id: migrate
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          target: migrate
-          push: true
-          platforms: linux/amd64
-          tags: |
-            ${{ needs.version.outputs.image }}-migrate:${{ needs.version.outputs.version }}
-            ${{ needs.version.outputs.image }}-migrate:sha-${{ github.sha }}
-          labels: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.version=${{ needs.version.outputs.version }}
-            org.opencontainers.image.revision=${{ github.sha }}
-          cache-from: type=gha,scope=migrate
       - name: Create draft release with exact image references
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
           IMAGE: ${{ needs.version.outputs.image }}
           APP_DIGEST: ${{ steps.app.outputs.digest }}
-          MIGRATE_DIGEST: ${{ steps.migrate.outputs.digest }}
         run: |
           node --input-type=module <<'NODE'
           import { writeFileSync } from 'node:fs';
@@ -118,10 +101,9 @@ jobs:
             commit: e.GITHUB_SHA,
             platform: 'linux/amd64',
             app: `${e.IMAGE}@${e.APP_DIGEST}`,
-            migrate: `${e.IMAGE}-migrate@${e.MIGRATE_DIGEST}`,
           };
           writeFileSync('release-manifest.json', JSON.stringify(manifest, null, 2) + '\n');
-          writeFileSync('release-notes.md', `Commit: ${manifest.commit}\n\nApplication: \`${manifest.app}\`\n\nMigrations: \`${manifest.migrate}\`\n\nDeployment and database migrations are manual.\n`);
+          writeFileSync('release-notes.md', `Commit: ${manifest.commit}\n\nApplication: \`${manifest.app}\`\n\nThe same image includes the maintenance commands. Deployment is manual.\n`);
           NODE
           gh release create "v$RELEASE_VERSION" release-manifest.json \
             --target "$GITHUB_SHA" --title "v$RELEASE_VERSION" \
