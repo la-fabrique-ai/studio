@@ -1,11 +1,37 @@
 import { withApiAuth } from "@/lib/api/handler";
 import { jsonOk, parseJson } from "@/lib/api/http";
-import { commentRestInput, createRestItemInput, parseSearchParams, updateRestItemInput } from "@/lib/api/schemas";
-import { BACKLOG_KEY, ITEM_KEY } from "@/lib/mcp/schemas";
+import { commentRestInput, createRestItemInput, createRestLabelInput, parseSearchParams, updateRestItemInput } from "@/lib/api/schemas";
+import { BACKLOG_KEY, ITEM_KEY, itemLabelInput } from "@/lib/mcp/schemas";
 import { getApiComment, getApiItemDetail, getApiItemSummary, getApiMe, listApiBacklogs, listApiStatuses, resolveApiBacklog, resolveApiItem } from "@/lib/services/api-read";
 import { searchItemsForActor } from "@/lib/services/item-search";
 import { addCommentUseCase } from "@/lib/use-cases/comments";
 import { createItemUseCase, updateItemUseCase } from "@/lib/use-cases/items";
+import { addItemLabelUseCase, createLabelUseCase, listLabelsUseCase, removeItemLabelUseCase } from "@/lib/use-cases/labels";
+
+export const getLabels = withApiAuth<{ key: string }>("read", async (_request, actor, params) => {
+  const backlog = await resolveApiBacklog(actor.actorId, BACKLOG_KEY.parse(params.key));
+  return jsonOk({ labels: await listLabelsUseCase(actor, backlog.backlogId) });
+});
+export const postLabel = withApiAuth<{ key: string }>("write", async (request, actor, params) => {
+  const key = BACKLOG_KEY.parse(params.key);
+  const input = await parseJson(request, createRestLabelInput);
+  const backlog = await resolveApiBacklog(actor.actorId, key);
+  const result = await createLabelUseCase(actor, { ...input, backlogId: backlog.backlogId });
+  return jsonOk(result, result.created ? 201 : 200);
+});
+type ItemLabelParams = { key: string; labelId: string };
+export const putItemLabel = withApiAuth<ItemLabelParams>("write", async (_request, actor, params) => {
+  const { key, labelId } = itemLabelInput.parse(params);
+  const item = await resolveApiItem(actor.actorId, key);
+  await addItemLabelUseCase(actor, { itemId: item.id, labelId });
+  return new Response(null, { status: 204, headers: { "Cache-Control": "private, no-store" } });
+});
+export const deleteItemLabel = withApiAuth<ItemLabelParams>("write", async (_request, actor, params) => {
+  const { key, labelId } = itemLabelInput.parse(params);
+  const item = await resolveApiItem(actor.actorId, key);
+  await removeItemLabelUseCase(actor, { itemId: item.id, labelId });
+  return new Response(null, { status: 204, headers: { "Cache-Control": "private, no-store" } });
+});
 
 export const getMe = withApiAuth("read", async (_request, actor) => jsonOk(await getApiMe(actor.actorId, actor.tokenId!)));
 export const getBacklogs = withApiAuth("read", async (_request, actor) => jsonOk({ backlogs: await listApiBacklogs(actor.actorId) }));

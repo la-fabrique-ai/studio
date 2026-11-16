@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ITEM_DESCRIPTION_MAX, ITEM_TITLE_MAX } from "@/lib/validation/item";
+import { ITEM_DESCRIPTION_MAX, ITEM_TITLE_MAX, labelIdsSchema } from "@/lib/validation/item";
 
 /**
  * Input schemas of the Jiroo MCP tools (JIR-158). Descriptions are read by
@@ -35,6 +35,16 @@ export const listBacklogsInput = z.object({
 export const listStatusesInput = z.object({
   backlog: BACKLOG_KEY,
 });
+
+export const listLabelsInput = z.object({ backlog: BACKLOG_KEY }).strict();
+export const createLabelInput = z.object({
+  backlog: BACKLOG_KEY,
+  name: z.string().trim().min(1).max(50),
+}).strict();
+export const itemLabelInput = z.object({
+  key: ITEM_KEY,
+  labelId: uuid.transform((id) => id.toLowerCase()),
+}).strict();
 
 export const searchItemsInput = z.object({
   backlog: BACKLOG_KEY.optional().describe("Limit to one backlog; otherwise every backlog you can read."),
@@ -72,10 +82,12 @@ export const createItemInput = z.object({
   dueDate: isoDate.optional(),
   kind: z.enum(["feature", "bug"]).optional(),
   sprintId: uuid.optional().describe("Plan the task in this sprint right away."),
+  labelIds: labelIdsSchema.optional().describe("Initial global or backlog label ids, from list_labels; duplicates are ignored."),
 });
 
 export const updateItemInput = z.object({
   key: ITEM_KEY,
+  labelIds: labelIdsSchema.optional().describe("Replace all labels with these global or backlog label ids; duplicates are ignored. An empty list clears labels."),
   title: z.string().trim().min(1).max(ITEM_TITLE_MAX).optional(),
   description: z.string().max(ITEM_DESCRIPTION_MAX).nullable().optional().describe("Markdown; null clears it."),
   priority: priority.optional(),

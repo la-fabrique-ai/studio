@@ -29,7 +29,7 @@ describe("MCP auth info", () => {
   it("registers every tool with its schema and read-only annotation", () => {
     const registerTool = vi.fn();
     registerJirooTools({ registerTool } as never);
-    expect(registerTool).toHaveBeenCalledTimes(9);
+    expect(registerTool).toHaveBeenCalledTimes(13);
     const [name, config] = registerTool.mock.calls[0]!;
     expect(name).toBe("list_backlogs");
     expect(config).toMatchObject({ title: "List backlogs", annotations: { readOnlyHint: true, destructiveHint: false } });

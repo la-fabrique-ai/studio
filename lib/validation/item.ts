@@ -46,7 +46,9 @@ function startsBeforeDue(d: { startDate?: string | null; dueDate?: string | null
   return d.startDate == null || d.dueDate == null || d.startDate <= d.dueDate;
 }
 const START_BEFORE_DUE = { message: "Le début doit précéder l’échéance.", path: ["startDate"] };
-const labelIds = z.array(z.uuid()).default([]);
+export const labelIdsSchema = z.array(z.uuid().transform((id) => id.toLowerCase()))
+  .transform((ids) => [...new Set(ids)]);
+const labelIds = labelIdsSchema.default([]);
 const fixVersionIds = z
   .array(z.uuid())
   .max(100)
@@ -98,7 +100,7 @@ export const updateItemSchema = z.object({
   estimatePoints: estimatePointsSchema.optional(),
   startDate,
   dueDate,
-  labelIds: z.array(z.uuid()).optional(),
+  labelIds: labelIdsSchema.optional(),
   fixVersionIds: fixVersionIds.optional(),
 })
   // Only when both are given; the service checks one against the stored other.

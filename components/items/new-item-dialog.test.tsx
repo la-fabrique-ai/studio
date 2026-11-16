@@ -202,6 +202,17 @@ describe("NewItemButton", () => {
     );
   });
 
+  it("keeps the creation form open and explains an unavailable selected label", async () => {
+    const user = userEvent.setup();
+    mocks.createItemAction.mockResolvedValueOnce({ ok: false, error: "Un label sélectionné est introuvable pour ce backlog." });
+    render(<NewItemButton {...dialogProps()} />);
+    await user.click(screen.getByRole("button", { name: "Nouvel item" }));
+    await user.type(screen.getByRole("textbox", { name: /Titre/ }), "Test");
+    await user.click(screen.getByRole("button", { name: /^Créer$/ }));
+    expect(await screen.findByText("Un label sélectionné est introuvable pour ce backlog.")).toBeVisible();
+    expect(screen.getByRole("textbox", { name: /Titre/ })).toHaveValue("Test");
+  });
+
   it("disables Fix version changes while creation is pending", async () => {
     const user = userEvent.setup();
     let resolve!: (result: { ok: false; error: string }) => void;

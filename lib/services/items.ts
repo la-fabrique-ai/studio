@@ -1,4 +1,5 @@
 import { currentActorContext } from "@/lib/auth/actor-context";
+import { ResourceNotFoundError } from "@/lib/auth/authorization";
 import { and, asc, desc, eq, exists, getTableColumns, inArray, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { randomUUID } from "node:crypto";
@@ -203,7 +204,7 @@ export function listLabelsForBacklog(backlogId: string) {
     .select()
     .from(labels)
     .where(or(eq(labels.backlogId, backlogId), isNull(labels.backlogId)))
-    .orderBy(asc(labels.name));
+    .orderBy(asc(labels.name), asc(labels.id));
 }
 
 export async function getItemLabelIds(itemId: string): Promise<string[]> {
@@ -634,7 +635,7 @@ export async function createItem(
             ),
           );
         if (valid.length !== data.labelIds.length) {
-          throw new Error("Un ou plusieurs labels n'appartiennent pas à ce backlog.");
+          throw new ResourceNotFoundError("label", "initial-labels");
         }
         await tx.insert(itemLabels).values(data.labelIds.map((labelId) => ({ itemId: id, labelId })));
       }
@@ -792,7 +793,7 @@ export async function updateItem(
             ),
           );
         if (valid.length !== data.labelIds.length) {
-          throw new Error("Un ou plusieurs labels n'appartiennent pas à ce backlog.");
+          throw new ResourceNotFoundError("label", "replacement-labels");
         }
       }
       const current = await tx

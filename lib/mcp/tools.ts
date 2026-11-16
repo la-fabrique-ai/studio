@@ -6,21 +6,25 @@ import { withRequestCache } from "@/lib/auth/request-cache";
 import { requireBacklogPermissionByKey } from "@/lib/auth/action-authorization";
 import { getBacklogByKeyForUser, listBacklogsForUser } from "@/lib/services/backlogs";
 import { scopeAllows, type ApiPrincipal } from "@/lib/services/api-tokens";
-import { listComments } from "@/lib/services/comments";
+import { getApiItemDetail } from "@/lib/services/api-read";
 import { findItemSummaryByKey, InvalidCursorError, searchItemsForActor } from "@/lib/services/item-search";
-import { getItemByKeyForBacklog, listActivities, listUsersByIds } from "@/lib/services/items";
+import { getItemByKeyForBacklog } from "@/lib/services/items";
 import { listStatusesForBacklog } from "@/lib/services/statuses";
 import { addCommentUseCase } from "@/lib/use-cases/comments";
 import { describeDomainError } from "@/lib/use-cases/errors";
 import { createItemUseCase, updateItemUseCase } from "@/lib/use-cases/items";
+import { addItemLabelUseCase, createLabelUseCase, listLabelsUseCase, removeItemLabelUseCase } from "@/lib/use-cases/labels";
 import type { ApiTokenScope } from "@/lib/validation/api-token";
 import {
   addCommentInput,
   createItemInput,
+  createLabelInput,
   getItemInput,
   listBacklogsInput,
   listMyItemsInput,
   listStatusesInput,
+  listLabelsInput,
+  itemLabelInput,
   searchItemsInput,
   transitionItemInput,
   updateItemInput,
@@ -151,40 +155,18 @@ export const JIROO_TOOLS = [
   define({
     name: "get_item",
     title: "Get item",
-    description: "One item by key, with its description, comments and activity history." + UNTRUSTED_CONTENT_NOTE,
+    description: "One item by key, with its description, children, labels, comments and activity history." + UNTRUSTED_CONTENT_NOTE,
     inputSchema: getItemInput,
     scope: "read",
     async handler({ key }, actor) {
-      const { backlog, item } = await resolveItem(actor.actorId, key);
-      const [summary, comments, activities] = await Promise.all([
-        summaryOf(actor.actorId, key),
-        listComments(item.id),
-        listActivities(item.id),
-      ]);
-      const actorIds = [...new Set(activities.map((a) => a.actorId))];
-      const names = new Map((await listUsersByIds(actorIds)).map((u) => [u.id, u.name]));
+      const item = await getApiItemDetail(actor.actorId, key);
       return {
         item: {
-          ...summary,
-          description: item.description,
-          url: `/b/${backlog.key}?item=${item.key}`,
-          comments: comments.map((c) => ({
-            id: c.id,
-            author: { id: c.authorId, name: c.authorName },
-            body: c.body,
-            createdAt: isoDate(c.createdAt),
-            editedAt: isoDate(c.editedAt),
-            deleted: c.deleted,
-          })),
-          activities: activities.map((a) => ({
-            id: a.id,
-            actor: { id: a.actorId, name: names.get(a.actorId) ?? a.actorId },
-            action: a.action,
-            field: a.field,
-            oldValue: a.oldValue,
-            newValue: a.newValue,
-            source: a.source,
-            at: isoDate(a.at),
+          ...item,
+          comments: item.comments.map((comment) => ({
+            ...comment,
+            editedAt: comment.updatedAt,
+            deleted: comment.deletedAt !== null,
           })),
         },
       };
@@ -262,6 +244,50 @@ export const JIROO_TOOLS = [
       return {
         comment: { id: comment.id, itemKey: key, body: comment.body, createdAt: isoDate(comment.createdAt) },
       };
+    },
+  }),
+  define({
+    name: "list_labels",
+    title: "List labels",
+    description: "The local and global labels available in a backlog, with their id, name and colour.",
+    inputSchema: listLabelsInput,
+    scope: "read",
+    async handler({ backlog: key }, actor) {
+      const backlog = await resolveBacklog(actor.actorId, key);
+      return { labels: await listLabelsUseCase(actor, backlog.id) };
+    },
+  }),
+  define({
+    name: "create_label",
+    title: "Create label",
+    description: "Create a local label, or reuse a global or local label of the same name (case insensitive). Needs write scope and edit_items.",
+    inputSchema: createLabelInput,
+    scope: "write",
+    async handler({ backlog: key, name }, actor) {
+      const backlog = await resolveBacklog(actor.actorId, key);
+      return createLabelUseCase(actor, { backlogId: backlog.id, name });
+    },
+  }),
+  define({
+    name: "add_item_label",
+    title: "Add item label",
+    description: "Add an available label to an item. Repeating the operation has no further effect; returns changed. Needs write scope and edit_items.",
+    inputSchema: itemLabelInput,
+    scope: "write",
+    async handler({ key, labelId }, actor) {
+      const { item } = await resolveItem(actor.actorId, key);
+      return addItemLabelUseCase(actor, { itemId: item.id, labelId });
+    },
+  }),
+  define({
+    name: "remove_item_label",
+    title: "Remove item label",
+    description: "Remove an available label from an item. An absent label is a no-op; returns changed. Needs write scope and edit_items.",
+    inputSchema: itemLabelInput,
+    scope: "write",
+    async handler({ key, labelId }, actor) {
+      const { item } = await resolveItem(actor.actorId, key);
+      return removeItemLabelUseCase(actor, { itemId: item.id, labelId });
     },
   }),
 ] as const satisfies readonly ToolDefinition[];

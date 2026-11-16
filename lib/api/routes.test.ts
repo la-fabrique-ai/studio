@@ -55,7 +55,7 @@ describe("REST v1 routes", () => {
   expect(r.status).toBe(200); expect(await r.json()).toEqual({ item });
   expect(m.update).toHaveBeenCalledWith(actor, { id: "i", statusId: uuid });
  });
- it.each([{}, { reporterId: "u" }, { title: "x", labelIds: [] }])("rejects empty or non-whitelisted patches %s", async (body) => { expect((await patch(req(body, "PATCH"), context)).status).toBe(400); expect(m.update).not.toHaveBeenCalled(); });
+ it.each([{}, { reporterId: "u" }, { title: "x", fixVersionIds: [] }])("rejects empty or non-whitelisted patches %s", async (body) => { expect((await patch(req(body, "PATCH"), context)).status).toBe(400); expect(m.update).not.toHaveBeenCalled(); });
  it("rejects malformed JSON", async () => {
   const r = await patch(new Request("http://localhost", { method: "PATCH", body: "{" }), context); expect(r.status).toBe(400);
  });

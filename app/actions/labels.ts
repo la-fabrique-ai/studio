@@ -1,10 +1,9 @@
 "use server";
 
 import { mapActionAuthorizationError } from "@/lib/auth/action-error";
-import { requireBacklogPermissionById } from "@/lib/auth/action-authorization";
 import { getSession } from "@/lib/auth/session";
-import { invalidateBacklog } from "@/lib/realtime/publish";
-import { createLabel } from "@/lib/services/labels";
+import { revalidateBacklogPages } from "@/lib/realtime/publish";
+import { createLabelUseCase } from "@/lib/use-cases/labels";
 
 async function authenticatedActorId(): Promise<string> {
   const session = await getSession();
@@ -27,17 +26,8 @@ export async function createLabelAction(input: {
 }) {
   const actorId = await authenticatedActorId();
   try {
-    await requireBacklogPermissionById({
-      actorId,
-      backlogId: input.backlogId,
-      permission: "edit_items",
-    });
-    const label = await createLabel({ backlogId: input.backlogId, name: input.name });
-    await invalidateBacklog(input.backlogKey, {
-      kind: "backlog",
-      backlogId: input.backlogId,
-      actorId,
-    });
+    const { label } = await createLabelUseCase({ actorId, source: "ui" }, { backlogId: input.backlogId, name: input.name });
+    revalidateBacklogPages(input.backlogKey);
     return { ok: true as const, label };
   } catch (e) {
     const authorizationError = mapActionAuthorizationError(e);

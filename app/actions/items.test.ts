@@ -145,6 +145,15 @@ describe("item action permission mapping", () => {
     resetActionMocks();
   });
 
+  it.each(["create", "update"])("explains an unavailable label when the %s service returns not found", async (kind) => {
+    const error = resourceNotFoundError("label", "hidden");
+    (kind === "create" ? mocks.createItem : mocks.updateItem).mockRejectedValueOnce(error);
+    const result = kind === "create"
+      ? await createItemAction({ backlogKey: "DEMO", backlogId, type: "composant", parentId: null, title: "Test" })
+      : await updateItemAction({ backlogKey: "DEMO", id: itemId, labelIds: [statusId] });
+    expect(result).toEqual({ ok: false, error: "Un label sélectionné est introuvable pour ce backlog." });
+  });
+
   it("publishes only after the mutation service resolves", async () => {
     let commit!: (item: { id: string }) => void;
     mocks.updateItem.mockReturnValueOnce(new Promise((resolve) => { commit = resolve; }));

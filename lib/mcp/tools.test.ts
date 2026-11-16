@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { permissionDeniedError } from "@/test-utils/action-authorization-errors";
 
 const mocks = vi.hoisted(() => ({
+  getApiItemDetail: vi.fn(),
   addCommentUseCase: vi.fn(),
   createItemUseCase: vi.fn(),
   findItemSummaryByKey: vi.fn(),
@@ -25,6 +26,7 @@ vi.mock("@/lib/services/backlogs", () => ({
   getBacklogByKeyForUser: mocks.getBacklogByKeyForUser,
   listBacklogsForUser: mocks.listBacklogsForUser,
 }));
+vi.mock("@/lib/services/api-read", () => ({ getApiItemDetail: mocks.getApiItemDetail }));
 vi.mock("@/lib/services/comments", () => ({ listComments: mocks.listComments }));
 vi.mock("@/lib/services/item-search", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/services/item-search")>()),
@@ -67,6 +69,7 @@ beforeEach(() => {
   mocks.findItemSummaryByKey.mockResolvedValue(summary);
   mocks.listBacklogsForUser.mockResolvedValue([backlog]);
   mocks.listStatusesForBacklog.mockResolvedValue([{ id: "status-1", name: "À faire", category: "todo", color: "#fff", order: 0 }]);
+  mocks.getApiItemDetail.mockResolvedValue({ ...summary, children: [], labels: [], comments: [], activities: [] });
   mocks.listComments.mockResolvedValue([]);
   mocks.listActivities.mockResolvedValue([]);
   mocks.listUsersByIds.mockResolvedValue([]);
@@ -76,7 +79,7 @@ beforeEach(() => {
 });
 
 describe("the tool catalogue", () => {
-  it("exposes the nine planned tools with their scopes", () => {
+  it("exposes the item and label tools with their scopes", () => {
     expect(JIROO_TOOLS.map((t) => [t.name, t.scope])).toEqual([
       ["list_backlogs", "read"],
       ["list_statuses", "read"],
@@ -87,6 +90,10 @@ describe("the tool catalogue", () => {
       ["update_item", "write"],
       ["transition_item", "write"],
       ["add_comment", "write"],
+      ["list_labels", "read"],
+      ["create_label", "write"],
+      ["add_item_label", "write"],
+      ["remove_item_label", "write"],
     ]);
   });
 });
@@ -100,7 +107,7 @@ describe("runTool", () => {
   });
 
   it("authorizes every key read through the audited backlog check", async () => {
-    await runTool(tool("get_item"), { key: "CASS-12" }, reader);
+    await runTool(tool("list_statuses"), { backlog: "CASS" }, reader);
     expect(mocks.requireBacklogPermissionByKey).toHaveBeenCalledWith({
       actorId: "user-1",
       backlogKey: "CASS",
@@ -109,6 +116,7 @@ describe("runTool", () => {
     await runTool(tool("search_items"), { backlog: "cass" }, reader);
     expect(mocks.requireBacklogPermissionByKey).toHaveBeenLastCalledWith(expect.objectContaining({ backlogKey: "CASS" }));
 
+    mocks.listStatusesForBacklog.mockClear();
     mocks.requireBacklogPermissionByKey.mockRejectedValueOnce(Object.assign(new Error("hidden"), { name: "ResourceNotFoundError" }));
     const hidden = await runTool(tool("list_statuses"), { backlog: "SECRET" }, reader);
     expect(hidden.isError).toBe(true);
@@ -154,7 +162,7 @@ describe("runTool", () => {
     mocks.requireBacklogPermissionByKey.mockRejectedValueOnce(Object.assign(new Error("hidden"), { name: "ResourceNotFoundError" }));
     const statuses = await runTool(tool("list_statuses"), { backlog: "nope" }, reader);
     expect(statuses).toMatchObject({ isError: true });
-    mocks.getItemByKeyForBacklog.mockResolvedValueOnce(null);
+    mocks.getApiItemDetail.mockRejectedValueOnce(Object.assign(new Error("hidden"), { name: "ResourceNotFoundError" }));
     const item = await runTool(tool("get_item"), { key: "CASS-404" }, reader);
     expect(item.content[0]!.text).toBe(statuses.content[0]!.text);
   });
