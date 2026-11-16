@@ -5,6 +5,10 @@ node_modules
 .next*
 **/.next*
 e2e
+# Exclude E2E tooling together with the sources it imports.
+playwright.config.ts
+scripts/e2e-*
+test-utils
 audit
 .claude
 .playwright
@@ -14,6 +18,15 @@ audit
 .aws
 .vercel
 .superpowers
+.infra
+.vscode
+.github
+.local
+.bin/shared
+docs
+**/*.key
+**/*.p12
+**/*.pfx
 **/.env*
 **/.npmrc
 **/*.log

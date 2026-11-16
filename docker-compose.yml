@@ -1,19 +1,18 @@
 services:
   db:
     image: postgres:17
-    container_name: jiroo-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: jiroo
-      POSTGRES_PASSWORD: jiroo
-      POSTGRES_DB: jiroo
+      POSTGRES_USER: ${POSTGRES_USER:-jiroo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jiroo}
+      POSTGRES_DB: ${POSTGRES_DB:-jiroo}
     ports:
-      - "5433:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5434}:5432"
     volumes:
       - jiroo-pgdata:/var/lib/postgresql/data
-      - ./docker/init:/docker-entrypoint-initdb.d
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jiroo -d jiroo"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 5s
       timeout: 5s
       retries: 10

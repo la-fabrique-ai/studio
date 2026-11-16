@@ -1,5 +1,10 @@
 # Docker images
 
+For the managed local environment and the future app + PostgreSQL VM stack,
+see [infrastructure](../.infra/README.md). For versioned GHCR images and GitHub
+draft releases, see [application releases](releases.md). The commands below
+remain useful for standalone builds and maintenance.
+
 Build from a reviewed checkout with Docker. No database, auth secret or dotenv
 file is needed at build time. Corepack reads the pinned pnpm from `package.json`;
 dependencies use the frozen lockfile. Keep the same tag for both targets:

@@ -1,0 +1,47 @@
+# Standalone VM stack, NOT an override of the development Compose file.
+# docker compose --env-file .infra/.env.vm -f .infra/compose.vm.yml ...
+name: jiroo
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set the database owner}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set the database owner password}
+      POSTGRES_DB: ${POSTGRES_DB:-jiroo}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../docker/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: ${JIROO_IMAGE:?Set an application image with a version or digest}
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set the restricted runtime URL using host db}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set a stable authentication secret}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?Set the public HTTPS origin}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  migrate:
+    image: ${JIROO_MIGRATE_IMAGE:?Set the matching maintenance image}
+    profiles: [maintenance]
+    environment:
+      DIRECT_DATABASE_URL: ${DIRECT_DATABASE_URL:?Set the owner URL using host db}
+      JIROO_RUNTIME_ROLE: ${JIROO_RUNTIME_ROLE:-jiroo_runtime}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  pgdata:

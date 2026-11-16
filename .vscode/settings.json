@@ -1,0 +1,14 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "files.insertFinalNewline": true,
+  "search.exclude": {
+    "**/.next": true,
+    "**/.next-e2e": true,
+    "**/pnpm-lock.yaml": true
+  },
+  "files.watcherExclude": {
+    "**/.next/**": true,
+    "**/.next-e2e/**": true,
+    "**/node_modules/**": true
+  }
+}

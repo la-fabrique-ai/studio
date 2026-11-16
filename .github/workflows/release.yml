@@ -1,0 +1,128 @@
+name: Prepare release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version already merged in package.json (for example 0.2.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# Serialize releases; never cancel a run halfway through publishing images.
+concurrency:
+  group: prepare-release
+  cancel-in-progress: false
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      image: ${{ steps.version.outputs.image }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Validate version and reject existing tags
+        id: version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
+          if (process.env.GITHUB_REF !== 'refs/heads/main') throw new Error('Run releases from main only');
+          if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version)) throw new Error('Expected a stable X.Y.Z version');
+          if (process.env.REQUESTED_VERSION !== version) throw new Error('Input must match package.json');
+          appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nimage=ghcr.io/${process.env.GITHUB_REPOSITORY.toLowerCase()}\n`);
+          NODE
+          tag="v$REQUESTED_VERSION"
+          existing_tags=$(git ls-remote --tags origin "refs/tags/$tag")
+          test -z "$existing_tags" || { echo "Tag already exists: $tag"; exit 1; }
+          releases=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" --jq '.[].tag_name')
+          if printf '%s\n' "$releases" | grep -Fxq "$tag"; then
+            echo "Release already exists: $tag"
+            exit 1
+          fi
+
+  checks:
+    needs: version
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: [version, checks]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish application image
+        id: app
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: runner
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ needs.version.outputs.image }}:${{ needs.version.outputs.version }}
+            ${{ needs.version.outputs.image }}:sha-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ needs.version.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=runner
+      - name: Publish maintenance image
+        id: migrate
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: migrate
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ needs.version.outputs.image }}-migrate:${{ needs.version.outputs.version }}
+            ${{ needs.version.outputs.image }}-migrate:sha-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ needs.version.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=migrate
+      - name: Create draft release with exact image references
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+          IMAGE: ${{ needs.version.outputs.image }}
+          APP_DIGEST: ${{ steps.app.outputs.digest }}
+          MIGRATE_DIGEST: ${{ steps.migrate.outputs.digest }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { writeFileSync } from 'node:fs';
+          const e = process.env;
+          const manifest = {
+            version: e.RELEASE_VERSION,
+            commit: e.GITHUB_SHA,
+            platform: 'linux/amd64',
+            app: `${e.IMAGE}@${e.APP_DIGEST}`,
+            migrate: `${e.IMAGE}-migrate@${e.MIGRATE_DIGEST}`,
+          };
+          writeFileSync('release-manifest.json', JSON.stringify(manifest, null, 2) + '\n');
+          writeFileSync('release-notes.md', `Commit: ${manifest.commit}\n\nApplication: \`${manifest.app}\`\n\nMigrations: \`${manifest.migrate}\`\n\nDeployment and database migrations are manual.\n`);
+          NODE
+          gh release create "v$RELEASE_VERSION" release-manifest.json \
+            --target "$GITHUB_SHA" --title "v$RELEASE_VERSION" \
+            --draft --generate-notes --notes-file release-notes.md
