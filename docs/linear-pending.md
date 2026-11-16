@@ -22,7 +22,14 @@ l'écrit pas : en revue, il signale ses constats dans son rapport.
 
 ## Entrées non synchronisées
 
-Aucune au 2 octobre 2026.
+- **16 novembre 2026 — NON SYNCHRONISÉ — Spécifications (lot 1).** Cible
+  prévue : projet P-JIR-37 « Évolutions à venir » (ou nouveau projet si le
+  propriétaire le décide), un ticket Feature et un document de plan. Source :
+  [`docs/superpowers/specs/2026-11-16-studio-specifications-design.md`](superpowers/specs/2026-11-16-studio-specifications-design.md)
+  (contenu complet). État : validé par le propriétaire en session, en cours
+  d'exécution sur la branche `lot-specs-documents`. Limite constatée : aucun
+  outil Linear disponible dans la session. Prochaine action : créer le ticket et
+  le document dans Linear, puis y relier la PR.
 
 ## Historique (clos)
 
