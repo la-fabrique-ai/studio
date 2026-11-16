@@ -98,7 +98,7 @@ export function HelpGuide() {
           title="Retrouver ses backlogs"
           purpose="Voir d’un coup d’œil tous les backlogs auxquels vous avez accès et garder vos favoris à portée de main."
           steps={[
-            <>Ouvrez l’accueil avec <Ui>Tous les backlogs</Ui>, sous le sélecteur de backlog de la barre latérale.</>,
+            <>Ouvrez le sélecteur de backlog en haut de la barre latérale, puis choisissez <Ui>Tous les backlogs</Ui>.</>,
             <>Chaque ligne affiche le nom et la clé du backlog, le nombre d’items ouverts (statut hors catégorie Terminé), le sprint actif avec ses points terminés sur les points engagés au démarrage (ou <Ui>Aucun sprint actif</Ui>) et le responsable.</>,
             <>Cliquez sur une ligne pour ouvrir le backlog.</>,
             <>Cliquez sur l’étoile (infobulle <Ui>Ajouter aux favoris</Ui>) pour placer un backlog en tête de liste ; cliquez à nouveau (<Ui>Retirer des favoris</Ui>) pour l’enlever. Pour les lecteurs d’écran, le bouton s’appelle « Favori » suivi du nom du backlog et indique s’il est activé.</>,
@@ -217,7 +217,7 @@ export function HelpGuide() {
           title="Choisir une vue"
           purpose="Regarder le même backlog sous l’angle utile au moment."
           steps={[
-            <>Choisissez la vue dans la barre latérale, sous le sélecteur de backlog : <Ui>Backlog</Ui>, <Ui>Board</Ui>, <Ui>Liste</Ui>, <Ui>Arbre</Ui> (puis <Ui>Releases</Ui> et <Ui>Rapports</Ui>).</>,
+            <>Choisissez la vue dans la barre latérale, sous le sélecteur de backlog : <Ui>Backlog</Ui>, <Ui>Board</Ui>, <Ui>Liste</Ui>, <Ui>Arbre</Ui> (puis <Ui>Roadmap</Ui> et <Ui>Releases</Ui>) ; les rapports de sprint sont dans <Ui>Pilotage</Ui> → <Ui>Sprint</Ui>.</>,
             <>Le titre de la page reprend le nom de la vue ; le fil d’Ariane au-dessus indique le backlog et, le cas échéant, la vue enregistrée active.</>,
           ]}
         >
@@ -340,7 +340,7 @@ export function HelpGuide() {
           title="Créer un ticket"
           purpose="Ajouter un Composant, une Epic, une Tâche ou une Sous-tâche."
           steps={[
-            <>Sur toutes les pages d’un backlog (vues, Roadmap, Releases, Rapports, Paramètres), cliquez sur <Ui>+ Créer</Ui> dans la barre du haut, à côté du champ de recherche (ou touche <Key>C</Key>) : la fenêtre <Ui>Nouvel item</Ui> s’ouvre, avec la clé du backlog dans sa couleur. Sur le Board, le ticket rejoint le sprint actif ; sans sprint actif, il va dans le backlog. Dans le Backlog, utilisez aussi <Ui>Créer un item</Ui> en bas d’une section (voir ci-dessous). Depuis le détail d’un ticket, <Ui>+ Créer une tâche</Ui> (ou une sous-tâche, un epic) préremplit le type et le parent.</>,
+            <>Sur toutes les pages d’un backlog (vues, Roadmap, Releases, Sprint, Paramètres), cliquez sur <Ui>+ Créer</Ui> dans la barre du haut, à côté du champ de recherche (ou touche <Key>C</Key>) : la fenêtre <Ui>Nouvel item</Ui> s’ouvre, avec la clé du backlog dans sa couleur. Sur le Board, le ticket rejoint le sprint actif ; sans sprint actif, il va dans le backlog. Dans le Backlog, utilisez aussi <Ui>Créer un item</Ui> en bas d’une section (voir ci-dessous). Depuis le détail d’un ticket, <Ui>+ Créer une tâche</Ui> (ou une sous-tâche, un epic) préremplit le type et le parent.</>,
             <>Choisissez le <Ui>Type</Ui> (et un <Ui>Modèle</Ui> si besoin), puis, sauf pour un Composant, le <Ui>Parent</Ui> obligatoire (marqué d’un astérisque ; une Epic se rattache à un Composant, une Tâche à une Epic, une Sous-tâche à une Tâche) ; saisissez le <Ui>Titre</Ui> et la <Ui>Description</Ui> dans l’éditeur mis en forme. Le champ <Ui>Parent</Ui> cherche dans le backlog à mesure que vous tapez une clé ou un mot du titre (vingt propositions au plus ; sans rien taper, les premières dans l’ordre du backlog) : <Key>↓</Key> et <Key>↑</Key> parcourent la liste, <Key>Entrée</Key> choisit, <Key>Échap</Key> la referme. Si le backlog n’a encore aucun parent possible, le champ <Ui>Parent</Ui> propose de le créer d’abord (voir « Démarrer dans un nouveau backlog »).</>,
             <>Dans <Ui>Modèle</Ui>, retrouvez les modèles fixes <Ui>Rapport de bug</Ui> et <Ui>User story</Ui>, puis les <Ui>Modèles du backlog</Ui>. Un modèle partagé préremplit le type (si autorisé dans ce contexte), la nature, le titre, la description, la priorité et les labels. Tout reste modifiable avant de créer ; <Ui>Aucun</Ui> retire le préremplissage.</>,
             <>Dans <Ui>Détails</Ui>, ajustez <Ui>Statut</Ui> (il affiche le statut que recevra le ticket, le premier statut « À faire » par défaut), <Ui>Assigné</Ui> (ou <Ui>M’assigner</Ui>, à droite du champ), <Ui>Priorité</Ui>, <Ui>Points</Ui> et <Ui>Sprint</Ui> (tâches), <Ui>Nature</Ui>, <Ui>Labels</Ui>, <Ui>Fix versions</Ui>, <Ui>Échéance</Ui>, puis <Ui>Créer</Ui>.</>,
@@ -559,7 +559,7 @@ export function HelpGuide() {
           <GuideNote>
             Les sous-tâches doivent être terminées avant la fin du sprint. Un sprint ne se supprime pas.
             Un sprint terminé disparaît du Backlog et du Board ; pour retrouver ses tickets, ouvrez
-            {" "}<Ui>Rapports</Ui> → <Ui>Rapport de sprint</Ui>, ou filtrez la <Ui>Liste</Ui> ou l’<Ui>Arbre</Ui>
+            {" "}<Ui>Pilotage</Ui> → <Ui>Sprint</Ui> → <Ui>Rapport de sprint</Ui>, ou filtrez la <Ui>Liste</Ui> ou l’<Ui>Arbre</Ui>
             {" "}avec <Ui>+ Filtre</Ui> → <Ui>Sprint</Ui>.
           </GuideNote>
         </GuideTopic>
@@ -645,7 +645,7 @@ export function HelpGuide() {
           title="Ouvrir un rapport"
           purpose="Mesurer ce qui a été engagé et livré."
           steps={[
-            <>Barre latérale → <Ui>Rapports</Ui>, puis <Ui>Rapport de sprint</Ui>, <Ui>Vélocité</Ui>, <Ui>Burndown</Ui> ou <Ui>Bilan des sprints</Ui>.</>,
+            <>Barre latérale → <Ui>Pilotage</Ui> → <Ui>Sprint</Ui>, puis <Ui>Rapport de sprint</Ui>, <Ui>Vélocité</Ui>, <Ui>Burndown</Ui> ou <Ui>Bilan des sprints</Ui>.</>,
             <>Pour <Ui>Bilan des sprints</Ui>, le tableau regroupe les sprints sans sélection supplémentaire.</>,
             <>Pour <Ui>Rapport de sprint</Ui> et <Ui>Burndown</Ui>, choisissez le <Ui>Sprint</Ui> puis <Ui>Afficher</Ui>. Pour <Ui>Vélocité</Ui>, choisissez <Ui>7 sprints</Ui> ou <Ui>12 sprints</Ui>.</>,
           ]}

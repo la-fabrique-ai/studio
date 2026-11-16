@@ -23,7 +23,7 @@ export function ReportNavigation({
   sprints: NavigationSprint[];
   plannedCount: number;
 }) {
-  const path = `/b/${backlogKey}/reports`;
+  const path = `/b/${backlogKey}/report-sprint`;
   // Sprint and Burndown present the same sprint: switching keeps it, pagination resets.
   const sprintQuery = selectedSprintId ? `&sprint=${selectedSprintId}` : "";
   return (

@@ -211,6 +211,13 @@
       "when": 1794830572994,
       "tag": "0029_last_lilandra",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1794858835800,
+      "tag": "0030_spec_nodes",
+      "breakpoints": true
     }
   ]
 }

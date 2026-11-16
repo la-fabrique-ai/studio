@@ -115,7 +115,10 @@ test("chaque page se charge derrière un squelette à sa forme", async ({ page }
   await expectSkeleton(page, testInfo, {
     shape: "home",
     label: "Chargement des backlogs",
-    navigate: link(page, "Tous les backlogs"),
+    navigate: async () => {
+      await page.getByRole("button", { name: /^Backlog / }).click();
+      await page.getByRole("menuitem", { name: "Tous les backlogs" }).click();
+    },
     heading: "Backlogs",
   });
   await expectSkeleton(page, testInfo, {

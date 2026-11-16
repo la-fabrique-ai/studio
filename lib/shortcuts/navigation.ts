@@ -50,6 +50,6 @@ export function goShortcutHref(id: GoShortcutId, backlogKey: string | null): str
     case "go.releases":
       return `${base}/releases`;
     case "go.reports":
-      return `${base}/reports`;
+      return `${base}/report-sprint`;
   }
 }

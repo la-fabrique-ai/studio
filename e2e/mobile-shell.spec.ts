@@ -37,7 +37,7 @@ test("garde le fil d’Ariane complet et lisible au-dessus du titre à 390 par 8
   await expect(page.getByRole("heading", { level: 1, name: "Liste" })).toBeVisible();
   await expectNoPageOverflow(page);
 
-  await page.goto("/b/CASS/reports");
+  await page.goto("/b/CASS/report-sprint");
   await expect(current).toHaveText("Rapports");
   await expectNotClipped(current);
   await expectNoPageOverflow(page);
@@ -63,14 +63,14 @@ test("ouvre les vues du projet dans le tiroir de navigation à 390 par 844", asy
   await page.getByRole("button", { name: "Ouvrir la navigation" }).click();
   const drawer = page.getByRole("dialog", { name: "Navigation principale" });
   const views = drawer.getByRole("navigation", { name: "Vues du projet" });
-  for (const name of ["Backlog", "Board", "Liste", "Arbre", "Roadmap", "Releases", "Rapports"]) {
+  for (const name of ["Backlog", "Board", "Liste", "Arbre", "Roadmap", "Releases"]) {
     await expect(views.getByRole("link", { name, exact: true })).toBeVisible();
   }
   await expect(views.getByRole("link", { name: /^Le point/ })).toBeVisible();
   await expect(views.getByRole("link", { name: "Liste" })).toHaveAttribute("aria-current", "page");
 
-  await views.getByRole("link", { name: "Rapports" }).click();
-  await expect(page).toHaveURL(/\/b\/CASS\/reports$/);
+  await drawer.getByRole("navigation", { name: "Pilotage du projet" }).getByRole("link", { name: "Sprint" }).click();
+  await expect(page).toHaveURL(/\/b\/CASS\/report-sprint$/);
   await expect(drawer).toHaveCount(0);
   await expectNoPageOverflow(page);
 });

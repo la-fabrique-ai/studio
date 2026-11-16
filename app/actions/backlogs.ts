@@ -150,8 +150,9 @@ export async function setBacklogStarAction(input: { backlogId: string; starred: 
 }
 
 /**
- * Whether the sidebar links this backlog's settings (JIR-122): the Accès
- * page's own gate, for the active backlog only, never an error.
+ * Whether the viewer may open this backlog's settings (JIR-122): the Accès
+ * page's own gate, never an error. The sidebar no longer links the settings
+ * (Administration does); kept for the backlog administrators' entry to come.
  */
 export async function canOpenBacklogSettingsAction(backlogId: string): Promise<boolean> {
   const session = await getSession();

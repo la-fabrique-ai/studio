@@ -1,31 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  BookText,
   CalendarDays,
   ChartColumn,
   ChartGantt,
   Compass,
-  FolderKanban,
+  Folder,
   Layers,
   List,
   ListTree,
   Rows3,
   Settings,
-  SlidersHorizontal,
   SquareKanban,
   Tag,
   Trash2,
   User,
   type LucideIcon,
 } from "lucide-react";
-import { canOpenBacklogSettingsAction } from "@/app/actions/backlogs";
 import { Badge } from "@/components/ui/badge";
 import { BacklogSelector } from "@/components/shell/backlog-selector";
 import { NavLink } from "@/components/shell/nav-link";
 import { useSidebarState } from "@/components/shell/sidebar-state";
+import { SidebarSection } from "@/components/shell/sidebar-section";
 import { SidebarViews } from "@/components/shell/sidebar-views";
 import { useViewUrlState } from "@/components/shell/view-url-state";
 import { UserCard } from "@/components/shell/user-card";
@@ -33,12 +32,14 @@ import type { SidebarViewRow } from "@/components/shell/sidebar-views";
 import {
   activeProjectView,
   deriveShellContext,
+  PILOTAGE_VIEWS,
   PROJECT_VIEWS,
   projectViewHref,
   type ProjectViewId,
 } from "@/lib/items/shell";
 import { showAllBacklogItemsParams } from "@/lib/items/views";
 import type { ShellCounts } from "@/lib/services/shell";
+import type { SpecRootFolder } from "@/lib/services/specs";
 import { cn } from "@/lib/utils";
 
 type Backlog = { id: string; key: string; name: string; color: string; starred?: boolean };
@@ -51,7 +52,7 @@ const PROJECT_VIEW_ICONS: Record<ProjectViewId, LucideIcon> = {
   tree: ListTree,
   roadmap: ChartGantt,
   releases: Tag,
-  reports: ChartColumn,
+  "report-sprint": ChartColumn,
 };
 
 /** A path segment as the router decodes it; a malformed escape stays as written. */
@@ -71,6 +72,7 @@ export function Sidebar({
   canAdminister,
   adminHref = "/admin",
   counts,
+  specFolders = [],
 }: {
   backlogs: Backlog[];
   views: SidebarViewRow[];
@@ -79,6 +81,8 @@ export function Sidebar({
   canAdminister: boolean;
   adminHref?: string;
   counts: ShellCounts;
+  /** Root folders of the specification trees (Brief, PRD, UX by default). */
+  specFolders?: SpecRootFolder[];
 }) {
   const { collapsed: desktopCollapsed, mobile } = useSidebarState();
   const collapsed = mobile ? false : desktopCollapsed;
@@ -117,32 +121,12 @@ export function Sidebar({
   const activeView = activeBacklog
     ? activeProjectView(pathname, new URLSearchParams(searchParams.toString()), activeBacklog.key)
     : null;
-  const settingsHref = activeBacklog
-    ? `/b/${encodeURIComponent(activeBacklog.key)}/settings`
-    : null;
-  const activeBacklogId = activeBacklog?.id;
-  // Asked for the active backlog only, again on each navigation (path or item
-  // view, since Board, Backlog, Liste and Arbre share `/b/<key>`) so a granted
-  // or revoked right shows up without a reload (JIR-122). The last answer for
-  // this backlog stays shown while the next one is pending or failed.
-  const [settingsAccess, setSettingsAccess] = useState<{ backlogId: string; allowed: boolean } | null>(null);
-  useEffect(() => {
-    if (!activeBacklogId) return;
-    let current = true;
-    canOpenBacklogSettingsAction(activeBacklogId).then(
-      (allowed) => {
-        if (current) setSettingsAccess({ backlogId: activeBacklogId, allowed });
-      },
-      () => undefined,
-    );
-    return () => {
-      current = false;
-    };
-  }, [activeBacklogId, pathname, activeView]);
-  const canOpenSettings =
-    activeBacklogId !== undefined &&
-    settingsAccess?.backlogId === activeBacklogId &&
-    settingsAccess.allowed;
+  const specsHref = activeBacklog ? `/b/${encodeURIComponent(activeBacklog.key)}/specs` : null;
+  const onSpecs = specsHref !== null
+    && (pathname.toUpperCase() === specsHref.toUpperCase() || pathname.toUpperCase().startsWith(`${specsHref.toUpperCase()}/`));
+  const activeSpecFolders = activeBacklog
+    ? specFolders.filter((folder) => folder.backlogId === activeBacklog.id)
+    : [];
 
   return (
     <div
@@ -185,100 +169,103 @@ export function Sidebar({
         collapsed={collapsed}
         activeKey={context.activeBacklogKey}
       />
-      {/* Jira's « Projects » page: every backlog, favourites first (JIR-82). */}
-      <NavLink
-        href="/"
-        active={context.activeNav === "backlogs"}
-        ariaLabel={collapsed ? "Tous les backlogs" : undefined}
-        collapsed={collapsed}
-        title={collapsed ? "Tous les backlogs" : undefined}
-      >
-        <FolderKanban className="size-4" aria-hidden="true" />
-        <span className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}>
-          Tous les backlogs
-        </span>
-      </NavLink>
 
-      {activeBacklog && (
-        <nav aria-label="Vues du projet" className="mt-2 flex flex-col gap-0.5">
-          {PROJECT_VIEWS.map((view) => {
-            const Icon = PROJECT_VIEW_ICONS[view.id];
-            const itemView = view.kind === "item";
-            return (
-              <NavLink
-                key={view.id}
-                href={
-                  itemView && onActiveBacklogRoute
-                    ? viewUrl.href((params) => params.set("view", view.id))
-                    : projectViewHref(activeBacklog.key, view.id)
-                }
-                active={activeView === view.id}
-                ariaLabel={collapsed ? view.label : undefined}
-                collapsed={collapsed}
-                title={collapsed ? view.label : undefined}
-                onNavigate={
-                  itemView && onActiveBacklogRoute
-                    ? (event) => {
-                        event.preventDefault();
-                        viewUrl.push((latest) => latest.set("view", view.id));
-                      }
-                    : undefined
-                }
-              >
-                <Icon className="size-4" aria-hidden="true" />
-                <span className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}>
-                  {view.label}
-                </span>
-                {view.id === "le-point" && !collapsed && (
-                  <Badge variant="outline" className="h-4 px-1.5 text-[10px] text-muted-foreground">
-                    pilote
-                  </Badge>
-                )}
-              </NavLink>
-            );
-          })}
-          {/* Jira's « Project settings », for the backlog's administrators (JIR-122). */}
-          {canOpenSettings && settingsHref && (
+      {/* The BMAD specifications (brief, PRD, UX), above the tickets as in the design. */}
+      {specsHref && (
+        <SidebarSection id="specs" title="Spécifications" collapsed={collapsed} className="mt-2">
+          {activeSpecFolders.length === 0 ? (
             <NavLink
-              href={`${settingsHref}/access`}
-              active={pathname.toUpperCase().startsWith(`${settingsHref.toUpperCase()}/`)}
-              ariaLabel={collapsed ? "Paramètres du backlog" : undefined}
+              href={specsHref}
+              active={onSpecs}
+              ariaLabel={collapsed ? "Spécifications" : undefined}
               collapsed={collapsed}
-              title={collapsed ? "Paramètres du backlog" : undefined}
+              title={collapsed ? "Spécifications" : undefined}
             >
-              <SlidersHorizontal className="size-4" aria-hidden="true" />
+              <BookText className="size-4" aria-hidden="true" />
               <span className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}>
-                Paramètres
+                Tous les documents
               </span>
             </NavLink>
+          ) : (
+            activeSpecFolders.map((folder) => (
+              <NavLink
+                key={folder.id}
+                href={`${specsHref}/${folder.id}`}
+                active={pathname.endsWith(`/specs/${folder.id}`)}
+                ariaLabel={collapsed ? folder.title : undefined}
+                collapsed={collapsed}
+                title={collapsed ? folder.title : undefined}
+              >
+                <Folder className="size-4" aria-hidden="true" />
+                <span className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}>{folder.title}</span>
+              </NavLink>
+            ))
           )}
-        </nav>
+        </SidebarSection>
       )}
 
-      {/* The team's calendar is a page of its own, not a filter: it sits between the backlogs and the filters.
-          From a backlog's pages it opens on that backlog; elsewhere, on every backlog the reader can browse. */}
-      <div className="mt-2">
-          <NavLink
-            href={onActiveBacklogPages && activeBacklog ? `/presences?backlog=${encodeURIComponent(activeBacklog.key)}` : "/presences"}
-            active={context.activeNav === "presences"}
-            ariaLabel="Calendrier d’équipe"
-            collapsed={collapsed}
-            title={collapsed ? "Calendrier d’équipe" : undefined}
-          >
-            <CalendarDays className="size-4" />
-            <span
-              className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}
-            >
-              Calendrier d’équipe
-            </span>
-          </NavLink>
-      </div>
+      <SidebarSection id="tickets" title="Gestion des tickets" collapsed={collapsed} className="mt-2">
+        {activeBacklog && (
+          <nav aria-label="Vues du projet" className="flex flex-col gap-0.5">
+            {PROJECT_VIEWS.map((view) => {
+              const Icon = PROJECT_VIEW_ICONS[view.id];
+              const itemView = view.kind === "item";
+              return (
+                <NavLink
+                  key={view.id}
+                  href={
+                    itemView && onActiveBacklogRoute
+                      ? viewUrl.href((params) => params.set("view", view.id))
+                      : projectViewHref(activeBacklog.key, view.id)
+                  }
+                  active={activeView === view.id}
+                  ariaLabel={collapsed ? view.label : undefined}
+                  collapsed={collapsed}
+                  title={collapsed ? view.label : undefined}
+                  onNavigate={
+                    itemView && onActiveBacklogRoute
+                      ? (event) => {
+                          event.preventDefault();
+                          viewUrl.push((latest) => latest.set("view", view.id));
+                        }
+                      : undefined
+                  }
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                  <span className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}>
+                    {view.label}
+                  </span>
+                  {view.id === "le-point" && !collapsed && (
+                    <Badge variant="outline" className="h-4 px-1.5 text-[10px] text-muted-foreground">
+                      pilote
+                    </Badge>
+                  )}
+                </NavLink>
+              );
+            })}
+          </nav>
+        )}
 
-      {/* Keep filters usable; short windows scroll the whole sidebar instead. */}
-      <div className="mt-2 flex min-h-32 flex-1 flex-col gap-0.5 overflow-y-auto">
+        {/* The team's calendar is a page of its own, not a filter: it sits between the views and the filters.
+            From a backlog's pages it opens on that backlog; elsewhere, on every backlog the reader can browse. */}
+        <NavLink
+          href={onActiveBacklogPages && activeBacklog ? `/presences?backlog=${encodeURIComponent(activeBacklog.key)}` : "/presences"}
+          active={context.activeNav === "presences"}
+          ariaLabel="Calendrier d’équipe"
+          collapsed={collapsed}
+          title={collapsed ? "Calendrier d’équipe" : undefined}
+        >
+          <CalendarDays className="size-4" />
+          <span
+            className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}
+          >
+            Calendrier d’équipe
+          </span>
+        </NavLink>
+
         <div
           className={cn(
-            "t-meta px-2 pb-1 font-medium uppercase tracking-wide text-muted-foreground",
+            "t-meta px-2 pt-2 pb-1 font-medium uppercase tracking-wide text-muted-foreground",
             collapsed && "sr-only",
           )}
         >
@@ -331,7 +318,35 @@ export function Sidebar({
             backlogs={backlogs}
           />
         )}
-      </div>
+      </SidebarSection>
+
+      {/* Steering the project: the sprint reports for now, the agents' pages later. */}
+      <SidebarSection id="pilotage" title="Pilotage" collapsed={collapsed} className="mt-2 mb-4">
+        {activeBacklog ? (
+          <nav aria-label="Pilotage du projet" className="flex flex-col gap-0.5">
+            {PILOTAGE_VIEWS.map((view) => {
+              const Icon = PROJECT_VIEW_ICONS[view.id];
+              return (
+                <NavLink
+                  key={view.id}
+                  href={projectViewHref(activeBacklog.key, view.id)}
+                  active={activeView === view.id}
+                  ariaLabel={collapsed ? view.label : undefined}
+                  collapsed={collapsed}
+                  title={collapsed ? view.label : undefined}
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                  <span className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}>
+                    {view.label}
+                  </span>
+                </NavLink>
+              );
+            })}
+          </nav>
+        ) : (
+          !collapsed && <p className="px-2 py-1 text-xs text-muted-foreground">Choisissez un backlog.</p>
+        )}
+      </SidebarSection>
 
       <div className="mt-auto flex flex-col gap-1">
         <NavLink

@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   unreadCount: vi.fn(),
   listRecentNotifications: vi.fn(),
   getShellCounts: vi.fn(),
+  listRootSpecFolders: vi.fn(async () => []),
   sidebar: vi.fn(() => null),
 }));
 
@@ -35,6 +36,7 @@ vi.mock("@/lib/services/notifications", () => ({
   listRecentNotifications: mocks.listRecentNotifications,
 }));
 vi.mock("@/lib/services/shell", () => ({ getShellCounts: mocks.getShellCounts }));
+vi.mock("@/lib/services/specs", () => ({ listRootSpecFolders: mocks.listRootSpecFolders }));
 vi.mock("@/components/shell/app-shell", () => ({
   AppShell: ({ sidebar }: { sidebar: ReactNode }) => sidebar,
 }));

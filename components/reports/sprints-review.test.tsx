@@ -18,7 +18,7 @@ describe("SprintsReviewView", () => {
     expect(within(row).getByText("53 %")).toHaveClass("text-destructive");
     expect(within(row).getByText("6 / 15")).toHaveClass("text-destructive");
     expect(within(row).getByText("0,7")).toBeVisible();
-    expect(within(row).getByRole("link", { name: "Sprint actif" })).toHaveAttribute("href", "/b/CASS/reports?report=sprint&sprint=sprint-1");
+    expect(within(row).getByRole("link", { name: "Sprint actif" })).toHaveAttribute("href", "/b/CASS/report-sprint?report=sprint&sprint=sprint-1");
     expect(screen.getByText(/50 derniers sprints clos/)).toBeVisible();
     expect(screen.getByText(/effectif assignable actuel/)).toBeVisible();
     expect(screen.getByText(/seuils à discuter/)).toBeVisible();

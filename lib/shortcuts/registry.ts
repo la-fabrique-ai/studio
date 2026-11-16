@@ -58,7 +58,7 @@ export const SHORTCUTS = [
   { id: "go.list", kind: "sequence", group: "navigation", sequence: ["g", "i"], label: "Liste", jira: "g puis i (liste des tickets)" },
   { id: "go.tree", kind: "sequence", group: "navigation", sequence: ["g", "t"], label: "Arbre" },
   { id: "go.releases", kind: "sequence", group: "navigation", sequence: ["g", "v"], label: "Releases (versions)" },
-  { id: "go.reports", kind: "sequence", group: "navigation", sequence: ["g", "r"], label: "Rapports" },
+  { id: "go.reports", kind: "sequence", group: "navigation", sequence: ["g", "r"], label: "Rapports de sprint" },
   { id: "go.help", kind: "sequence", group: "navigation", sequence: ["g", "u"], label: "Aide (guide d’utilisation)" },
 
   // Listes

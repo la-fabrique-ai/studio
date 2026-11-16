@@ -5,7 +5,7 @@ describe("backlogKeyFromPath", () => {
   it("reads the backlog key from backlog routes", () => {
     expect(backlogKeyFromPath("/b/CASS")).toBe("CASS");
     expect(backlogKeyFromPath("/b/CASS/releases/42")).toBe("CASS");
-    expect(backlogKeyFromPath("/b/A%20B/reports")).toBe("A B");
+    expect(backlogKeyFromPath("/b/A%20B/report-sprint")).toBe("A B");
   });
 
   it("is null outside a backlog", () => {
@@ -22,7 +22,7 @@ describe("goShortcutHref", () => {
     expect(goShortcutHref("go.list", "CASS")).toBe("/b/CASS?view=list");
     expect(goShortcutHref("go.tree", "CASS")).toBe("/b/CASS?view=tree");
     expect(goShortcutHref("go.releases", "CASS")).toBe("/b/CASS/releases");
-    expect(goShortcutHref("go.reports", "CASS")).toBe("/b/CASS/reports");
+    expect(goShortcutHref("go.reports", "CASS")).toBe("/b/CASS/report-sprint");
   });
 
   it("always reaches the guide, and nothing else without a backlog", () => {

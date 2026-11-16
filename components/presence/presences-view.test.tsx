@@ -261,7 +261,7 @@ describe("PresencesView", () => {
     const panel = screen.getByRole("region", { name: "Tickets" });
     expect(panel).toHaveTextContent("Sprint 8");
     expect(panel).toHaveTextContent("3 tickets");
-    expect(within(panel).getByRole("link", { name: "Voir le rapport de sprint" })).toHaveAttribute("href", "/b/DATA/reports?report=sprint&sprint=s8");
+    expect(within(panel).getByRole("link", { name: "Voir le rapport de sprint" })).toHaveAttribute("href", "/b/DATA/report-sprint?report=sprint&sprint=s8");
     // Hugo's PEN ticket stays out of the DATA scope.
     expect(within(panel).queryByText("PEN-3")).toBeNull();
   });

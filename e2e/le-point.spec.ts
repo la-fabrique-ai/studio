@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import { randomBytes } from "node:crypto";
 import { expect, test as base, type Locator, type Page } from "@playwright/test";
 import { asc, eq } from "drizzle-orm";
@@ -12,7 +11,6 @@ import { addLink } from "../lib/services/links";
 import { startSprint } from "../lib/services/sprint-lifecycle";
 import { createSprint } from "../lib/services/sprints";
 import { writeAuditScreenshot, writeAuditText } from "./audit-artifacts";
-import { readActionArguments } from "./support/actions";
 import { observePage } from "./support/capture";
 import { keyPattern } from "./key-helpers";
 
@@ -26,7 +24,7 @@ let fixture: Awaited<ReturnType<typeof seedProject>>;
 let ownedBacklogId: string | undefined;
 
 type Capture = { console: string[]; network: string[]; errors: string[] };
-type ObservedWrite = { actionId?: string; permissionArguments: boolean; method: string; path: string };
+type ObservedWrite = { method: string; path: string };
 
 async function seedProject() {
   const [actor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@studio.local"));
@@ -69,23 +67,6 @@ async function businessState() {
   return { header, tickets, history };
 }
 
-async function permissionActionIds() {
-  // next dev owns this manifest. Read only the named export, never print the
-  // manifest: it also contains Next's encryption key. Fail closed if unavailable.
-  let manifest: { node: Record<string, { exportedName?: string; filename?: string }> };
-  try {
-    manifest = JSON.parse(await readFile(".next-e2e/dev/server/server-reference-manifest.json", "utf8"));
-  } catch {
-    // JSON parser errors may quote the manifest, including its encryption key.
-    throw new Error("Server Action metadata unavailable; read-only verification refused.");
-  }
-  const ids = new Set(Object.entries(manifest.node).filter(([, action]) =>
-    action.exportedName === "canOpenBacklogSettingsAction" && action.filename?.includes("app/actions/backlogs.ts"),
-  ).map(([id]) => id));
-  expect(ids.size, "The known permission read is identified by its named export").toBeGreaterThan(0);
-  return ids;
-}
-
 const test = base.extend<{ audit: Capture }>({
   audit: [async ({ page }, runTest, info) => {
     const capture: Capture = { console: [`run=${RUN}`], network: [`run=${RUN}`], errors: [] };
@@ -94,24 +75,16 @@ const test = base.extend<{ audit: Capture }>({
     observePage(page, { console: capture.console, network: capture.network, onFault: ({ line }) => capture.errors.push(line) }, "admin");
     page.on("request", (request) => {
       if (["GET", "HEAD"].includes(request.method())) return; // Includes RSC reads.
-      const args = readActionArguments(request.postData());
-      writes.push({ actionId: request.headers()["next-action"],
-        permissionArguments: args?.length === 1 && args[0] === fixture.backlog.id,
-        method: request.method(), path: new URL(request.url()).pathname });
+      writes.push({ method: request.method(), path: new URL(request.url()).pathname });
     });
     try {
       await runTest(capture);
     } finally {
       try {
-        const knownReads = await permissionActionIds();
-        const reads = writes.filter((request) => request.method === "POST" && request.permissionArguments
-          && !!request.actionId && knownReads.has(request.actionId));
-        for (const request of writes) {
-          if (!reads.includes(request)) capture.errors.push(`Mutation request: ${request.method} ${request.path}`);
-        }
-        expect(reads.length, "Permission reads are observed, not globally forbidden or silently skipped").toBeGreaterThan(0);
+        // The sidebar no longer reads the settings permission: every POST is a mutation.
+        for (const request of writes) capture.errors.push(`Mutation request: ${request.method} ${request.path}`);
         expect(await businessState(), "The browser journey does not mutate project data").toEqual(before);
-        expect(capture.errors, "No browser errors or mutations; permission and RSC reads remain allowed").toEqual([]);
+        expect(capture.errors, "No browser errors or mutations; RSC reads remain allowed").toEqual([]);
       } finally {
         const slug = `le-point-${info.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
         try {

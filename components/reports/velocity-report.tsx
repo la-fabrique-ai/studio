@@ -30,7 +30,7 @@ export function VelocityReportView({
   backlogKey: string;
   report: SerializableVelocityReport;
 }) {
-  const path = `/b/${backlogKey}/reports`;
+  const path = `/b/${backlogKey}/report-sprint`;
   const maximum = Math.max(
     1,
     report.averageCompletedPoints ?? 0,

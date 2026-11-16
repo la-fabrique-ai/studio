@@ -66,3 +66,6 @@ export const permissionPrincipalEnum = pgEnum("permission_principal", [
 ]);
 export const accessModeEnum = pgEnum("access_mode", ["simple", "advanced"]);
 export const roleActorTypeEnum = pgEnum("role_actor_type", ["user", "group"]);
+// Specification tree nodes (Spécifications): a folder holds children, a
+// document holds Markdown. Only folders have children (Confluence-like tree).
+export const specNodeKindEnum = pgEnum("spec_node_kind", ["folder", "document"]);

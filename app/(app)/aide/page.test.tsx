@@ -303,7 +303,7 @@ describe("HelpPage", () => {
     expect(views).toHaveTextContent("« Aucun sprint »");
     const sprints = document.querySelector("section#sprints") as HTMLElement;
     expect(sprints).toHaveTextContent("Un sprint terminé disparaît du Backlog et du Board");
-    expect(sprints).toHaveTextContent("« Rapports » → « Rapport de sprint »");
+    expect(sprints).toHaveTextContent("« Pilotage » → « Sprint » → « Rapport de sprint »");
     expect(sprints).toHaveTextContent("« + Filtre » → « Sprint »");
   });
 

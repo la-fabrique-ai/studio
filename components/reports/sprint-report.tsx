@@ -187,7 +187,7 @@ export function SprintReportView({
     );
   }
 
-  const path = `/b/${backlogKey}/reports`;
+  const path = `/b/${backlogKey}/report-sprint`;
   const metrics = report.metrics;
   return (
     <div className="space-y-8">

@@ -1,11 +1,12 @@
 "use client";
 
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { Check, ChevronsUpDown, Star } from "lucide-react";
+import { Check, ChevronsUpDown, FolderKanban, Star } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useViewUrlState } from "@/components/shell/view-url-state";
@@ -115,6 +116,12 @@ export function BacklogSelector({
             </DropdownMenuItem>
           );
         })}
+        {/* Jira's « View all projects »: the backlogs home, favourites first (JIR-82). */}
+        {backlogs.length > 0 && <DropdownMenuSeparator />}
+        <DropdownMenuItem onSelect={() => router.push("/")}>
+          <FolderKanban className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <span>Tous les backlogs</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FilterBar } from "@/components/shell/filter-bar";
 import { Sidebar } from "@/components/shell/sidebar";
@@ -10,12 +11,8 @@ const mocks = vi.hoisted(() => ({
   replace: vi.fn(),
   pathname: "/b/CASS",
   search: "view=board",
-  canOpenBacklogSettings: vi.fn<(backlogId: string) => Promise<boolean>>(async () => false),
 }));
 
-vi.mock("@/app/actions/backlogs", () => ({
-  canOpenBacklogSettingsAction: mocks.canOpenBacklogSettings,
-}));
 
 // The user card's password dialog imports a Server Action module.
 vi.mock("@/app/actions/account", () => ({ changeOwnPasswordAction: vi.fn() }));
@@ -82,8 +79,6 @@ describe("Sidebar", () => {
     mocks.replace.mockReset();
     mocks.pathname = "/b/CASS";
     mocks.search = "view=board";
-    mocks.canOpenBacklogSettings.mockReset();
-    mocks.canOpenBacklogSettings.mockResolvedValue(false);
   });
 
   afterEach(() => {
@@ -91,18 +86,18 @@ describe("Sidebar", () => {
   });
 
   it.each(["open", "collapsed"])(
-    "allows the whole %s sidebar to scroll while keeping filters usable (JIR-125)",
+    "allows the whole %s sidebar to scroll, filters included (JIR-125)",
     async (state) => {
       document.documentElement.dataset.sidebar = state;
       const { container } = renderSidebar();
       const sidebar = container.firstElementChild;
-      const filters = screen.getByText("Filtres").parentElement;
 
       await waitFor(() => {
         // JSDOM has no layout: Chromium separately checks wheel/Tab reachability.
         expect(sidebar).toHaveClass("overflow-y-auto", "overflow-x-hidden");
         expect(sidebar).not.toHaveClass("overflow-hidden");
-        expect(filters).toHaveClass("min-h-32", "overflow-y-auto");
+        // The filters scroll with the sidebar: no box of their own, no gap under them.
+        expect(screen.getByText("Filtres").parentElement).not.toHaveClass("min-h-32");
       });
     },
   );
@@ -137,6 +132,54 @@ describe("Sidebar", () => {
     expect(within(nav).getAllByRole("link")[0]).toBe(pilot);
   });
 
+  it("lists the active backlog's specification folders and marks the open one", () => {
+    mocks.pathname = "/b/CASS/specs/folder-prd";
+    mocks.search = "";
+    render(
+      <SidebarStateProvider>
+        <ViewUrlStateProvider initialEntries={[]}>
+          <Sidebar
+            {...props}
+            specFolders={[
+              { id: "folder-brief", backlogId: props.backlogs[0]!.id, title: "Brief" },
+              { id: "folder-prd", backlogId: props.backlogs[0]!.id, title: "PRD" },
+              { id: "elsewhere", backlogId: "another-backlog", title: "Ailleurs" },
+            ]}
+          />
+        </ViewUrlStateProvider>
+      </SidebarStateProvider>,
+    );
+
+    const specs = screen.getByRole("region", { name: "Spécifications" });
+    expect(within(specs).getByRole("link", { name: "Brief" })).toHaveAttribute("href", "/b/CASS/specs/folder-brief");
+    expect(within(specs).getByRole("link", { name: "PRD" })).toHaveAttribute("aria-current", "page");
+    expect(within(specs).queryByRole("link", { name: "Ailleurs" })).not.toBeInTheDocument();
+  });
+
+  it("groups the sidebar in sections that fold away and remember it", async () => {
+    window.localStorage.clear();
+    const view = renderSidebar();
+    const tickets = screen.getByRole("region", { name: "Gestion des tickets" });
+    expect(within(tickets).getByRole("navigation", { name: "Vues du projet" })).toBeInTheDocument();
+    expect(within(tickets).getByRole("link", { name: /Mes items/ })).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "Pilotage" })).getByRole("link", { name: "Sprint" })).toBeInTheDocument();
+    // No folders yet: the section still leads to the specifications.
+    expect(within(screen.getByRole("region", { name: "Spécifications" })).getByRole("link", { name: "Tous les documents" }))
+      .toHaveAttribute("href", "/b/CASS/specs");
+
+    const toggle = within(tickets).getByRole("button", { name: "Gestion des tickets" });
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("link", { name: /Mes items/ })).not.toBeInTheDocument();
+
+    view.unmount();
+    renderSidebar();
+    const again = within(screen.getByRole("region", { name: "Gestion des tickets" })).getByRole("button", { name: "Gestion des tickets" });
+    await waitFor(() => expect(again).toHaveAttribute("aria-expanded", "false"));
+    window.localStorage.clear();
+  });
+
   it("keeps the project of the page on Le point (JIR-107)", () => {
     mocks.pathname = "/b/PEN/le-point";
     mocks.search = "";
@@ -158,12 +201,13 @@ describe("Sidebar", () => {
   });
 
 
-  it("links every backlog's home, inactive off the home page (JIR-82)", () => {
+  it("reaches every backlog's home from the backlog selector, not a sidebar link (JIR-82)", async () => {
     renderSidebar();
 
-    const home = screen.getByRole("link", { name: "Tous les backlogs" });
-    expect(home).toHaveAttribute("href", "/");
-    expect(home).not.toHaveAttribute("aria-current");
+    expect(screen.queryByRole("link", { name: "Tous les backlogs" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /^Backlog CASS/ }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Tous les backlogs" }));
+    expect(mocks.push).toHaveBeenCalledWith("/");
   });
 
   it("shows filtered trash to every member without exposing administration", () => {
@@ -217,7 +261,6 @@ describe("Sidebar", () => {
       "Arbre",
       "Roadmap",
       "Releases",
-      "Rapports",
     ]);
     // useSearchParams is mocked to view=board.
     expect(within(nav).getByRole("link", { name: "Board" })).toHaveAttribute("aria-current", "page");
@@ -229,84 +272,25 @@ describe("Sidebar", () => {
       "href",
       "/b/CASS/releases",
     );
-    expect(within(nav).getByRole("link", { name: "Rapports" })).toHaveAttribute(
+    const pilotage = screen.getByRole("navigation", { name: "Pilotage du projet" });
+    expect(within(pilotage).getByRole("link", { name: "Sprint" })).toHaveAttribute(
       "href",
-      "/b/CASS/reports",
+      "/b/CASS/report-sprint",
     );
   });
 
-  it("links the active backlog's settings only for its administrators (JIR-122)", async () => {
-    const { unmount } = renderSidebar([["view", "board"]]);
-    await waitFor(() => expect(mocks.canOpenBacklogSettings).toHaveBeenCalledWith("backlog-1"));
+  it("marks Sprint in Pilotage on the sprint reports", () => {
+    mocks.pathname = "/b/CASS/report-sprint";
+    renderSidebar([]);
     expect(
-      within(screen.getByRole("navigation", { name: "Vues du projet" })).queryByRole("link", {
-        name: "Paramètres",
-      }),
-    ).not.toBeInTheDocument();
-    unmount();
+      within(screen.getByRole("navigation", { name: "Pilotage du projet" })).getByRole("link", { name: "Sprint" }),
+    ).toHaveAttribute("aria-current", "page");
+  });
 
-    mocks.canOpenBacklogSettings.mockResolvedValue(true);
+  it("leaves the backlog settings to Administration: no sidebar link", () => {
     mocks.pathname = "/b/CASS/settings/templates";
     renderSidebar([]);
-    const settings = await within(
-      screen.getByRole("navigation", { name: "Vues du projet" }),
-    ).findByRole("link", { name: "Paramètres" });
-    expect(settings).toHaveAttribute("href", "/b/CASS/settings/access");
-    expect(settings).toHaveAttribute("aria-current", "page");
-  });
-
-  it("re-checks the settings link on navigation, without remounting (JIR-122)", async () => {
-    mocks.canOpenBacklogSettings.mockResolvedValue(true);
-    const tree = () => (
-      <SidebarStateProvider>
-        <ViewUrlStateProvider initialEntries={[]}>
-          <Sidebar {...props} />
-        </ViewUrlStateProvider>
-      </SidebarStateProvider>
-    );
-    const { rerender } = render(tree());
-    const nav = screen.getByRole("navigation", { name: "Vues du projet" });
-    await within(nav).findByRole("link", { name: "Paramètres" });
-
-    // Revoked: the next page drops the link.
-    mocks.canOpenBacklogSettings.mockResolvedValue(false);
-    mocks.pathname = "/b/CASS/roadmap";
-    rerender(tree());
-    await waitFor(() =>
-      expect(within(nav).queryByRole("link", { name: "Paramètres" })).not.toBeInTheDocument(),
-    );
-
-    // A failed check keeps the last answer; the next navigation retries.
-    mocks.canOpenBacklogSettings.mockRejectedValue(new Error("network"));
-    mocks.pathname = "/b/CASS/releases";
-    rerender(tree());
-    await waitFor(() => expect(mocks.canOpenBacklogSettings).toHaveBeenCalledTimes(3));
-    expect(within(nav).queryByRole("link", { name: "Paramètres" })).not.toBeInTheDocument();
-
-    mocks.canOpenBacklogSettings.mockResolvedValue(true);
-    mocks.pathname = "/b/CASS/reports";
-    rerender(tree());
-    await within(nav).findByRole("link", { name: "Paramètres" });
-  });
-
-  it("re-checks the settings link when switching item views on the same path (JIR-122)", async () => {
-    mocks.canOpenBacklogSettings.mockResolvedValue(false);
-    const tree = () => (
-      <SidebarStateProvider>
-        <ViewUrlStateProvider initialEntries={[]}>
-          <Sidebar {...props} />
-        </ViewUrlStateProvider>
-      </SidebarStateProvider>
-    );
-    const { rerender } = render(tree());
-    await waitFor(() => expect(mocks.canOpenBacklogSettings).toHaveBeenCalledTimes(1));
-    const nav = screen.getByRole("navigation", { name: "Vues du projet" });
-
-    mocks.canOpenBacklogSettings.mockResolvedValue(true);
-    mocks.search = "view=list";
-    rerender(tree());
-    await within(nav).findByRole("link", { name: "Paramètres" });
-    expect(mocks.canOpenBacklogSettings).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("link", { name: "Paramètres" })).not.toBeInTheDocument();
   });
 
   it("follows the backlog of an access page, not the first backlog (JIR-85)", () => {
@@ -501,7 +485,7 @@ describe("Sidebar", () => {
     );
     fromLePoint.unmount();
 
-    mocks.pathname = "/b/%43ASS/reports";
+    mocks.pathname = "/b/%43ASS/report-sprint";
     const fromEncoded = renderSidebar();
     expect(screen.getByRole("link", { name: "Calendrier d’équipe" })).toHaveAttribute(
       "href",

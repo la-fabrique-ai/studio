@@ -4,6 +4,7 @@ import { listBacklogsWithStarsForUser } from "@/lib/services/backlogs";
 import { listVisibleViews } from "@/lib/services/views";
 import { unreadCount, listRecentNotifications } from "@/lib/services/notifications";
 import { getShellCounts } from "@/lib/services/shell";
+import { listRootSpecFolders } from "@/lib/services/specs";
 import { AppShell } from "@/components/shell/app-shell";
 import { DraftsSession } from "@/components/shell/drafts-session";
 import { Sidebar } from "@/components/shell/sidebar";
@@ -13,9 +14,12 @@ import { RealtimeProvider } from "@/components/realtime/realtime-provider";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await requireAppPageSession();
-  const [backlogs, views, notifCount, notifications, counts, adminDecisions] = await Promise.all([
+  const backlogsLoad = listBacklogsWithStarsForUser(session.user.id);
+  const [backlogs, specFolders, views, notifCount, notifications, counts, adminDecisions] = await Promise.all([
     // Favourites first, as in the selector (JIR-82).
-    listBacklogsWithStarsForUser(session.user.id),
+    backlogsLoad,
+    // Only for backlogs the user can see: the list above is already filtered.
+    backlogsLoad.then((visible) => listRootSpecFolders(visible.map((backlog) => backlog.id))),
     listVisibleViews(session.user.id),
     unreadCount(session.user.id),
     listRecentNotifications(session.user.id),
@@ -38,6 +42,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             canAdminister={adminDecisions.some((decision) => decision.allowed)}
             adminHref={adminDecisions[0]?.allowed || adminDecisions[2]?.allowed ? "/admin" : "/admin?tab=users"}
             counts={counts}
+            specFolders={specFolders}
           />
         }
         topbar={

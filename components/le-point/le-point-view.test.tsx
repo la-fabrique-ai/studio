@@ -196,7 +196,7 @@ describe("LePointView, whole team (JIR-121)", () => {
     expect(sprint).toHaveTextContent("2bloquésDEMO-15, DEMO-33");
     expect(sprint).toHaveTextContent("+1ajouté5 % de l’engagement initial");
     expect(sprint).toHaveTextContent("4 jouvrés restants16 jours-personne, 4 personnes présentes");
-    expect(within(sprint).getByRole("link", { name: "Voir le burndown" })).toHaveAttribute("href", "/b/DEMO/reports?report=burndown");
+    expect(within(sprint).getByRole("link", { name: "Voir le burndown" })).toHaveAttribute("href", "/b/DEMO/report-sprint?report=burndown");
     // One chip per person: the fact in its name, the colour in its dot, nothing open yet.
     const chip = (name: string) => within(sprint).getByRole("button", { name: new RegExp(`^${name}`) });
     expect(chip("Camille Morel")).toHaveAccessibleName("Camille Morel, 1 bloqué · 1 en cours · 5 pts, 4 tickets ouverts, 9 points");
@@ -302,7 +302,7 @@ describe("LePointView, whole team (JIR-121)", () => {
     expect(sprint).toHaveTextContent("10 tickets embarqués au démarrage ; depuis, 1 ajouté. L’engagement dépasse de 3 points la vélocité moyenne.");
     expect(sprint).toHaveTextContent("AjoutéDEMO-33Habilitations greffe2 pts · le 29 oct. par Léa Martin");
     expect(within(sprint).getByRole("link", { name: "DEMO-33" })).toHaveAttribute("href", "/b/DEMO/le-point?item=DEMO-33");
-    expect(within(sprint).getByRole("link", { name: "Voir le rapport de sprint" })).toHaveAttribute("href", "/b/DEMO/reports?report=sprint");
+    expect(within(sprint).getByRole("link", { name: "Voir le rapport de sprint" })).toHaveAttribute("href", "/b/DEMO/report-sprint?report=sprint");
     await userEvent.click(tile);
     expect(within(sprint).queryByRole("link", { name: "Voir le rapport de sprint" })).toBeNull();
   });
