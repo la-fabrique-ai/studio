@@ -837,7 +837,9 @@ bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
             Les outils de lecture sont <code>list_backlogs</code>, <code>list_statuses</code>,{" "}
             <code>search_items</code>, <code>get_item</code>, <code>list_my_items</code>, <code>list_labels</code> et <code>list_dependencies</code>.
             Avec la portée <Ui>Lecture et écriture</Ui>, l’agent peut aussi utiliser{" "}
-            <code>create_item</code>, <code>update_item</code>, <code>transition_item</code> et <code>add_comment</code>,
+            <code>create_item</code>, <code>update_item</code>, <code>transition_item</code>, <code>add_comment</code>,{" "}
+            <code>create_label</code>, <code>add_item_label</code>, <code>remove_item_label</code>,{" "}
+            <code>add_dependency</code> et <code>remove_dependency</code>,
             dans les limites des droits du compte.
           </p>
           <p className="t-body">
