@@ -18,6 +18,7 @@ import {
   items,
   itemWebLinks,
   repoConnections,
+  specNodes,
   sprints,
   statuses,
   views,
@@ -177,6 +178,25 @@ export async function requireItemPermission(
     resourceType: "item",
     resourceId: item.id,
     backlogId: item.backlogId,
+  });
+}
+
+/** A specification node, trashed or not, through its backlog's permission. */
+export async function requireSpecNodePermission(
+  input: BacklogPermissionInput & { nodeId: string },
+): Promise<AuthorizedResource> {
+  const [node] = await db
+    .select({ id: specNodes.id, backlogId: specNodes.backlogId })
+    .from(specNodes)
+    .where(eq(specNodes.id, input.nodeId))
+    .limit(1);
+  if (!node) throw new ResourceNotFoundError("spec_node", input.nodeId);
+
+  return authorizeResource({
+    ...input,
+    resourceType: "spec_node",
+    resourceId: node.id,
+    backlogId: node.backlogId,
   });
 }
 

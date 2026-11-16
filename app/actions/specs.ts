@@ -3,7 +3,7 @@
 import { ZodError } from "zod";
 import { mapActionAuthorizationError } from "@/lib/auth/action-error";
 import { getSession } from "@/lib/auth/session";
-import { invalidateSpecs } from "@/lib/realtime/publish";
+import { revalidateSpecPages } from "@/lib/realtime/publish";
 import { SpecConflictError, SpecRuleError } from "@/lib/services/specs";
 import {
   createSpecNodeUseCase,
@@ -14,7 +14,9 @@ import {
   updateSpecContentUseCase,
 } from "@/lib/use-cases/specs";
 
+/** `backlogKey` only re-renders the pages: a node is authorized through its own backlog. */
 type Target = { backlogKey: string; backlogId: string };
+type NodeTarget = { backlogKey: string; id: string };
 type Failure = { ok: false; error: string };
 
 async function actor() {
@@ -33,35 +35,23 @@ function failure(error: unknown, fallback: string, invalid: string = fallback): 
   return { ok: false, error: fallback };
 }
 
-/** The use case's input: the key only serves to re-render the pages. */
-function scoped<T extends Target>(input: T): Omit<T, "backlogKey"> {
-  const copy: Partial<T> = { ...input };
-  delete copy.backlogKey;
-  return copy as Omit<T, "backlogKey">;
-}
-
-function invalidate(target: Target, actorId: string) {
-  return invalidateSpecs(target.backlogKey, { backlogId: target.backlogId, actorId });
-}
-
 export async function createSpecNodeAction(
   input: Target & { parentId: string | null; kind: "folder" | "document"; title: string },
 ) {
   try {
-    const who = await actor();
-    const node = await createSpecNodeUseCase(who, scoped(input));
-    await invalidate(input, who.actorId);
+    const { backlogId, parentId, kind, title } = input;
+    const node = await createSpecNodeUseCase(await actor(), { backlogId, parentId, kind, title });
+    revalidateSpecPages(input.backlogKey);
     return { ok: true as const, id: node.id };
   } catch (error) {
     return failure(error, input.kind === "folder" ? "Création du dossier impossible." : "Création du document impossible.", TITLE_INVALID);
   }
 }
 
-export async function renameSpecNodeAction(input: Target & { id: string; title: string }) {
+export async function renameSpecNodeAction(input: NodeTarget & { title: string }) {
   try {
-    const who = await actor();
-    await renameSpecNodeUseCase(who, scoped(input));
-    await invalidate(input, who.actorId);
+    await renameSpecNodeUseCase(await actor(), { id: input.id, title: input.title });
+    revalidateSpecPages(input.backlogKey);
     return { ok: true as const };
   } catch (error) {
     return failure(error, "Renommage impossible.", TITLE_INVALID);
@@ -69,12 +59,11 @@ export async function renameSpecNodeAction(input: Target & { id: string; title: 
 }
 
 export async function moveSpecNodeAction(
-  input: Target & { id: string; parentId: string | null; afterId: string | null },
+  input: NodeTarget & { parentId: string | null; afterId: string | null },
 ) {
   try {
-    const who = await actor();
-    await moveSpecNodeUseCase(who, scoped(input));
-    await invalidate(input, who.actorId);
+    await moveSpecNodeUseCase(await actor(), { id: input.id, parentId: input.parentId, afterId: input.afterId });
+    revalidateSpecPages(input.backlogKey);
     return { ok: true as const };
   } catch (error) {
     return failure(error, "Déplacement impossible.");
@@ -82,20 +71,20 @@ export async function moveSpecNodeAction(
 }
 
 export async function updateSpecContentAction(
-  input: Target & { id: string; content: string; revision: string },
+  input: NodeTarget & { content: string; revision: string },
 ) {
   try {
     // No revalidation: the editor keeps its own state, and re-rendering the
     // page on every autosave would fight the cursor.
-    const { backlogId, id, content, revision: expected } = input;
-    const { revision } = await updateSpecContentUseCase(await actor(), { backlogId, id, content, revision: expected });
+    const { id, content, revision: expected } = input;
+    const { revision } = await updateSpecContentUseCase(await actor(), { id, content, revision: expected });
     return { ok: true as const, revision: revision.toISOString() };
   } catch (error) {
     if (error instanceof SpecConflictError) {
       return {
         ok: false as const,
         conflict: true as const,
-        error: "Ce document a été modifié entre-temps.",
+        error: error.message,
         content: error.current.content,
         revision: error.current.revision.toISOString(),
       };
@@ -104,22 +93,20 @@ export async function updateSpecContentAction(
   }
 }
 
-export async function trashSpecNodeAction(input: Target & { id: string }) {
+export async function trashSpecNodeAction(input: NodeTarget) {
   try {
-    const who = await actor();
-    const { ids } = await trashSpecNodeUseCase(who, scoped(input));
-    await invalidate(input, who.actorId);
+    const { ids } = await trashSpecNodeUseCase(await actor(), { id: input.id });
+    revalidateSpecPages(input.backlogKey);
     return { ok: true as const, ids };
   } catch (error) {
     return failure(error, "Suppression impossible.");
   }
 }
 
-export async function restoreSpecNodeAction(input: Target & { id: string }) {
+export async function restoreSpecNodeAction(input: NodeTarget) {
   try {
-    const who = await actor();
-    await restoreSpecNodeUseCase(who, scoped(input));
-    await invalidate(input, who.actorId);
+    await restoreSpecNodeUseCase(await actor(), { id: input.id });
+    revalidateSpecPages(input.backlogKey);
     return { ok: true as const };
   } catch (error) {
     return failure(error, "Restauration impossible.");
