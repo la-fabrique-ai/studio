@@ -67,12 +67,12 @@ describe("ShellBreadcrumb", () => {
   });
 
   it("links a backlog feature page back to its own backlog", () => {
-    route.pathname = "/b/PEN/reports";
+    route.pathname = "/b/PEN/report-sprint";
     route.search = "view=tree&v=v1";
     render(<ShellBreadcrumb backlogs={backlogs} views={views} />);
 
     expect(screen.getByRole("link", { name: "Pôle pénal" })).toHaveAttribute("href", "/b/PEN");
-    expect(screen.getByText("Rapports")).toHaveAttribute("aria-current", "page");
+    expect(screen.getByText("Sprint")).toHaveAttribute("aria-current", "page");
   });
 
   it("links the section above a nested page", () => {

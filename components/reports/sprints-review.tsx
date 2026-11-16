@@ -38,7 +38,7 @@ export function SprintsReviewView({ backlogKey, report }: { backlogKey: string; 
               {report.rows.map((row) => (
                 <tr key={row.id} className={row.state === "active" ? "bg-muted/40" : undefined}>
                   <th scope="row" className="px-3 py-3 text-left font-medium">
-                    <Link className="break-words hover:underline [overflow-wrap:anywhere]" href={`/b/${backlogKey}/reports?report=sprint&sprint=${row.id}`}>{row.name}</Link>
+                    <Link className="break-words hover:underline [overflow-wrap:anywhere]" href={`/b/${backlogKey}/report-sprint?report=sprint&sprint=${row.id}`}>{row.name}</Link>
                     {row.state === "active" ? <span className="ml-2 inline-block rounded-full border px-2 py-0.5 text-xs font-normal">en cours</span> : null}
                     <span className="mt-1 block whitespace-nowrap text-xs font-normal text-muted-foreground">{date(row.start)} – {row.end ? date(row.end) : "fin inconnue"}</span>
                   </th>

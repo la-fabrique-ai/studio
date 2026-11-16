@@ -190,7 +190,7 @@ describe("RealtimeProvider", () => {
 describe("backlogKeyFromPath", () => {
   it.each([
     ["/b/CASS", "CASS"],
-    ["/b/CASS/reports", "CASS"],
+    ["/b/CASS/report-sprint", "CASS"],
     ["/mine", null],
     [null, null],
   ])("%s → %s", (pathname, key) => {

@@ -162,7 +162,7 @@ describe("Sidebar", () => {
     const tickets = screen.getByRole("region", { name: "Gestion des tickets" });
     expect(within(tickets).getByRole("navigation", { name: "Vues du projet" })).toBeInTheDocument();
     expect(within(tickets).getByRole("link", { name: /Mes items/ })).toBeInTheDocument();
-    expect(within(screen.getByRole("region", { name: "Pilotage" })).getByText("À venir")).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "Pilotage" })).getByRole("link", { name: "Sprint" })).toBeInTheDocument();
     // No folders yet: the section still leads to the specifications.
     expect(within(screen.getByRole("region", { name: "Spécifications" })).getByRole("link", { name: "Tous les documents" }))
       .toHaveAttribute("href", "/b/CASS/specs");
@@ -261,7 +261,6 @@ describe("Sidebar", () => {
       "Arbre",
       "Roadmap",
       "Releases",
-      "Rapports",
     ]);
     // useSearchParams is mocked to view=board.
     expect(within(nav).getByRole("link", { name: "Board" })).toHaveAttribute("aria-current", "page");
@@ -273,10 +272,19 @@ describe("Sidebar", () => {
       "href",
       "/b/CASS/releases",
     );
-    expect(within(nav).getByRole("link", { name: "Rapports" })).toHaveAttribute(
+    const pilotage = screen.getByRole("navigation", { name: "Pilotage du projet" });
+    expect(within(pilotage).getByRole("link", { name: "Sprint" })).toHaveAttribute(
       "href",
-      "/b/CASS/reports",
+      "/b/CASS/report-sprint",
     );
+  });
+
+  it("marks Sprint in Pilotage on the sprint reports", () => {
+    mocks.pathname = "/b/CASS/report-sprint";
+    renderSidebar([]);
+    expect(
+      within(screen.getByRole("navigation", { name: "Pilotage du projet" })).getByRole("link", { name: "Sprint" }),
+    ).toHaveAttribute("aria-current", "page");
   });
 
   it("leaves the backlog settings to Administration: no sidebar link", () => {
@@ -477,7 +485,7 @@ describe("Sidebar", () => {
     );
     fromLePoint.unmount();
 
-    mocks.pathname = "/b/%43ASS/reports";
+    mocks.pathname = "/b/%43ASS/report-sprint";
     const fromEncoded = renderSidebar();
     expect(screen.getByRole("link", { name: "Calendrier d’équipe" })).toHaveAttribute(
       "href",

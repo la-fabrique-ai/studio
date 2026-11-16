@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import ReportsError from "@/app/(app)/b/[key]/reports/error";
-import ReportsLoading from "@/app/(app)/b/[key]/reports/loading";
+import ReportsError from "@/app/(app)/b/[key]/report-sprint/error";
+import ReportsLoading from "@/app/(app)/b/[key]/report-sprint/loading";
 
 describe("ReportsError", () => {
   it("shows safe recovery copy without exposing the error payload", () => {

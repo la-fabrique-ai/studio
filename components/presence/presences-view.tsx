@@ -901,7 +901,7 @@ function PanelView({ page, panel, people, developers, onClose }: {
     rows = developers.flatMap((person) =>
       ticketsOf(data, person.id, scope).filter((ticket) => activeIn(ticket, bounds.from, bounds.to, data.today)).map((ticket) => ({ ticket, person })));
     title = <>{panel.sprint.name} <span className="font-normal text-muted-foreground">· du {formatDay(panel.sprint.start)}{panel.sprint.end ? ` au ${formatDay(panel.sprint.end)}` : ""}</span></>;
-    if (backlog) link = <Link href={`/b/${backlog.key}/reports?report=sprint&sprint=${panel.sprint.id}`} className={LINK}>Voir le rapport de sprint</Link>;
+    if (backlog) link = <Link href={`/b/${backlog.key}/report-sprint?report=sprint&sprint=${panel.sprint.id}`} className={LINK}>Voir le rapport de sprint</Link>;
   } else {
     const person = people.get(panel.personId);
     if (!person) return null;

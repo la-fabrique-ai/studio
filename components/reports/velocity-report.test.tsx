@@ -29,10 +29,10 @@ describe("VelocityReportView", () => {
     expect(screen.getByRole("row", { name: /Sprint 2 0 0 .*Exclue Aucune donnée de points/ })).toBeVisible();
     expect(screen.getByRole("row", { name: /Legacy.*Historique détaillé indisponible/ })).toBeVisible();
     expect(within(screen.getByRole("row", { name: /Sprint 3/ })).getByRole("link"))
-      .toHaveAttribute("href", "/b/CASS/reports?report=sprint&sprint=s3");
+      .toHaveAttribute("href", "/b/CASS/report-sprint?report=sprint&sprint=s3");
     expect(screen.getByRole("link", { name: "12 sprints" })).toHaveAttribute(
       "href",
-      "/b/CASS/reports?report=velocity&limit=12",
+      "/b/CASS/report-sprint?report=velocity&limit=12",
     );
   });
 

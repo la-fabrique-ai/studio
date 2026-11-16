@@ -32,7 +32,7 @@ describe("invalidateBacklog", () => {
   it("re-renders the backlog pages and publishes an item change", async () => {
     await invalidateBacklog("CASS", { backlogId: BACKLOG, itemIds: [ITEM], actorId: "u1" });
 
-    expect(revalidatePath.mock.calls).toEqual([["/b/CASS"], ["/b/CASS/roadmap"], ["/b/CASS/reports"], ["/b/CASS/le-point"]]);
+    expect(revalidatePath.mock.calls).toEqual([["/b/CASS"], ["/b/CASS/roadmap"], ["/b/CASS/report-sprint"], ["/b/CASS/le-point"]]);
     expect(publishedEvents()).toEqual([
       expect.objectContaining({ kind: "item", backlogId: BACKLOG, itemIds: [ITEM], actorId: "u1" }),
     ]);

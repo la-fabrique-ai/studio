@@ -35,11 +35,11 @@ describe("ReportNavigation", () => {
     );
     expect(screen.getByRole("link", { name: "Vélocité" })).toHaveAttribute(
       "href",
-      "/b/CASS/reports?report=velocity&limit=7",
+      "/b/CASS/report-sprint?report=velocity&limit=7",
     );
     const form = screen.getByRole("form", { name: "Choisir un sprint" });
     expect(form).toHaveAttribute("method", "get");
-    expect(form).toHaveAttribute("action", "/b/CASS/reports");
+    expect(form).toHaveAttribute("action", "/b/CASS/report-sprint");
     expect(screen.getByRole("combobox", { name: "Sprint" })).toHaveValue(sprints[0]!.id);
     expect(screen.getAllByRole("option")).toHaveLength(2);
     expect(screen.getByDisplayValue("sprint")).toHaveAttribute("name", "report");
@@ -58,7 +58,7 @@ describe("ReportNavigation", () => {
 
     expect(screen.getByText("Aucun sprint actif ou terminé.")).toBeVisible();
     expect(screen.getByRole("link", { name: "Burndown" }))
-      .toHaveAttribute("href", "/b/CASS/reports?report=burndown");
+      .toHaveAttribute("href", "/b/CASS/report-sprint?report=burndown");
 
     rerender(
       <ReportNavigation
@@ -89,11 +89,11 @@ describe("ReportNavigation", () => {
     // Switching presentation keeps the subject: the selected (older) sprint stays selected.
     expect(burndown).toHaveAttribute(
       "href",
-      `/b/CASS/reports?report=burndown&sprint=${sprints[1]!.id}`,
+      `/b/CASS/report-sprint?report=burndown&sprint=${sprints[1]!.id}`,
     );
     expect(screen.getByRole("link", { name: "Rapport de sprint" })).toHaveAttribute(
       "href",
-      `/b/CASS/reports?report=sprint&sprint=${sprints[1]!.id}`,
+      `/b/CASS/report-sprint?report=sprint&sprint=${sprints[1]!.id}`,
     );
     expect(burndown).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Rapport de sprint" }))
@@ -101,7 +101,7 @@ describe("ReportNavigation", () => {
     expect(screen.getByRole("link", { name: "Vélocité" })).not.toHaveAttribute("aria-current");
     const form = screen.getByRole("form", { name: "Choisir un sprint" });
     expect(form).toHaveAttribute("method", "get");
-    expect(form).toHaveAttribute("action", "/b/CASS/reports");
+    expect(form).toHaveAttribute("action", "/b/CASS/report-sprint");
     expect(screen.getByRole("combobox", { name: "Sprint" })).toHaveValue(sprints[1]!.id);
     expect(screen.getByDisplayValue("burndown")).toHaveAttribute("name", "report");
   });
@@ -151,6 +151,6 @@ describe("ReportNavigation", () => {
 it("opens the team review without a sprint selector", () => {
   render(<ReportNavigation backlogKey="CASS" report="bilan" selectedSprintId={null} sprints={sprints} plannedCount={0} />);
   expect(screen.getByRole("link", { name: "Bilan des sprints" })).toHaveAttribute("aria-current", "page");
-  expect(screen.getByRole("link", { name: "Bilan des sprints" })).toHaveAttribute("href", "/b/CASS/reports?report=bilan");
+  expect(screen.getByRole("link", { name: "Bilan des sprints" })).toHaveAttribute("href", "/b/CASS/report-sprint?report=bilan");
   expect(screen.queryByRole("form", { name: "Choisir un sprint" })).not.toBeInTheDocument();
 });

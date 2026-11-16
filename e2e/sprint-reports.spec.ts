@@ -699,7 +699,7 @@ audited(1, "affiche les rapports figés et la vélocité explicable", async ({ p
     page,
     capture,
     "admin",
-    `/b/CASS/reports?report=sprint&sprint=${fixtures.first.id}`,
+    `/b/CASS/report-sprint?report=sprint&sprint=${fixtures.first.id}`,
   );
   await expect(page.getByRole("main").getByText("Historique figé", { exact: true })).toBeVisible();
   const measures = page.getByRole("region", { name: "Mesures du sprint" });
@@ -751,7 +751,7 @@ audited(1, "affiche les rapports figés et la vélocité explicable", async ({ p
   await writeAuditScreenshot("audit/screenshots/reports-completed-desktop.png", (path) =>
     page.screenshot({ path, fullPage: true, caret: "initial" }));
 
-  await auditedGoto(page, capture, "admin", "/b/CASS/reports?report=velocity&limit=7");
+  await auditedGoto(page, capture, "admin", "/b/CASS/report-sprint?report=velocity&limit=7");
   await expect(page.getByText("Moyenne des points terminés : 2,5 sur 2 sprints inclus"))
     .toBeVisible();
   await expect(page.getByRole("row", { name: /Sprint Rapport 1 8 5 .*Incluse/ })).toBeVisible();
@@ -781,18 +781,18 @@ audited(1, "affiche les rapports figés et la vélocité explicable", async ({ p
 
 audited(2, "distingue les états vides, planifiés, actifs non estimés et legacy", async ({ page }) => {
   await db.delete(sprints).where(eq(sprints.id, fixtures.labsForeign.id));
-  await page.goto("/b/LABS/reports");
+  await page.goto("/b/LABS/report-sprint");
   await expect(page.getByText("Aucun sprint actif ou terminé.")).toBeVisible();
   const labs = await fixtureContext("LABS");
   const labsPlanned = await namedSprint(labs, "Sprint LABS planifié");
   fixtures.labsForeign = labsPlanned;
   await page.reload();
   await expect(page.getByText(/sprint est planifié, mais aucun n’a encore démarré/)).toBeVisible();
-  await page.goto("/b/LABS/reports?report=velocity");
+  await page.goto("/b/LABS/report-sprint?report=velocity");
   await expect(page.getByText("Pas encore de vélocité")).toBeVisible();
 
   const active = fixtures.active;
-  await page.goto(`/b/CASS/reports?report=sprint&sprint=${active.id}`);
+  await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${active.id}`);
   await expect(page.getByText("Données en cours", { exact: true })).toBeVisible();
   await expect(page.getByText("Ce sprint actif ne contient encore aucun élément.")).toBeVisible();
   const activeItem = await task(fixtures.context, "Sprint actif — tout non estimé", {
@@ -802,9 +802,9 @@ audited(2, "distingue les états vides, planifiés, actifs non estimés et legac
   await page.reload();
   await expect(page.getByText("Tous les éléments actuels de ce sprint sont non estimés.")).toBeVisible();
 
-  // JIR-55 / JIR-74: the sidebar project views stay available on Reports, Rapports current.
+  // JIR-55 / JIR-74: the sidebar project views stay available on the reports, Pilotage → Sprint current.
   const reportsTabs = page.getByRole("navigation", { name: "Vues du projet" });
-  await expect(reportsTabs.getByRole("link", { name: "Rapports" }))
+  await expect(page.getByRole("navigation", { name: "Pilotage du projet" }).getByRole("link", { name: "Sprint" }))
     .toHaveAttribute("aria-current", "page");
   await reportsTabs.getByRole("link", { name: "Backlog" }).click();
   await expect(page).toHaveURL(/\/b\/CASS\?view=backlog$/);
@@ -813,7 +813,7 @@ audited(2, "distingue les états vides, planifiés, actifs non estimés et legac
   await page.getByRole("spinbutton", { name: "Points" }).fill("5");
   await businessPost(page, () =>
     page.getByRole("button", { name: "Enregistrer l’estimation" }).click());
-  await page.goto(`/b/CASS/reports?report=sprint&sprint=${active.id}`);
+  await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${active.id}`);
   await expect(page.getByRole("region", { name: "Mesures du sprint" })
     .getByText("Périmètre actuel", { exact: true }).locator("..")).toContainText("5 pts");
   await expect(page.getByRole("region", { name: "Journal du sprint" }))
@@ -824,7 +824,7 @@ audited(2, "distingue les états vides, planifiés, actifs non estimés et legac
     points: null,
     sprintId: active.id,
   });
-  await page.goto("/b/CASS/reports");
+  await page.goto("/b/CASS/report-sprint");
   await expect(page.getByLabel("Sprint", { exact: true })).toHaveValue(active.id);
   await expect(page.getByRole("main").getByText("Données en cours", { exact: true })).toBeVisible();
   const mixedMeasures = page.getByRole("region", { name: "Mesures du sprint" });
@@ -836,7 +836,7 @@ audited(2, "distingue les états vides, planifiés, actifs non estimés et legac
   await writeAuditScreenshot("audit/screenshots/reports-active-desktop.png", (path) =>
     page.screenshot({ path, fullPage: true, caret: "initial" }));
 
-  await page.goto(`/b/CASS/reports?report=sprint&sprint=${fixtures.legacy.id}`);
+  await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${fixtures.legacy.id}`);
   await expect(page.getByText("Historique détaillé indisponible", { exact: true })).toBeVisible();
   await expect(page.getByText("Engagement")).toHaveCount(0);
 });
@@ -848,13 +848,13 @@ audited(3, "conserve les lectures lecteur, second contexte et dissimule les ress
   const secondAdmin = await observedPage("admin-second", AUTH.admin);
   const reader = await observedPage("reader", AUTH.reader);
   for (const current of [page, secondAdmin, reader]) {
-    await current.goto(`/b/CASS/reports?report=sprint&sprint=${fixtures.second.id}`);
+    await current.goto(`/b/CASS/report-sprint?report=sprint&sprint=${fixtures.second.id}`);
     await expect(current.getByText("Historique figé", { exact: true })).toBeVisible();
     await expect(current.getByRole("region", { name: "Mesures du sprint" })
       .getByText("Engagement", { exact: true }).locator("..")).toContainText("13 pts");
     await expect(current.getByText("Sprint Destination", { exact: false }).first()).toBeVisible();
     await current.reload();
-    await current.goto("/b/CASS/reports?report=velocity&limit=7");
+    await current.goto("/b/CASS/report-sprint?report=velocity&limit=7");
     await expect(current.getByText("Moyenne des points terminés : 2,5 sur 2 sprints inclus"))
       .toBeVisible();
     await expect(current.getByRole("row", { name: /Sprint Rapport 2 13 0 .*Incluse/ }))
@@ -863,11 +863,11 @@ audited(3, "conserve les lectures lecteur, second contexte et dissimule les ress
   }
   await expect(reader.getByRole("button", { name: /Terminer le sprint|Démarrer le sprint|Créer/ })).toHaveCount(0);
 
-  const malformed = await page.goto("/b/CASS/reports?sprint=not-a-uuid");
+  const malformed = await page.goto("/b/CASS/report-sprint?sprint=not-a-uuid");
   expect(malformed?.status()).toBe(200);
   await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
   await expect(page.locator("body")).toContainText(/introuvable|could not be found/i);
-  const foreign = await page.goto(`/b/CASS/reports?sprint=${fixtures.labsForeign.id}`);
+  const foreign = await page.goto(`/b/CASS/report-sprint?sprint=${fixtures.labsForeign.id}`);
   expect(foreign?.status()).toBe(200);
   await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
   await expect(page.locator("body")).toContainText(/introuvable|could not be found/i);
@@ -876,7 +876,7 @@ audited(3, "conserve les lectures lecteur, second contexte et dissimule les ress
 
 audited(4, "reste lisible et sans débordement à 390 par 844", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/b/CASS/reports?report=velocity&limit=12");
+  await page.goto("/b/CASS/report-sprint?report=velocity&limit=12");
   await expect(page.getByRole("heading", { name: "Vélocité" })).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
@@ -884,14 +884,14 @@ audited(4, "reste lisible et sans débordement à 390 par 844", async ({ page })
   await writeAuditScreenshot("audit/screenshots/reports-velocity-mobile.png", (path) =>
     page.screenshot({ path, fullPage: true, caret: "initial" }));
 
-  await page.goto(`/b/CASS/reports?report=sprint&sprint=${fixtures.first.id}`);
+  await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${fixtures.first.id}`);
   await expect(page.getByRole("main").getByText("Historique figé", { exact: true })).toBeVisible();
   const sprintOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(sprintOverflow).toBeLessThanOrEqual(1);
   await writeAuditScreenshot("audit/screenshots/reports-completed-mobile.png", (path) =>
     page.screenshot({ path, fullPage: true, caret: "initial" }));
 
-  await page.goto("/b/CASS/reports");
+  await page.goto("/b/CASS/report-sprint");
   await expect(page.getByLabel("Sprint", { exact: true })).toHaveValue(fixtures.active.id);
   await expect(page.getByRole("main").getByText("Données en cours", { exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Mesures du sprint" })
@@ -917,7 +917,7 @@ audited(5, "masque une panne de lecture et récupère après retry", async ({
       'ALTER TABLE "sprint_report_snapshots" RENAME TO "sprint_report_snapshots_fault"',
     ));
     reportTableRenamed = true;
-    await page.goto(`/b/CASS/reports?report=sprint&sprint=${fixtures.first.id}`);
+    await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${fixtures.first.id}`);
     await expect(page.getByRole("heading", { name: "Impossible de charger les rapports" }))
       .toBeVisible();
     const body = await page.locator("body").innerText();
@@ -966,7 +966,7 @@ audited(6, "relie bulk, Board et clôture UI au rapport", async ({ page, capture
     page,
     capture,
     "admin",
-    `/b/CASS/reports?report=sprint&sprint=${uiActive.id}`,
+    `/b/CASS/report-sprint?report=sprint&sprint=${uiActive.id}`,
   );
   let journal = page.getByRole("region", { name: "Journal du sprint" });
   await expect(journal).toContainText(`a ajouté ${bulkTwo.key} au sprint avec 2 pts`);
@@ -985,7 +985,7 @@ audited(6, "relie bulk, Board et clôture UI au rapport", async ({ page, capture
   await page.getByRole("spinbutton", { name: "Estimation groupée" }).fill("4");
   await businessPost(page, () =>
     page.getByRole("button", { name: "Appliquer l’estimation" }).click());
-  await page.goto(`/b/CASS/reports?report=sprint&sprint=${uiActive.id}`);
+  await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${uiActive.id}`);
   journal = page.getByRole("region", { name: "Journal du sprint" });
   await expect(journal).toContainText(`a modifié ${bulkTwo.key} : 2 pts → 4 pts`);
   await expect(journal).toContainText(`a modifié ${bulkOne.key} : 1 pt → 4 pts`);
@@ -1003,7 +1003,7 @@ audited(6, "relie bulk, Board et clôture UI au rapport", async ({ page, capture
     await page.getByRole("button", { name: "Modifier le sprint" }).click();
     await page.getByRole("menuitem", { name: "Backlog", exact: true }).click();
   });
-  await page.goto(`/b/CASS/reports?report=sprint&sprint=${uiActive.id}`);
+  await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${uiActive.id}`);
   journal = page.getByRole("region", { name: "Journal du sprint" });
   await expect(journal).toContainText(`a retiré ${bulkTwo.key} vers le Backlog avec 4 pts`);
   await expect(journal).toContainText(`a retiré ${bulkOne.key} vers le Backlog avec 4 pts`);
@@ -1020,7 +1020,7 @@ audited(6, "relie bulk, Board et clôture UI au rapport", async ({ page, capture
 
   await page.goto("/b/CASS?view=board");
   await dragBoardItemToStatus(page, boardItem.key, fixtures.context.doneName);
-  await page.goto(`/b/CASS/reports?report=sprint&sprint=${uiActive.id}`);
+  await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${uiActive.id}`);
   await expect(page.getByRole("region", { name: "Journal du sprint" }))
     .toContainText(`a terminé ${boardItem.key}`);
   measures = page.getByRole("region", { name: "Mesures du sprint" });
@@ -1030,7 +1030,7 @@ audited(6, "relie bulk, Board et clôture UI au rapport", async ({ page, capture
 
   await page.goto("/b/CASS?view=board");
   await dragBoardItemToStatus(page, boardItem.key, fixtures.context.todoName);
-  await page.goto(`/b/CASS/reports?report=sprint&sprint=${uiActive.id}`);
+  await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${uiActive.id}`);
   journal = page.getByRole("region", { name: "Journal du sprint" });
   await expect(journal).toContainText(`a rouvert ${boardItem.key}`);
   measures = page.getByRole("region", { name: "Mesures du sprint" });
@@ -1059,7 +1059,7 @@ audited(6, "relie bulk, Board et clôture UI au rapport", async ({ page, capture
   await chooseOption(page, "Destination des tâches incomplètes", "Backlog");
   await businessPost(page, () =>
     page.getByRole("button", { name: "Terminer le sprint", exact: true }).click());
-  await page.goto(`/b/CASS/reports?report=sprint&sprint=${uiActive.id}`);
+  await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${uiActive.id}`);
   await expect(page.getByRole("main").getByText("Historique figé", { exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Journal du sprint" }))
     .toContainText("a clôturé le sprint");
@@ -1078,7 +1078,7 @@ audited(6, "relie bulk, Board et clôture UI au rapport", async ({ page, capture
     page.getByRole("button", { name: "Terminer le sprint", exact: true }).click());
   await expect(page.getByRole("heading", { name: "Sprint UI Destination" })).toBeVisible();
   await expect(page.getByText(carriedItem.key, { exact: true })).toBeVisible();
-  await page.goto(`/b/CASS/reports?report=sprint&sprint=${uiToPlanned.id}`);
+  await page.goto(`/b/CASS/report-sprint?report=sprint&sprint=${uiToPlanned.id}`);
   await expect(page.getByRole("main").getByText("Historique figé", { exact: true })).toBeVisible();
   measures = page.getByRole("region", { name: "Mesures du sprint" });
   await expect(measures.getByText("Engagement", { exact: true }).locator(".."))
@@ -1172,7 +1172,7 @@ audited(7, "rejoue le burndown actif depuis le baseline figé et le ledger", asy
   const expectedCompleted = BURNDOWN.doneAtStart + BURNDOWN.todoReestimated + BURNDOWN.addedDoneReestimated;
 
   // Report tab navigation: the active sprint is the default selection.
-  await auditedGoto(page, capture, "admin", "/b/CASS/reports?report=sprint");
+  await auditedGoto(page, capture, "admin", "/b/CASS/report-sprint?report=sprint");
   const tabs = page.getByRole("navigation", { name: "Types de rapport" });
   await tabs.getByRole("link", { name: "Burndown", exact: true }).click();
   await expect(page).toHaveURL(/report=burndown/);
@@ -1316,7 +1316,7 @@ audited(8, "relie édition unitaire, bulk et Board au burndown, ordre par séque
     .toBe(expectedRemaining + expectedCompleted);
   await expect(activeHeader.getByText("Engagement supérieur à la moyenne des sprints précédents", { exact: false })).toHaveCount(0);
 
-  await auditedGoto(page, capture, "admin", `/b/CASS/reports?report=burndown&sprint=${burndown.sprintId}`);
+  await auditedGoto(page, capture, "admin", `/b/CASS/report-sprint?report=burndown&sprint=${burndown.sprintId}`);
   await expectBurndownSummary(page, {
     kind: "active",
     initialRemainingPoints: burndown.baseline.remainingPoints,
@@ -1402,7 +1402,7 @@ audited(9, "fige le point final à la clôture et ignore les mutations ultérieu
       .toHaveCount(0);
   };
 
-  await auditedGoto(page, capture, "admin", `/b/CASS/reports?report=burndown&sprint=${burndown.sprintId}`);
+  await auditedGoto(page, capture, "admin", `/b/CASS/report-sprint?report=burndown&sprint=${burndown.sprintId}`);
   await expectFrozen();
 
   // Mutate every source after completion: the frozen report must not move.
@@ -1437,13 +1437,13 @@ audited(9, "fige le point final à la clôture et ignore les mutations ultérieu
     burndownFigure(page).screenshot({ path, caret: "initial" }));
   await page.setViewportSize(DESKTOP_VIEWPORT);
 
-  await auditedGoto(page, capture, "admin", `/b/CASS/reports?report=burndown&sprint=${fixtures.legacy.id}`);
+  await auditedGoto(page, capture, "admin", `/b/CASS/report-sprint?report=burndown&sprint=${fixtures.legacy.id}`);
   await expect(page.getByText("Historique burndown indisponible", { exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Mesures du burndown" })).toHaveCount(0);
   await expect(page.getByRole("table", { name: "Valeurs exactes du burndown" })).toHaveCount(0);
 
   // Switching report tabs keeps an older completed sprint selected (BUG-JIR-029).
-  await auditedGoto(page, capture, "admin", `/b/CASS/reports?report=sprint&sprint=${fixtures.first.id}`);
+  await auditedGoto(page, capture, "admin", `/b/CASS/report-sprint?report=sprint&sprint=${fixtures.first.id}`);
   const tabs = page.getByRole("navigation", { name: "Types de rapport" });
   await tabs.getByRole("link", { name: "Burndown", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`report=burndown&sprint=${fixtures.first.id}`, "u"));
@@ -1499,7 +1499,7 @@ audited(10, "compare un sprint planifié à la vélocité récente sans bloquer"
   await page.setViewportSize(DESKTOP_VIEWPORT);
 
   // A planned sprint has no burndown and stays concealed.
-  await auditedGoto(page, capture, "admin", `/b/CASS/reports?report=burndown&sprint=${planned.id}`);
+  await auditedGoto(page, capture, "admin", `/b/CASS/report-sprint?report=burndown&sprint=${planned.id}`);
   await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
   await expect(page.locator("body")).toContainText(/introuvable|could not be found/i);
   await expect(page.locator("body")).not.toContainText(BURNDOWN.plannedName);
@@ -1514,7 +1514,7 @@ audited(11, "conserve le burndown pour lecteur et second contexte, dissimule ét
   const rows = expectedBurndownRows(burndown.baseline, burndown.steps);
   const finalCompleted = BURNDOWN.doneAtStart + BURNDOWN.todoReestimated + BURNDOWN.addedDoneReestimated
     + BURNDOWN.addedIncomplete;
-  const url = `/b/CASS/reports?report=burndown&sprint=${burndown.sprintId}`;
+  const url = `/b/CASS/report-sprint?report=burndown&sprint=${burndown.sprintId}`;
   const secondAdmin = await observedPage("admin-second", AUTH.admin);
   const reader = await observedPage("reader", AUTH.reader);
   for (const [actor, current] of [["admin", page], ["admin-second", secondAdmin], ["reader", reader]] as const) {
@@ -1534,7 +1534,7 @@ audited(11, "conserve le burndown pour lecteur et second contexte, dissimule ét
   }
   await expect(reader.getByRole("button", { name: /Terminer le sprint|Démarrer le sprint|Créer/ })).toHaveCount(0);
 
-  const malformed = await auditedGoto(page, capture, "admin", "/b/CASS/reports?report=burndown&sprint=not-a-uuid");
+  const malformed = await auditedGoto(page, capture, "admin", "/b/CASS/report-sprint?report=burndown&sprint=not-a-uuid");
   expect(malformed?.status()).toBe(200);
   await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
   await expect(page.locator("body")).toContainText(/introuvable|could not be found/i);
@@ -1544,9 +1544,9 @@ audited(11, "conserve le burndown pour lecteur et second contexte, dissimule ét
   const labs = await fixtureContext("LABS");
   const foreign = await namedSprint(labs, BURNDOWN.labsName);
   await begin(labs, foreign.id, BURNDOWN.labsName);
-  await auditedGoto(page, capture, "admin", `/b/LABS/reports?report=burndown&sprint=${foreign.id}`);
+  await auditedGoto(page, capture, "admin", `/b/LABS/report-sprint?report=burndown&sprint=${foreign.id}`);
   await expect(page.getByRole("heading", { level: 1, name: BURNDOWN.labsName })).toBeVisible();
-  const concealed = await auditedGoto(page, capture, "admin", `/b/CASS/reports?report=burndown&sprint=${foreign.id}`);
+  const concealed = await auditedGoto(page, capture, "admin", `/b/CASS/report-sprint?report=burndown&sprint=${foreign.id}`);
   expect(concealed?.status()).toBe(200);
   await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
   await expect(page.locator("body")).toContainText(/introuvable|could not be found/i);
@@ -1575,7 +1575,7 @@ audited(12, "masque une panne de lecture du burndown et récupère après retry"
       capture.expectedFault.serverRenderingError = error.message;
     }
     expect(capture.expectedFault.serverRenderingError, "La panne de lecture doit être observée.").toBeDefined();
-    await auditedGoto(page, capture, "admin", `/b/CASS/reports?report=burndown&sprint=${retrySprintId}`);
+    await auditedGoto(page, capture, "admin", `/b/CASS/report-sprint?report=burndown&sprint=${retrySprintId}`);
     await expect(page.getByRole("heading", { name: "Impossible de charger les rapports" })).toBeVisible();
     const body = await page.locator("body").innerText();
     expect(body).not.toMatch(

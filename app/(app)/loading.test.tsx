@@ -9,7 +9,7 @@ import TrashLoading from "@/app/(app)/trash/loading";
 import ReleasesLoading from "@/app/(app)/b/[key]/releases/loading";
 import ReleaseDetailLoading from "@/app/(app)/b/[key]/releases/[releaseId]/loading";
 import ReleaseNotesLoading from "@/app/(app)/b/[key]/releases/[releaseId]/notes/loading";
-import ReportsLoading from "@/app/(app)/b/[key]/reports/loading";
+import ReportsLoading from "@/app/(app)/b/[key]/report-sprint/loading";
 import AccessLoading from "@/app/(app)/b/[key]/settings/access/loading";
 
 /** JIR-84: each route segment streams its own placeholder, not the board's. */
@@ -27,7 +27,7 @@ const ROUTES: [string, ComponentType, string, string][] = [
     "Chargement des notes de release",
     "release-notes",
   ],
-  ["/b/[key]/reports", ReportsLoading, "Chargement des rapports…", "reports"],
+  ["/b/[key]/report-sprint", ReportsLoading, "Chargement des rapports…", "reports"],
   ["/b/[key]/settings/access", AccessLoading, "Chargement des accès", "access"],
 ];
 

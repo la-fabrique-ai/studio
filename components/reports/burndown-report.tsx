@@ -349,7 +349,7 @@ function BurndownChart({ report }: { report: DetailedReport }) {
 }
 
 function ExactValues({ backlogKey, report }: { backlogKey: string; report: DetailedReport }) {
-  const path = `/b/${backlogKey}/reports`;
+  const path = `/b/${backlogKey}/report-sprint`;
   const { baseline, eventPoints } = report;
   return (
     <section aria-labelledby="burndown-exact-title" className="space-y-3">

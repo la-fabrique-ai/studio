@@ -547,7 +547,7 @@ function ScopePanel({ data, light }: { data: LePointDataset; light: SprintLight 
     <div className="space-y-2 rounded-[var(--radius)] border border-border bg-[var(--surface-2)] px-3 py-2 text-[13px]">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-medium">Périmètre du sprint</span>
-        <Link href={`/b/${data.backlog.key}/reports?report=sprint`} className="ml-auto text-xs text-[var(--primary)] underline">
+        <Link href={`/b/${data.backlog.key}/report-sprint?report=sprint`} className="ml-auto text-xs text-[var(--primary)] underline">
           Voir le rapport de sprint
         </Link>
       </div>
@@ -729,7 +729,7 @@ function SprintHealthCard({ data }: { data: LePointDataset }) {
         </span>
         {prototype}
         {rules}
-        <Link href={`/b/${data.backlog.key}/reports?report=burndown`} className="ml-auto text-xs text-[var(--primary)] underline">
+        <Link href={`/b/${data.backlog.key}/report-sprint?report=burndown`} className="ml-auto text-xs text-[var(--primary)] underline">
           Voir le burndown
         </Link>
       </div>

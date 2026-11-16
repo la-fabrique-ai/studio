@@ -59,7 +59,7 @@ test("« g » puis une lettre change de vue, jamais pendant la saisie", async ({
 
   await page.keyboard.press("g");
   await page.keyboard.press("r");
-  await expect(page).toHaveURL(/\/b\/CASS\/reports$/);
+  await expect(page).toHaveURL(/\/b\/CASS\/report-sprint$/);
 });
 
 test("« j » / « k » sélectionnent un ticket et « o » l’ouvre ; dans le tiroir « j » / « k », « m » puis « i »", async ({

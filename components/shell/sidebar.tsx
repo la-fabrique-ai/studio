@@ -32,6 +32,7 @@ import type { SidebarViewRow } from "@/components/shell/sidebar-views";
 import {
   activeProjectView,
   deriveShellContext,
+  PILOTAGE_VIEWS,
   PROJECT_VIEWS,
   projectViewHref,
   type ProjectViewId,
@@ -51,7 +52,7 @@ const PROJECT_VIEW_ICONS: Record<ProjectViewId, LucideIcon> = {
   tree: ListTree,
   roadmap: ChartGantt,
   releases: Tag,
-  reports: ChartColumn,
+  "report-sprint": ChartColumn,
 };
 
 /** A path segment as the router decodes it; a malformed escape stays as written. */
@@ -319,9 +320,32 @@ export function Sidebar({
         )}
       </SidebarSection>
 
-      {/* Steering the team and its agents: the section is announced, its pages come later. */}
+      {/* Steering the project: the sprint reports for now, the agents' pages later. */}
       <SidebarSection id="pilotage" title="Pilotage" collapsed={collapsed} className="mt-2 mb-4">
-        {!collapsed && <p className="px-2 py-1 text-xs text-muted-foreground">À venir</p>}
+        {activeBacklog ? (
+          <nav aria-label="Pilotage du projet" className="flex flex-col gap-0.5">
+            {PILOTAGE_VIEWS.map((view) => {
+              const Icon = PROJECT_VIEW_ICONS[view.id];
+              return (
+                <NavLink
+                  key={view.id}
+                  href={projectViewHref(activeBacklog.key, view.id)}
+                  active={activeView === view.id}
+                  ariaLabel={collapsed ? view.label : undefined}
+                  collapsed={collapsed}
+                  title={collapsed ? view.label : undefined}
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                  <span className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}>
+                    {view.label}
+                  </span>
+                </NavLink>
+              );
+            })}
+          </nav>
+        ) : (
+          !collapsed && <p className="px-2 py-1 text-xs text-muted-foreground">Choisissez un backlog.</p>
+        )}
       </SidebarSection>
 
       <div className="mt-auto flex flex-col gap-1">

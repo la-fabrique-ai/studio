@@ -81,7 +81,7 @@ export function SprintEventJournal({
     timeStyle: "short",
     timeZone: "UTC",
   });
-  const path = `/b/${backlogKey}/reports`;
+  const path = `/b/${backlogKey}/report-sprint`;
   return (
     <section role="region" aria-labelledby="sprint-journal-title" className="space-y-3">
       <h2 id="sprint-journal-title" className="t-h2">Journal du sprint</h2>

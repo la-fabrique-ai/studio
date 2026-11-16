@@ -23,7 +23,7 @@ const MODE_LABELS: Record<string, ShellMode> = {
 };
 
 // A backlog's own pages beside its item views, kept in that backlog's context.
-const FEATURE_SECTIONS = { "le-point": "Le point", roadmap: "Roadmap", releases: "Releases", reports: "Rapports", specs: "Spécifications" } as const;
+const FEATURE_SECTIONS = { "le-point": "Le point", roadmap: "Roadmap", releases: "Releases", "report-sprint": "Sprint", specs: "Spécifications" } as const;
 
 // A backlog's settings pages, kept in the current backlog context.
 const SETTINGS_ROUTE = /^\/b\/([^/]+)\/settings\/(access|development|templates)\/?$/;
@@ -72,7 +72,7 @@ export function deriveShellContext({
     };
   }
 
-  const completedFeatureMatch = /^\/b\/([^/]+)\/(le-point|roadmap|releases|reports|specs)(?:\/.*)?$/.exec(pathname);
+  const completedFeatureMatch = /^\/b\/([^/]+)\/(le-point|roadmap|releases|report-sprint|specs)(?:\/.*)?$/.exec(pathname);
   if (completedFeatureMatch) {
     const requestedKey = decodeURIComponent(completedFeatureMatch[1]!).toUpperCase();
     const backlog = backlogs.find(
@@ -145,12 +145,12 @@ export function deriveShellContext({
 // ---------------------------------------------------------------------------
 
 export type ItemViewId = "backlog" | "board" | "list" | "tree";
-export type ProjectViewId = ItemViewId | "le-point" | "roadmap" | "releases" | "reports";
+export type ProjectViewId = ItemViewId | "le-point" | "roadmap" | "releases" | "report-sprint";
 
 /**
  * The project's views, in sidebar order. Item views are display modes of
- * `/b/[key]` (`?view=`); Le point, Roadmap, Releases and Rapports are their
- * own routes. Le point comes first, like Jira's project Summary (JIR-107).
+ * `/b/[key]` (`?view=`); Le point, Roadmap and Releases are their own
+ * routes. Le point comes first, like Jira's project Summary (JIR-107).
  */
 export const PROJECT_VIEWS = [
   { id: "le-point", label: "Le point", kind: "page" },
@@ -160,11 +160,22 @@ export const PROJECT_VIEWS = [
   { id: "tree", label: "Arbre", kind: "item" },
   { id: "roadmap", label: "Roadmap", kind: "page" },
   { id: "releases", label: "Releases", kind: "page" },
-  { id: "reports", label: "Rapports", kind: "page" },
 ] as const satisfies readonly {
   id: ProjectViewId;
   label: string;
   kind: "item" | "page";
+}[];
+
+/**
+ * The Pilotage section's pages: Sprint gathers the sprint reports (sprint
+ * report, velocity, burndown, review) at `report-sprint`.
+ */
+export const PILOTAGE_VIEWS = [
+  { id: "report-sprint", label: "Sprint", kind: "page" },
+] as const satisfies readonly {
+  id: ProjectViewId;
+  label: string;
+  kind: "page";
 }[];
 
 const ITEM_VIEW_IDS: readonly string[] = ["backlog", "board", "list", "tree"];
@@ -186,7 +197,7 @@ export function activeProjectView(
   search: URLSearchParams,
   backlogKey: string,
 ): ProjectViewId | null {
-  const match = /^\/b\/([^/]+)(?:\/(le-point|roadmap|releases|reports)(?:\/.*)?|\/?)$/.exec(pathname);
+  const match = /^\/b\/([^/]+)(?:\/(le-point|roadmap|releases|report-sprint)(?:\/.*)?|\/?)$/.exec(pathname);
   if (!match) return null;
   if (decodeURIComponent(match[1]!).toUpperCase() !== backlogKey.toUpperCase()) return null;
   if (match[2]) return match[2] as ProjectViewId;
@@ -256,7 +267,7 @@ export function deriveBreadcrumb(input: {
   if (!project) return [{ label: context.section }];
   if (context.section === backlog!.name) return [{ label: project.label }];
 
-  const nested = /^\/b\/[^/]+\/(releases|reports|specs)\/.+$/.exec(input.pathname);
+  const nested = /^\/b\/[^/]+\/(releases|report-sprint|specs)\/.+$/.exec(input.pathname);
   return [
     project,
     nested

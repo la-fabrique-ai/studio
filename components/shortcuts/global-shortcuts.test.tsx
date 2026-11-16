@@ -59,7 +59,7 @@ describe("GlobalShortcuts", () => {
     [["g", "i"], "/b/CASS?view=list"],
     [["g", "t"], "/b/CASS?view=tree"],
     [["g", "v"], "/b/CASS/releases"],
-    [["g", "r"], "/b/CASS/reports"],
+    [["g", "r"], "/b/CASS/report-sprint"],
     [["g", "u"], "/aide"],
   ])("navigates with %s", (keys, href) => {
     renderShortcuts();

@@ -4,6 +4,7 @@ import {
   deriveBreadcrumb,
   deriveShellContext,
   itemViewFromParam,
+  PILOTAGE_VIEWS,
   PROJECT_VIEWS,
   projectViewHref,
 } from "@/lib/items/shell";
@@ -164,8 +165,8 @@ describe("deriveShellContext", () => {
     ["/b/PEN/releases", "Releases"],
     ["/b/pen/le-point", "Le point"],
     ["/b/pen/roadmap", "Roadmap"],
-    ["/b/pen/reports", "Rapports"],
-    ["/b/PEN/reports/detail", "Rapports"],
+    ["/b/pen/report-sprint", "Sprint"],
+    ["/b/PEN/report-sprint/detail", "Sprint"],
     ["/b/pen/specs", "Spécifications"],
     ["/b/PEN/specs/node-1", "Spécifications"],
   ] as const)("keeps the requested backlog for %s", (pathname, section) => {
@@ -311,7 +312,7 @@ describe("deriveShellContext — Backlog mode", () => {
 });
 
 describe("project views (sidebar)", () => {
-  it("lists the eight project views in sidebar order", () => {
+  it("lists the seven ticket views in sidebar order, Sprint in Pilotage", () => {
     expect(PROJECT_VIEWS.map((view) => view.label)).toEqual([
       "Le point",
       "Backlog",
@@ -320,8 +321,8 @@ describe("project views (sidebar)", () => {
       "Arbre",
       "Roadmap",
       "Releases",
-      "Rapports",
     ]);
+    expect(PILOTAGE_VIEWS.map((view) => [view.id, view.label])).toEqual([["report-sprint", "Sprint"]]);
   });
 
   it.each([
@@ -332,13 +333,13 @@ describe("project views (sidebar)", () => {
     ["le-point", "/b/CASS/le-point"],
     ["roadmap", "/b/CASS/roadmap"],
     ["releases", "/b/CASS/releases"],
-    ["reports", "/b/CASS/reports"],
+    ["report-sprint", "/b/CASS/report-sprint"],
   ] as const)("links %s to %s", (id, href) => {
     expect(projectViewHref("CASS", id)).toBe(href);
   });
 
   it("encodes the backlog key", () => {
-    expect(projectViewHref("A B", "reports")).toBe("/b/A%20B/reports");
+    expect(projectViewHref("A B", "report-sprint")).toBe("/b/A%20B/report-sprint");
   });
 
   it.each([
@@ -350,7 +351,7 @@ describe("project views (sidebar)", () => {
     ["/b/CASS/roadmap", "", "roadmap"],
     ["/b/CASS/releases", "", "releases"],
     ["/b/CASS/releases/r-1/notes", "", "releases"],
-    ["/b/CASS/reports", "view=list", "reports"],
+    ["/b/CASS/report-sprint", "view=list", "report-sprint"],
   ] as const)("activates the view of %s?%s", (pathname, search, expected) => {
     expect(activeProjectView(pathname, new URLSearchParams(search), "CASS")).toBe(expected);
   });
@@ -407,7 +408,7 @@ describe("deriveBreadcrumb (page header)", () => {
   it.each([
     ["/b/PEN/releases", "Pôle pénal", "/b/PEN", "Releases"],
     ["/b/pen/roadmap", "Pôle pénal", "/b/PEN", "Roadmap"],
-    ["/b/pen/reports", "Pôle pénal", "/b/PEN", "Rapports"],
+    ["/b/pen/report-sprint", "Pôle pénal", "/b/PEN", "Sprint"],
     ["/b/pen/specs", "Pôle pénal", "/b/PEN", "Spécifications"],
     ["/aide", "Pôle civil", "/b/CASS", "Aide"],
     ["/admin", "Pôle civil", "/b/CASS", "Administration"],

@@ -38,7 +38,7 @@ export async function invalidateBacklog(backlogKey: string, change: BacklogChang
 export function revalidateBacklogPages(backlogKey: string): void {
   revalidatePath(`/b/${backlogKey}`);
   revalidatePath(`/b/${backlogKey}/roadmap`);
-  revalidatePath(`/b/${backlogKey}/reports`);
+  revalidatePath(`/b/${backlogKey}/report-sprint`);
   revalidatePath(`/b/${backlogKey}/le-point`);
 }
 
