@@ -30,6 +30,13 @@ l'écrit pas : en revue, il signale ses constats dans son rapport.
   d'exécution sur la branche `lot-specs-documents`. Limite constatée : aucun
   outil Linear disponible dans la session. Prochaine action : créer le ticket et
   le document dans Linear, puis y relier la PR.
+- **16 novembre 2026 — NON SYNCHRONISÉ — Spécifications, accès API et MCP
+  (lot 2).** Cible prévue : même projet que le lot 1, un ticket Feature lié.
+  Source :
+  [`docs/superpowers/specs/2026-11-16-studio-specifications-api-design.md`](superpowers/specs/2026-11-16-studio-specifications-api-design.md)
+  (contenu complet). État : validé par le propriétaire en session, en cours
+  d'exécution sur la branche `lot-specs-api` (empilée sur `lot-specs-documents`).
+  Prochaine action : créer le ticket dans Linear et y relier la PR.
 
 ## Historique (clos)
 
