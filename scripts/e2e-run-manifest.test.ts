@@ -71,7 +71,7 @@ describe("manifeste brut de provenance E2E", () => {
       systemIdentifierFingerprint: "sha256:22085aa929bcd7af4b23d9d9c046a1d4fde8be51f79d91392efafef96574ab01",
     });
     const options = {
-      env: { JIROO_E2E_PERSIST_AUDIT: "1" },
+      env: { STUDIO_E2E_PERSIST_AUDIT: "1" },
       workingDirectory,
     };
 

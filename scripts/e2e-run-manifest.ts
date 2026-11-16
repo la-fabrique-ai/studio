@@ -60,7 +60,7 @@ type Manifest = ReturnType<typeof buildE2eRunManifest>;
 export async function writeE2eRunManifest(
   manifest: Manifest,
   options: {
-    env?: Partial<Record<"JIROO_E2E_PERSIST_AUDIT", string>>;
+    env?: Partial<Record<"STUDIO_E2E_PERSIST_AUDIT", string>>;
     workingDirectory?: string;
   } = {},
 ): Promise<string> {
@@ -68,7 +68,7 @@ export async function writeE2eRunManifest(
     throw new Error("Run ID invalide pour le manifeste E2E.");
   }
   const env = options.env ?? process.env;
-  const relativePath = env.JIROO_E2E_PERSIST_AUDIT === "1"
+  const relativePath = env.STUDIO_E2E_PERSIST_AUDIT === "1"
     ? join("audit", "runs", `${manifest.runId}-manifest.json`)
     : join(".playwright", "reports", `${manifest.runId}-manifest.json`);
   const path = join(options.workingDirectory ?? process.cwd(), relativePath);

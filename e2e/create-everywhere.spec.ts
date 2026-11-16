@@ -10,7 +10,7 @@ import { writeAuditScreenshot, writeAuditText } from "./audit-artifacts";
 import { keyPattern } from "./key-helpers";
 import { chooseOption } from "./select-helpers";
 
-const RUN = process.env.JIROO_E2E_RUN_ID;
+const RUN = process.env.STUDIO_E2E_RUN_ID;
 if (!RUN) throw new Error("Create-everywhere requires an isolated E2E run id.");
 const KEY = "CRTALL";
 const COLOR = "#ffeeaa";

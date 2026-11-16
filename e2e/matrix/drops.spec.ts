@@ -188,7 +188,7 @@ async function runSeries(page: Page, target: DropStatus, info: TestInfo) {
     console.info(summary);
     info.annotations.push({ type: "drops", description: summary });
     const evidence = [...lines, summary].join("\n") + "\n";
-    if (createAuditEvidenceFilters(process.env.JIROO_PLAYWRIGHT_PASSWORD ?? "Audit-Local-2026!").credentialEvidence.test(evidence)) {
+    if (createAuditEvidenceFilters(process.env.STUDIO_PLAYWRIGHT_PASSWORD ?? "Audit-Local-2026!").credentialEvidence.test(evidence)) {
       throw new Error("Credentials refused in drop evidence.");
     }
     const label = `${page.viewportSize()?.width}-${info.title.includes("farthest") ? "farthest" : "nearest"}`;

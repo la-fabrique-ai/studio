@@ -5,7 +5,7 @@ import { Client } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { grantRuntimeRole, RuntimeRoleError } from "@/lib/db/runtime-role";
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 
 // The schema owner: the migrated test database's own connection.
 const OWNER_URL = process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL ?? "";

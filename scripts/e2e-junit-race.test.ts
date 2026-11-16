@@ -21,12 +21,12 @@ async function runPlaywright(instance: string, delayMs: number, listOnly = false
         cwd: process.cwd(),
         env: {
           ...process.env,
-          JIROO_E2E_JUNIT_PATH: reportPath,
-          JIROO_E2E_RACE_ARTIFACT_ROOT: testRoot,
-          JIROO_E2E_RACE_DELAY_MS: String(delayMs),
-          JIROO_E2E_RACE_INSTANCE: instance,
-          JIROO_E2E_RUN_ID: runId,
-          JIROO_E2E_RUN_LOCK_ROOT: lockRoot,
+          STUDIO_E2E_JUNIT_PATH: reportPath,
+          STUDIO_E2E_RACE_ARTIFACT_ROOT: testRoot,
+          STUDIO_E2E_RACE_DELAY_MS: String(delayMs),
+          STUDIO_E2E_RACE_INSTANCE: instance,
+          STUDIO_E2E_RUN_ID: runId,
+          STUDIO_E2E_RUN_LOCK_ROOT: lockRoot,
         },
       },
     );

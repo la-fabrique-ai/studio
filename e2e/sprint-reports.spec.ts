@@ -55,7 +55,7 @@ type ReportFixtures = Awaited<ReturnType<typeof seedReportFixtures>>;
 let fixtures: ReportFixtures;
 
 // Same resolution as e2e/global.setup.ts; the value never reaches an artifact.
-const FIXTURE_PASSWORD = process.env.JIROO_PLAYWRIGHT_PASSWORD ?? "Audit-Local-2026!";
+const FIXTURE_PASSWORD = process.env.STUDIO_PLAYWRIGHT_PASSWORD ?? "Audit-Local-2026!";
 const {
   forbiddenAuditEvidence: FORBIDDEN_AUDIT_EVIDENCE,
   credentialEvidence: CREDENTIAL_EVIDENCE,

@@ -51,7 +51,7 @@ describe("end-of-run E2E inventory", () => {
       const root = await directory();
       await manifest(root, persistent);
       const options = { workingDirectory: root, env: {
-        JIROO_E2E_RUN_ID: RUN, JIROO_E2E_PERSIST_AUDIT: persistent ? "1" : "0",
+        STUDIO_E2E_RUN_ID: RUN, STUDIO_E2E_PERSIST_AUDIT: persistent ? "1" : "0",
       } };
       const path = await writeAuditText("audit/a11y/axe-p1-accueil.json", "abc", options);
       const expected = persistent
@@ -106,7 +106,7 @@ describe("end-of-run E2E inventory", () => {
     const original = await manifest(root);
     const other = await manifest(root, true, `${RUN}-reports`);
     await writeAuditScreenshot("audit/screenshots/reports-chart.png", (path) => writeFile(path, "abc"), {
-      workingDirectory: root, env: { JIROO_E2E_RUN_ID: RUN, JIROO_E2E_PERSIST_AUDIT: "1" },
+      workingDirectory: root, env: { STUDIO_E2E_RUN_ID: RUN, STUDIO_E2E_PERSIST_AUDIT: "1" },
     });
     const before = await readFile(join(root, original.path), "utf8");
     const otherBefore = await readFile(join(root, other.path), "utf8");
@@ -120,7 +120,7 @@ describe("end-of-run E2E inventory", () => {
     await manifest(root);
     await manifest(root, false, `${RUN}-reports`);
     await writeAuditScreenshot("audit/screenshots/reports-chart.png", (path) => writeFile(path, "abc"), {
-      workingDirectory: root, env: { JIROO_E2E_RUN_ID: RUN, JIROO_E2E_PERSIST_AUDIT: "1" },
+      workingDirectory: root, env: { STUDIO_E2E_RUN_ID: RUN, STUDIO_E2E_PERSIST_AUDIT: "1" },
     });
     const result = await inventoryE2eRun(RUN, { workingDirectory: root });
     expect(result.artifacts).toEqual([entry(`audit/screenshots/${RUN}-reports-chart.png`)]);
@@ -130,7 +130,7 @@ describe("end-of-run E2E inventory", () => {
     const root = await directory();
     const original = await manifest(root, persistent);
     const options = { workingDirectory: root, env: {
-      JIROO_E2E_RUN_ID: RUN, JIROO_E2E_PERSIST_AUDIT: persistent ? "1" : "0",
+      STUDIO_E2E_RUN_ID: RUN, STUDIO_E2E_PERSIST_AUDIT: persistent ? "1" : "0",
     } };
     await writeAuditText("audit/console/report.log", "abc", options);
     await writeAuditScreenshot("audit/screenshots/report.png", (path) => writeFile(path, "abc"), options);

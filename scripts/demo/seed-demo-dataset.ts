@@ -7,7 +7,7 @@
  * action. The team is made of the accounts already in the database: no
  * account is created. The product owners are named, the others develop.
  *
- *   JIROO_DEMO_SEED=1 JIROO_DEMO_PRODUCT_OWNERS="Name One,Name Two" DATABASE_URL=… pnpm tsx scripts/demo/seed-demo-dataset.ts
+ *   STUDIO_DEMO_SEED=1 STUDIO_DEMO_PRODUCT_OWNERS="Name One,Name Two" DATABASE_URL=… pnpm tsx scripts/demo/seed-demo-dataset.ts
  *
  * Runs once per database: it refuses a database where a demo backlog already has its labels or releases.
  */
@@ -46,15 +46,15 @@ export class DemoSeedError extends Error {}
 
 /**
  * Run before importing any module that opens a database connection. A remote
- * database must be the DEV one named by JIROO_DEMO_ALLOWED_HOST, which the
+ * database must be the DEV one named by STUDIO_DEMO_ALLOWED_HOST, which the
  * DEV launcher's configuration provides.
  */
 export function assertDemoSeedAllowed(env: Readonly<Record<string, string | undefined>>): void {
-  if (env.JIROO_DEMO_SEED !== "1") throw new DemoSeedError("Set JIROO_DEMO_SEED=1 explicitly.");
+  if (env.STUDIO_DEMO_SEED !== "1") throw new DemoSeedError("Set STUDIO_DEMO_SEED=1 explicitly.");
   let url: URL;
   try { url = new URL(env.DATABASE_URL ?? ""); } catch { throw new DemoSeedError("DATABASE_URL is missing or invalid."); }
   const local = ["127.0.0.1", "localhost"].includes(url.hostname);
-  const approvedDev = env.JIROO_ENVIRONMENT === "dev" && !!env.JIROO_DEMO_ALLOWED_HOST && url.hostname === env.JIROO_DEMO_ALLOWED_HOST;
+  const approvedDev = env.STUDIO_ENVIRONMENT === "dev" && !!env.STUDIO_DEMO_ALLOWED_HOST && url.hostname === env.STUDIO_DEMO_ALLOWED_HOST;
   if (!local && !approvedDev) throw new DemoSeedError("Only a local database or the approved DEV database is allowed.");
 }
 
@@ -296,7 +296,7 @@ const SPRINT_COUNT = Math.max(...PLANNED_SPRINTS) + 1;
 
 /**
  * The existing accounts cast as product owners, named by
- * JIROO_DEMO_PRODUCT_OWNERS, and per backlog the developers: the other
+ * STUDIO_DEMO_PRODUCT_OWNERS, and per backlog the developers: the other
  * accounts that may write, minus those who may only read that backlog.
  */
 type Cast = { productOwners: string[]; developers: Map<string, string[]> };
@@ -316,8 +316,8 @@ async function preflight(svc: Services): Promise<{ sprintWords: Map<string, stri
   const accounts = await pool.query<{ id: string; name: string; role: string }>(
     `select id, name, role from "user" where role <> 'viewer' order by (role = 'admin') desc, created_at`,
   );
-  const named = (process.env.JIROO_DEMO_PRODUCT_OWNERS ?? "").split(",").map((name) => name.trim()).filter(Boolean);
-  if (named.length === 0) fail("name the product owners in JIROO_DEMO_PRODUCT_OWNERS (comma-separated account names).");
+  const named = (process.env.STUDIO_DEMO_PRODUCT_OWNERS ?? "").split(",").map((name) => name.trim()).filter(Boolean);
+  if (named.length === 0) fail("name the product owners in STUDIO_DEMO_PRODUCT_OWNERS (comma-separated account names).");
   const productOwners = named.map((name) => {
     const matches = accounts.rows.filter((row) => row.name.toLocaleLowerCase("fr") === name.toLocaleLowerCase("fr"));
     if (matches.length !== 1) fail(`product owner « ${name} »: ${matches.length} matching account(s) that may write.`);

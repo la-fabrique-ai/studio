@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { Client } from "pg";
 import { describe, expect, it } from "vitest";
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 const migration = readFileSync(new URL("../drizzle/0028_label_name_uniqueness.sql", import.meta.url), "utf8");
 const preflight = readFileSync(new URL("./check-label-duplicates.sql", import.meta.url), "utf8");
 

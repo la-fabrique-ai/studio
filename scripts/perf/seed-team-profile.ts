@@ -10,7 +10,7 @@ export class TeamProfileSeedError extends Error {}
 
 /** Run before importing any module that opens a database connection. */
 export function assertTeamProfileSeedAllowed(env: Readonly<Record<string, string | undefined>>): void {
-  if (env.JIROO_ALLOW_TEAM_PROFILE_SEED !== "1") throw new TeamProfileSeedError("Set JIROO_ALLOW_TEAM_PROFILE_SEED=1 explicitly.");
+  if (env.STUDIO_ALLOW_TEAM_PROFILE_SEED !== "1") throw new TeamProfileSeedError("Set STUDIO_ALLOW_TEAM_PROFILE_SEED=1 explicitly.");
   let url: URL;
   try { url = new URL(env.DATABASE_URL ?? ""); } catch { throw new TeamProfileSeedError("An explicit local PostgreSQL URL is required."); }
   if (!["postgres:", "postgresql:"].includes(url.protocol) || !["127.0.0.1", "localhost"].includes(url.hostname) ||
@@ -31,8 +31,8 @@ export type TeamProfile = {
 /** A fresh migrated database only: no reset, delete, sequence rewind, or shared namespace. */
 export async function seedTeamProfile(): Promise<TeamProfile> {
   assertTeamProfileSeedAllowed(process.env);
-  const password = process.env.JIROO_PERF_PASSWORD;
-  if (!password || password.length < 16) throw new TeamProfileSeedError("Supply a synthetic JIROO_PERF_PASSWORD of at least 16 characters in memory.");
+  const password = process.env.STUDIO_PERF_PASSWORD;
+  if (!password || password.length < 16) throw new TeamProfileSeedError("Supply a synthetic STUDIO_PERF_PASSWORD of at least 16 characters in memory.");
   const { db, databasePool } = await import("@/lib/db");
   const lock = await databasePool.connect();
   try {

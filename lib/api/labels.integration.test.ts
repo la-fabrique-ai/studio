@@ -14,7 +14,7 @@ import { POST as createItem } from "@/app/api/v1/items/route";
 import { GET as detail } from "@/app/api/v1/items/[key]/route";
 import { STUDIO_TOOLS, runTool } from "@/lib/mcp/tools";
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 describeDb("labels across REST and MCP with real permissions", () => {
   let fixture: ReadVisibilityFixture;
   let token: string; let readToken: string; let outsiderToken: string;

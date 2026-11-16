@@ -11,7 +11,7 @@ vi.mock("@/lib/realtime/publish", () => ({ publishBacklogChange: vi.fn(), notify
 import { POST } from "@/app/api/v1/items/route";
 import { publishBacklogChange } from "@/lib/realtime/publish";
 import { STUDIO_TOOLS, runTool } from "@/lib/mcp/tools";
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 describeDb("durable item creation requests across REST and MCP", () => {
   let f: ReadVisibilityFixture;
   let bearer: string; let readerBearer: string; let writer: ApiPrincipal; let reader: ApiPrincipal;

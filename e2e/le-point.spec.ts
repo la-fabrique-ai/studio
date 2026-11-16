@@ -16,7 +16,7 @@ import { readActionArguments } from "./support/actions";
 import { observePage } from "./support/capture";
 import { keyPattern } from "./key-helpers";
 
-const RUN = process.env.JIROO_E2E_RUN_ID;
+const RUN = process.env.STUDIO_E2E_RUN_ID;
 if (!RUN) throw new Error("Le point E2E requires an isolated run id.");
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };

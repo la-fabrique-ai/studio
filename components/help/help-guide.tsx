@@ -804,12 +804,12 @@ export function HelpGuide() {
           title="Utiliser l’API REST"
           purpose="Consulter ou modifier les tickets depuis un script ou un outil connecté."
           steps={[
-            <>Définissez <code>JIROO_ORIGIN</code> avec l’origine de votre instance du Studio (protocole et nom d’hôte, sans barre finale) et <code>JIROO_TOKEN</code> avec le secret de votre jeton, qui commence par <code>jiroo_pat_</code>.</>,
+            <>Définissez <code>STUDIO_ORIGIN</code> avec l’origine de votre instance du Studio (protocole et nom d’hôte, sans barre finale) et <code>STUDIO_TOKEN</code> avec le secret de votre jeton, qui commence par <code>jiroo_pat_</code>.</>,
             <>Envoyez le jeton dans l’en-tête <code>Authorization: Bearer …</code> pour chaque requête vers <code>/api/v1</code>. Cet exemple de lecture affiche le compte et le jeton utilisés.</>,
           ]}
         >
-          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`curl "$JIROO_ORIGIN/api/v1/me" \\
-  -H "Authorization: Bearer $JIROO_TOKEN"`}</code></pre>
+          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`curl "$STUDIO_ORIGIN/api/v1/me" \\
+  -H "Authorization: Bearer $STUDIO_TOKEN"`}</code></pre>
           <p className="t-body">
             Les routes, filtres, écritures et erreurs sont décrits dans la référence du dépôt :{" "}
             <a href="https://github.com/DVLPR-Consulting/jiroo/blob/main/docs/api-v1.md" className="underline underline-offset-4">docs/api-v1.md</a>.
@@ -820,8 +820,8 @@ export function HelpGuide() {
           title="Connecter Claude Code ou Codex en MCP"
           purpose="Laisser un agent consulter les tickets et effectuer les actions que vous lui autorisez."
           steps={[
-            <>Préparez la variable d’environnement <code>JIROO_TOKEN</code> comme pour l’API. Le serveur MCP est à l’adresse <code>/api/mcp</code> de votre instance ; il utilise le même jeton.</>,
-            <>Pour Claude Code, ajoutez le serveur HTTP avec la commande ci-dessous. Pour Codex, ajoutez le bloc dans <code>~/.codex/config.toml</code>, puis démarrez Codex depuis l’environnement qui contient <code>JIROO_TOKEN</code>.</>,
+            <>Préparez la variable d’environnement <code>STUDIO_TOKEN</code> comme pour l’API. Le serveur MCP est à l’adresse <code>/api/mcp</code> de votre instance ; il utilise le même jeton.</>,
+            <>Pour Claude Code, ajoutez le serveur HTTP avec la commande ci-dessous. Pour Codex, ajoutez le bloc dans <code>~/.codex/config.toml</code>, puis démarrez Codex depuis l’environnement qui contient <code>STUDIO_TOKEN</code>.</>,
           ]}
         >
           <p className="t-body">
@@ -829,10 +829,10 @@ export function HelpGuide() {
             Remplacez-les par l’adresse de votre instance si vous en utilisez une autre.
           </p>
           <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`claude mcp add --transport http studio https://jiroo-dev.vercel.app/api/mcp \\
-  --header "Authorization: Bearer $JIROO_TOKEN"`}</code></pre>
+  --header "Authorization: Bearer $STUDIO_TOKEN"`}</code></pre>
           <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`[mcp_servers.studio]
 url = "https://jiroo-dev.vercel.app/api/mcp"
-bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
+bearer_token_env_var = "STUDIO_TOKEN"`}</code></pre>
           <p className="t-body">
             Les outils de lecture sont <code>list_backlogs</code>, <code>list_statuses</code>,{" "}
             <code>search_items</code>, <code>get_item</code>, <code>list_my_items</code>, <code>list_labels</code> et <code>list_dependencies</code>.

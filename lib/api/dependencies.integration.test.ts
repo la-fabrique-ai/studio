@@ -16,7 +16,7 @@ const actionSession = vi.hoisted(() => ({ actorId: "" }));
 vi.mock("@/lib/auth/session", () => ({ getSession: async () => ({ user: { id: actionSession.actorId } }) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 import { addLinkAction } from "@/app/actions/links";
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 describeDb("blocking dependencies across REST and MCP", () => {
   let f: ReadVisibilityFixture;
   let token: string; let readToken: string;

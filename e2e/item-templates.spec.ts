@@ -8,7 +8,7 @@ import { assignBacklogRoleActor, removeBacklogRoleActor } from "../lib/services/
 import { createLabel } from "../lib/services/labels";
 import { chooseOption } from "./select-helpers";
 
-const RUN_ID = process.env.JIROO_E2E_RUN_ID ?? String(Date.now());
+const RUN_ID = process.env.STUDIO_E2E_RUN_ID ?? String(Date.now());
 
 async function screenshots(page: Page, name: string, output: (name: string) => string) {
   for (const width of [1440, 390]) {

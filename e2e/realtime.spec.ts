@@ -10,7 +10,7 @@ import { keyPattern } from "./key-helpers";
 
 const TIMEOUT = 10_000;
 const BANNER = "Ce backlog a été modifié par quelqu'un d'autre.";
-const RUN = process.env.JIROO_E2E_RUN_ID;
+const RUN = process.env.STUDIO_E2E_RUN_ID;
 if (!RUN) throw new Error("Realtime E2E requires the isolated Playwright run id.");
 
 type Capture = {

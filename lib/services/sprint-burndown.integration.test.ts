@@ -30,7 +30,7 @@ import { withSprintHistoryCleanup } from "@/test-utils/sprint-history-cleanup";
 
 vi.mock("server-only", () => ({}));
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 const startedAt = new Date("2026-08-01T09:00:00.000Z");
 const targetEndAt = new Date("2026-08-31T09:00:00.000Z");
 const completionAt = new Date("2026-08-15T09:00:00.000Z");

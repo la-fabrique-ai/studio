@@ -10,7 +10,7 @@ import { createItem } from "../lib/services/items";
 import { writeAuditScreenshot, writeAuditText } from "./audit-artifacts";
 import { keyPattern } from "./key-helpers";
 
-const RUN = process.env.JIROO_E2E_RUN_ID;
+const RUN = process.env.STUDIO_E2E_RUN_ID;
 if (!RUN) throw new Error("Browsing users E2E requires an isolated run id.");
 const HINT = "Il vous manque la permission globale « Parcourir les utilisateurs ». Demandez-la à un administrateur du Studio.";
 const REMOVE = "Retirer Parcourir les utilisateurs pour Tous les utilisateurs authentifiés";

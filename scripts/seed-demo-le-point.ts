@@ -10,8 +10,8 @@ export class DemoSeedError extends Error {}
 
 /** Check the actual target before importing any database or auth service. */
 export function assertDemoSeedAllowed(env: Readonly<Record<string, string | undefined>>): void {
-  if (env.JIROO_ALLOW_DEMO_SEED !== "1") {
-    throw new DemoSeedError("Set JIROO_ALLOW_DEMO_SEED=1 to allow this local demo seed.");
+  if (env.STUDIO_ALLOW_DEMO_SEED !== "1") {
+    throw new DemoSeedError("Set STUDIO_ALLOW_DEMO_SEED=1 to allow this local demo seed.");
   }
   let url: URL;
   try { url = new URL(env.DATABASE_URL ?? ""); } catch {

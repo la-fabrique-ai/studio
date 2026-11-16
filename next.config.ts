@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  distDir: process.env.JIROO_E2E_ISOLATED === "1" ? ".next-e2e" : ".next",
+  distDir: process.env.STUDIO_E2E_ISOLATED === "1" ? ".next-e2e" : ".next",
   turbopack: {
     root: import.meta.dirname,
   },

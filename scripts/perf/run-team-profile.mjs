@@ -26,8 +26,8 @@ export function runConfig(input) {
   // Do not inherit database URLs, proxies, Node preload options or deployment settings.
   const env = Object.fromEntries(["PATH", "HOME", "TMPDIR", "LANG", "COREPACK_HOME", "PNPM_HOME"].filter((k) => process.env[k]).map((k) => [k, process.env[k]]));
   Object.assign(env, { PATH: `${dirname(process.execPath)}:${env.PATH}`, DATABASE_URL: ownerUrl, DIRECT_DATABASE_URL: ownerUrl,
-    BETTER_AUTH_URL: base, BETTER_AUTH_SECRET: hex(32), JIROO_PERF_PASSWORD: hex(), JIROO_ALLOW_TEAM_PROFILE_SEED: "1",
-    NEXT_TELEMETRY_DISABLED: "1", JIROO_E2E_ISOLATED: "0", POSTGRES_USER: "jiroo_owner", POSTGRES_PASSWORD: ownerPassword, POSTGRES_DB: database });
+    BETTER_AUTH_URL: base, BETTER_AUTH_SECRET: hex(32), STUDIO_PERF_PASSWORD: hex(), STUDIO_ALLOW_TEAM_PROFILE_SEED: "1",
+    NEXT_TELEMETRY_DISABLED: "1", STUDIO_E2E_ISOLATED: "0", POSTGRES_USER: "jiroo_owner", POSTGRES_PASSWORD: ownerPassword, POSTGRES_DB: database });
   return { database, container, base, port, durationMs: seconds * 1000, env, runtimePassword };
 }
 
@@ -82,7 +82,7 @@ async function main() {
     const seedLines = readFileSync(join(output, "seed.log"), "utf8").split("\n");
     const profile = JSON.parse(seedLines.findLast((line) => line.startsWith('{"people":')));
     sql(`create role studio_perf_runtime login password '${config.runtimePassword}'; alter role studio_perf_runtime set log_min_duration_statement=0; alter role studio_perf_runtime set log_parameter_max_length=0;`);
-    await command("corepack", ["pnpm", "db:grant-runtime"], "grant", { ...env, JIROO_RUNTIME_ROLE: "studio_perf_runtime" });
+    await command("corepack", ["pnpm", "db:grant-runtime"], "grant", { ...env, STUDIO_RUNTIME_ROLE: "studio_perf_runtime" });
     const runtimeEnv = { ...env, DATABASE_URL: `postgresql://studio_perf_runtime:${config.runtimePassword}@127.0.0.1:5434/${database}` };
     delete runtimeEnv.DIRECT_DATABASE_URL;
     step("Building the production standalone server");
@@ -118,8 +118,8 @@ async function main() {
         const response = await authRequest(`${base}/api/auth/${path}`, { method: input ? "POST" : "GET", headers: { ...headers(), "Content-Type": "application/json" }, body: input ? JSON.stringify(input) : undefined, redirect: "manual", signal: AbortSignal.timeout(120000) });
         cookies(response); if (!response.ok) throw new Error(`Auth ${path}: HTTP ${response.status}`); return response.json();
       };
-      await api("sign-in/email", { email: profile.people[i + 1].email, password: env.JIROO_PERF_PASSWORD });
-      const secret = new URL((await api("two-factor/enable", { password: env.JIROO_PERF_PASSWORD })).totpURI).searchParams.get("secret");
+      await api("sign-in/email", { email: profile.people[i + 1].email, password: env.STUDIO_PERF_PASSWORD });
+      const secret = new URL((await api("two-factor/enable", { password: env.STUDIO_PERF_PASSWORD })).totpURI).searchParams.get("secret");
       await api("two-factor/verify-totp", { code: totp(secret) });
       const session = await api("get-session");
       if (session?.user?.role !== "contributor" || session.user.twoFactorEnabled !== true) throw new Error("TOTP contributor session required");

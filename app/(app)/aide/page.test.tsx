@@ -365,10 +365,10 @@ describe("HelpPage", () => {
     expect(api).toHaveTextContent("Contributeur");
     expect(api).toHaveTextContent("gestionnaire de secrets");
     expect(api).toHaveTextContent("affiché qu’une seule fois");
-    expect(api).toHaveTextContent("Authorization: Bearer $JIROO_TOKEN");
+    expect(api).toHaveTextContent("Authorization: Bearer $STUDIO_TOKEN");
     expect(api).toHaveTextContent("/api/v1/me");
     expect(api).toHaveTextContent("claude mcp add --transport http");
-    expect(api).toHaveTextContent('bearer_token_env_var = "JIROO_TOKEN"');
+    expect(api).toHaveTextContent('bearer_token_env_var = "STUDIO_TOKEN"');
     expect(api).toHaveTextContent("/api/mcp");
     expect(api).toHaveTextContent("search_items");
     expect(section.getByRole("link", { name: /docs\/api-v1.md/ })).toHaveAttribute("href", "https://github.com/DVLPR-Consulting/jiroo/blob/main/docs/api-v1.md");

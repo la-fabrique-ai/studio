@@ -11,9 +11,9 @@ import { createItem } from "../lib/services/items";
 // in the item drawer's Développement panel.
 
 const ADMIN_EMAIL = "platform-admin@studio.local";
-const RUN_ID = process.env.JIROO_E2E_RUN_ID ?? String(Date.now());
+const RUN_ID = process.env.STUDIO_E2E_RUN_ID ?? String(Date.now());
 /** Optional directory for the review screenshots (outside the repository). */
-const SCREENSHOT_DIR = process.env.JIROO_E2E_SCREENSHOT_DIR;
+const SCREENSHOT_DIR = process.env.STUDIO_E2E_SCREENSHOT_DIR;
 
 async function screenshot(target: Page | Locator, name: string) {
   if (!SCREENSHOT_DIR) return;

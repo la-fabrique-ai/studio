@@ -56,7 +56,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # `test` is `vitest run`: unit and component tests only. DB-backed suites
-      # are skipped because JIROO_RUN_DB_TESTS is unset, and Playwright E2E
+      # are skipped because STUDIO_RUN_DB_TESTS is unset, and Playwright E2E
       # (e2e/**) is excluded in vitest.config.ts. No secrets are required.
       - run: pnpm run ${{ matrix.task }}
 

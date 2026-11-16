@@ -8,7 +8,7 @@ import { createItem } from "../lib/services/items";
 import { writeAuditScreenshot, writeAuditText } from "./audit-artifacts";
 import { keyPattern } from "./key-helpers";
 
-const RUN = process.env.JIROO_E2E_RUN_ID;
+const RUN = process.env.STUDIO_E2E_RUN_ID;
 if (!RUN) throw new Error("Roadmap E2E requires the isolated Playwright run id.");
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
