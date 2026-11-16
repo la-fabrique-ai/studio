@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
@@ -15,14 +14,12 @@ import {
   ListTree,
   Rows3,
   Settings,
-  SlidersHorizontal,
   SquareKanban,
   Tag,
   Trash2,
   User,
   type LucideIcon,
 } from "lucide-react";
-import { canOpenBacklogSettingsAction } from "@/app/actions/backlogs";
 import { Badge } from "@/components/ui/badge";
 import { BacklogSelector } from "@/components/shell/backlog-selector";
 import { NavLink } from "@/components/shell/nav-link";
@@ -123,38 +120,12 @@ export function Sidebar({
   const activeView = activeBacklog
     ? activeProjectView(pathname, new URLSearchParams(searchParams.toString()), activeBacklog.key)
     : null;
-  const settingsHref = activeBacklog
-    ? `/b/${encodeURIComponent(activeBacklog.key)}/settings`
-    : null;
-  const activeBacklogId = activeBacklog?.id;
-  // Asked for the active backlog only, again on each navigation (path or item
-  // view, since Board, Backlog, Liste and Arbre share `/b/<key>`) so a granted
-  // or revoked right shows up without a reload (JIR-122). The last answer for
-  // this backlog stays shown while the next one is pending or failed.
-  const [settingsAccess, setSettingsAccess] = useState<{ backlogId: string; allowed: boolean } | null>(null);
-  useEffect(() => {
-    if (!activeBacklogId) return;
-    let current = true;
-    canOpenBacklogSettingsAction(activeBacklogId).then(
-      (allowed) => {
-        if (current) setSettingsAccess({ backlogId: activeBacklogId, allowed });
-      },
-      () => undefined,
-    );
-    return () => {
-      current = false;
-    };
-  }, [activeBacklogId, pathname, activeView]);
   const specsHref = activeBacklog ? `/b/${encodeURIComponent(activeBacklog.key)}/specs` : null;
   const onSpecs = specsHref !== null
     && (pathname.toUpperCase() === specsHref.toUpperCase() || pathname.toUpperCase().startsWith(`${specsHref.toUpperCase()}/`));
   const activeSpecFolders = activeBacklog
     ? specFolders.filter((folder) => folder.backlogId === activeBacklog.id)
     : [];
-  const canOpenSettings =
-    activeBacklogId !== undefined &&
-    settingsAccess?.backlogId === activeBacklogId &&
-    settingsAccess.allowed;
 
   return (
     <div
@@ -271,21 +242,6 @@ export function Sidebar({
                 </NavLink>
               );
             })}
-            {/* Jira's « Project settings », for the backlog's administrators (JIR-122). */}
-            {canOpenSettings && settingsHref && (
-              <NavLink
-                href={`${settingsHref}/access`}
-                active={pathname.toUpperCase().startsWith(`${settingsHref.toUpperCase()}/`)}
-                ariaLabel={collapsed ? "Paramètres du backlog" : undefined}
-                collapsed={collapsed}
-                title={collapsed ? "Paramètres du backlog" : undefined}
-              >
-                <SlidersHorizontal className="size-4" aria-hidden="true" />
-                <span className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}>
-                  Paramètres
-                </span>
-              </NavLink>
-            )}
           </nav>
         )}
 

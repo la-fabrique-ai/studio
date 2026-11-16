@@ -11,12 +11,8 @@ const mocks = vi.hoisted(() => ({
   replace: vi.fn(),
   pathname: "/b/CASS",
   search: "view=board",
-  canOpenBacklogSettings: vi.fn<(backlogId: string) => Promise<boolean>>(async () => false),
 }));
 
-vi.mock("@/app/actions/backlogs", () => ({
-  canOpenBacklogSettingsAction: mocks.canOpenBacklogSettings,
-}));
 
 // The user card's password dialog imports a Server Action module.
 vi.mock("@/app/actions/account", () => ({ changeOwnPasswordAction: vi.fn() }));
@@ -83,8 +79,6 @@ describe("Sidebar", () => {
     mocks.replace.mockReset();
     mocks.pathname = "/b/CASS";
     mocks.search = "view=board";
-    mocks.canOpenBacklogSettings.mockReset();
-    mocks.canOpenBacklogSettings.mockResolvedValue(false);
   });
 
   afterEach(() => {
@@ -97,6 +91,7 @@ describe("Sidebar", () => {
       document.documentElement.dataset.sidebar = state;
       const { container } = renderSidebar();
       const sidebar = container.firstElementChild;
+
       const filters = screen.getByText("Filtres").parentElement;
 
       await waitFor(() => {
@@ -285,78 +280,10 @@ describe("Sidebar", () => {
     );
   });
 
-  it("links the active backlog's settings only for its administrators (JIR-122)", async () => {
-    const { unmount } = renderSidebar([["view", "board"]]);
-    await waitFor(() => expect(mocks.canOpenBacklogSettings).toHaveBeenCalledWith("backlog-1"));
-    expect(
-      within(screen.getByRole("navigation", { name: "Vues du projet" })).queryByRole("link", {
-        name: "Paramètres",
-      }),
-    ).not.toBeInTheDocument();
-    unmount();
-
-    mocks.canOpenBacklogSettings.mockResolvedValue(true);
+  it("leaves the backlog settings to Administration: no sidebar link", () => {
     mocks.pathname = "/b/CASS/settings/templates";
     renderSidebar([]);
-    const settings = await within(
-      screen.getByRole("navigation", { name: "Vues du projet" }),
-    ).findByRole("link", { name: "Paramètres" });
-    expect(settings).toHaveAttribute("href", "/b/CASS/settings/access");
-    expect(settings).toHaveAttribute("aria-current", "page");
-  });
-
-  it("re-checks the settings link on navigation, without remounting (JIR-122)", async () => {
-    mocks.canOpenBacklogSettings.mockResolvedValue(true);
-    const tree = () => (
-      <SidebarStateProvider>
-        <ViewUrlStateProvider initialEntries={[]}>
-          <Sidebar {...props} />
-        </ViewUrlStateProvider>
-      </SidebarStateProvider>
-    );
-    const { rerender } = render(tree());
-    const nav = screen.getByRole("navigation", { name: "Vues du projet" });
-    await within(nav).findByRole("link", { name: "Paramètres" });
-
-    // Revoked: the next page drops the link.
-    mocks.canOpenBacklogSettings.mockResolvedValue(false);
-    mocks.pathname = "/b/CASS/roadmap";
-    rerender(tree());
-    await waitFor(() =>
-      expect(within(nav).queryByRole("link", { name: "Paramètres" })).not.toBeInTheDocument(),
-    );
-
-    // A failed check keeps the last answer; the next navigation retries.
-    mocks.canOpenBacklogSettings.mockRejectedValue(new Error("network"));
-    mocks.pathname = "/b/CASS/releases";
-    rerender(tree());
-    await waitFor(() => expect(mocks.canOpenBacklogSettings).toHaveBeenCalledTimes(3));
-    expect(within(nav).queryByRole("link", { name: "Paramètres" })).not.toBeInTheDocument();
-
-    mocks.canOpenBacklogSettings.mockResolvedValue(true);
-    mocks.pathname = "/b/CASS/reports";
-    rerender(tree());
-    await within(nav).findByRole("link", { name: "Paramètres" });
-  });
-
-  it("re-checks the settings link when switching item views on the same path (JIR-122)", async () => {
-    mocks.canOpenBacklogSettings.mockResolvedValue(false);
-    const tree = () => (
-      <SidebarStateProvider>
-        <ViewUrlStateProvider initialEntries={[]}>
-          <Sidebar {...props} />
-        </ViewUrlStateProvider>
-      </SidebarStateProvider>
-    );
-    const { rerender } = render(tree());
-    await waitFor(() => expect(mocks.canOpenBacklogSettings).toHaveBeenCalledTimes(1));
-    const nav = screen.getByRole("navigation", { name: "Vues du projet" });
-
-    mocks.canOpenBacklogSettings.mockResolvedValue(true);
-    mocks.search = "view=list";
-    rerender(tree());
-    await within(nav).findByRole("link", { name: "Paramètres" });
-    expect(mocks.canOpenBacklogSettings).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("link", { name: "Paramètres" })).not.toBeInTheDocument();
   });
 
   it("follows the backlog of an access page, not the first backlog (JIR-85)", () => {
