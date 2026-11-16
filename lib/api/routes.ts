@@ -1,11 +1,41 @@
+import { createExternalItemUseCase } from "@/lib/use-cases/item-creation";
+import { restIdempotencyKey } from "@/lib/items/creation-request";
 import { withApiAuth } from "@/lib/api/handler";
 import { jsonOk, parseJson } from "@/lib/api/http";
-import { commentRestInput, createRestItemInput, parseSearchParams, updateRestItemInput } from "@/lib/api/schemas";
-import { BACKLOG_KEY, ITEM_KEY } from "@/lib/mcp/schemas";
+import { commentRestInput, createRestItemInput, createRestLabelInput, parseSearchParams, updateRestItemInput } from "@/lib/api/schemas";
+import { BACKLOG_KEY, ITEM_KEY, itemLabelInput, addDependencyInput, dependencyBodyInput, removeDependencyInput } from "@/lib/mcp/schemas";
 import { getApiComment, getApiItemDetail, getApiItemSummary, getApiMe, listApiBacklogs, listApiStatuses, resolveApiBacklog, resolveApiItem } from "@/lib/services/api-read";
 import { searchItemsForActor } from "@/lib/services/item-search";
 import { addCommentUseCase } from "@/lib/use-cases/comments";
-import { createItemUseCase, updateItemUseCase } from "@/lib/use-cases/items";
+import { updateItemUseCase } from "@/lib/use-cases/items";
+import { addItemLabelUseCase, createLabelUseCase, listLabelsUseCase, removeItemLabelUseCase } from "@/lib/use-cases/labels";
+
+import { listDependenciesUseCase, addDependencyUseCase, removeDependencyUseCase } from "@/lib/use-cases/links";
+
+export const getLabels = withApiAuth<{ key: string }>("read", async (_request, actor, params) => {
+  const backlog = await resolveApiBacklog(actor.actorId, BACKLOG_KEY.parse(params.key));
+  return jsonOk({ labels: await listLabelsUseCase(actor, backlog.backlogId) });
+});
+export const postLabel = withApiAuth<{ key: string }>("write", async (request, actor, params) => {
+  const key = BACKLOG_KEY.parse(params.key);
+  const input = await parseJson(request, createRestLabelInput);
+  const backlog = await resolveApiBacklog(actor.actorId, key);
+  const result = await createLabelUseCase(actor, { ...input, backlogId: backlog.backlogId });
+  return jsonOk(result, result.created ? 201 : 200);
+});
+type ItemLabelParams = { key: string; labelId: string };
+export const putItemLabel = withApiAuth<ItemLabelParams>("write", async (_request, actor, params) => {
+  const { key, labelId } = itemLabelInput.parse(params);
+  const item = await resolveApiItem(actor.actorId, key);
+  await addItemLabelUseCase(actor, { itemId: item.id, labelId });
+  return new Response(null, { status: 204, headers: { "Cache-Control": "private, no-store" } });
+});
+export const deleteItemLabel = withApiAuth<ItemLabelParams>("write", async (_request, actor, params) => {
+  const { key, labelId } = itemLabelInput.parse(params);
+  const item = await resolveApiItem(actor.actorId, key);
+  await removeItemLabelUseCase(actor, { itemId: item.id, labelId });
+  return new Response(null, { status: 204, headers: { "Cache-Control": "private, no-store" } });
+});
 
 export const getMe = withApiAuth("read", async (_request, actor) => jsonOk(await getApiMe(actor.actorId, actor.tokenId!)));
 export const getBacklogs = withApiAuth("read", async (_request, actor) => jsonOk({ backlogs: await listApiBacklogs(actor.actorId) }));
@@ -34,11 +64,11 @@ export const getMyItems = withApiAuth("read", async (request, actor) => {
   return jsonOk({ items, nextCursor: cursor });
 });
 export const postItem = withApiAuth("write", async (request, actor) => {
-  const { backlogKey, parentKey, ...input } = await parseJson(request, createRestItemInput);
-  const backlog = await resolveApiBacklog(actor.actorId, backlogKey);
-  const parent = parentKey ? await resolveApiItem(actor.actorId, parentKey) : null;
-  const result = await createItemUseCase(actor, { ...input, backlogId: backlog.backlogId, parentId: parent?.id ?? null });
-  return jsonOk({ item: await getApiItemSummary(actor.actorId, result.item.key) }, 201);
+  const { backlogKey, ...fields } = await parseJson(request, createRestItemInput);
+  const idempotencyKey = restIdempotencyKey(request.headers.get("Idempotency-Key"), fields.idempotencyKey);
+  const input = { ...fields, backlog: backlogKey, ...(idempotencyKey === undefined ? {} : { idempotencyKey }) };
+  const result = await createExternalItemUseCase(actor, input);
+  return jsonOk({ item: await getApiItemSummary(actor.actorId, result.item.key), replayed: result.replayed }, result.replayed ? 200 : 201);
 });
 export const patchItem = withApiAuth<{ key: string }>("write", async (request, actor, params) => {
   const key = ITEM_KEY.parse(params.key);
@@ -53,4 +83,22 @@ export const postComment = withApiAuth<{ key: string }>("write", async (request,
   const item = await resolveApiItem(actor.actorId, key);
   const { comment } = await addCommentUseCase(actor, { ...input, itemId: item.id });
   return jsonOk({ comment: await getApiComment(actor.actorId, key, comment.id) }, 201);
+});
+
+export const getDependencies = withApiAuth<{ key: string }>("read", async (_request, actor, params) => {
+  const item = await resolveApiItem(actor.actorId, ITEM_KEY.parse(params.key));
+  return jsonOk({ dependencies: await listDependenciesUseCase(actor, item.id) });
+});
+export const postDependency = withApiAuth<{ key: string }>("write", async (request, actor, params) => {
+  const body = await parseJson(request, dependencyBodyInput);
+  const { key, otherKey, direction } = addDependencyInput.parse({ key: params.key, ...body });
+  const item = await resolveApiItem(actor.actorId, key);
+  const other = await resolveApiItem(actor.actorId, otherKey);
+  return jsonOk(await addDependencyUseCase(actor, { itemId: item.id, otherId: other.id, direction }), 201);
+});
+export const deleteDependency = withApiAuth<{ key: string; id: string }>("write", async (_request, actor, params) => {
+  const { key, id } = removeDependencyInput.parse(params);
+  const item = await resolveApiItem(actor.actorId, key);
+  await removeDependencyUseCase(actor, { itemId: item.id, id });
+  return new Response(null, { status: 204, headers: { "Cache-Control": "private, no-store" } });
 });

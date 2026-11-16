@@ -197,6 +197,20 @@
       "when": 1794518596286,
       "tag": "0027_api_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1794823911449,
+      "tag": "0028_label_name_uniqueness",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794830572994,
+      "tag": "0029_last_lilandra",
+      "breakpoints": true
     }
   ]
 }

@@ -8,6 +8,8 @@ import { ZodError } from "zod";
  */
 export const DOMAIN_ERROR_MESSAGES = [
   // Items
+  "Cette clé de création a déjà été utilisée avec un contenu différent.",
+  "L’item créé avec cette clé a été supprimé. Utilisez une nouvelle clé pour une nouvelle création.",
   "Aucun statut par défaut pour ce backlog.",
   "Backlog introuvable.",
   "Cycle : le nouveau parent est dans le sous-arbre déplacé.",
@@ -39,6 +41,9 @@ export const DOMAIN_ERROR_MESSAGES = [
   "Un ou plusieurs items sont introuvables.",
   "Une ou plusieurs releases sont invalides pour ce backlog.",
   "Une release archivée ne peut pas être ajoutée.",
+  // Links
+  "Ce lien existe déjà.",
+  "Impossible d'ajouter ce lien : il créerait un cycle de blocage.",
   // Comments
   "Action réservée à l'auteur du commentaire.",
   "Commentaire introuvable.",

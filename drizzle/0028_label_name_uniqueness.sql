@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "labels_backlog_name_idx" ON "labels" USING btree ("backlog_id",lower("name"));

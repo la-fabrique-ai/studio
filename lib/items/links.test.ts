@@ -6,7 +6,6 @@ import {
   directionFor,
   groupLinksForDisplay,
   addLinkInput,
-  wouldCreateDirectCycle,
   isDuplicateLink,
 } from "./links";
 
@@ -268,44 +267,6 @@ describe("addLinkInput", () => {
     expect(addLinkInput.safeParse({ sourceId: UUID_A, targetId: UUID_B }).success).toBe(false);
     expect(addLinkInput.safeParse({ sourceId: UUID_A, type: "blocks" }).success).toBe(false);
     expect(addLinkInput.safeParse({ targetId: UUID_B, type: "blocks" }).success).toBe(false);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// wouldCreateDirectCycle
-// ---------------------------------------------------------------------------
-
-describe("wouldCreateDirectCycle", () => {
-  it("returns true when a reverse blocks link exists (2-cycle)", () => {
-    const existing = [makeLink("1", UUID_B, UUID_A, "blocks")];
-    // Adding A blocks B when B already blocks A → cycle
-    expect(wouldCreateDirectCycle(existing, UUID_A, UUID_B)).toBe(true);
-  });
-
-  it("returns false when no reverse blocks link exists", () => {
-    const existing = [makeLink("1", UUID_A, UUID_C, "blocks")];
-    expect(wouldCreateDirectCycle(existing, UUID_A, UUID_B)).toBe(false);
-  });
-
-  it("returns false for an empty existing list", () => {
-    expect(wouldCreateDirectCycle([], UUID_A, UUID_B)).toBe(false);
-  });
-
-  it("ignores relates links (not cycle-checked)", () => {
-    // B relates A — this should NOT be considered a cycle for blocks
-    const existing = [makeLink("2", UUID_B, UUID_A, "relates")];
-    expect(wouldCreateDirectCycle(existing, UUID_A, UUID_B)).toBe(false);
-  });
-
-  it("ignores duplicates links (not cycle-checked)", () => {
-    const existing = [makeLink("3", UUID_B, UUID_A, "duplicates")];
-    expect(wouldCreateDirectCycle(existing, UUID_A, UUID_B)).toBe(false);
-  });
-
-  it("returns false for same-direction blocks (not a 2-cycle)", () => {
-    // A already blocks B — adding A blocks B again is a dup, not a cycle
-    const existing = [makeLink("4", UUID_A, UUID_B, "blocks")];
-    expect(wouldCreateDirectCycle(existing, UUID_A, UUID_B)).toBe(false);
   });
 });
 

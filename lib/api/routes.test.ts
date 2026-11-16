@@ -6,6 +6,7 @@ vi.mock("@/lib/api/rate-limit", () => ({ reserveApiRequest: m.budget }));
 vi.mock("@/lib/services/api-tokens", () => ({ scopeAllows: (g: string, r: string) => g === "write" || r === "read" }));
 vi.mock("@/lib/services/api-read", () => ({ getApiMe: m.me, listApiBacklogs: m.backlogs, listApiStatuses: m.statuses, getApiItemSummary: m.summary, getApiItemDetail: m.detail, resolveApiItem: m.resolve, resolveApiBacklog: m.backlog, getApiComment: m.commentDto }));
 vi.mock("@/lib/services/item-search", () => ({ searchItemsForActor: m.search }));
+vi.mock("@/lib/use-cases/item-creation", () => ({ createExternalItemUseCase: m.create }));
 vi.mock("@/lib/use-cases/items", () => ({ createItemUseCase: m.create, updateItemUseCase: m.update }));
 vi.mock("@/lib/use-cases/comments", () => ({ addCommentUseCase: m.comment }));
 import { GET as list, POST as create, DELETE as unsupported } from "@/app/api/v1/items/route";
@@ -27,7 +28,7 @@ describe("REST v1 routes", () => {
   m.budget.mockResolvedValue({ allowed: true });
   m.summary.mockResolvedValue(item); m.detail.mockResolvedValue({ ...item, description: "text" });
   m.resolve.mockResolvedValue({ id: "i", backlogId: "b" }); m.backlog.mockResolvedValue({ backlogId: "b" });
-  m.create.mockResolvedValue({ item: { id: "i", key: "TEST-1" } }); m.update.mockResolvedValue({ item: { id: "i", key: "TEST-1" } });
+  m.create.mockResolvedValue({ item: { id: "i", key: "TEST-1" }, replayed: false }); m.update.mockResolvedValue({ item: { id: "i", key: "TEST-1" } });
  });
  it("lists with cumulative filters and the unchanged opaque cursor", async () => {
   m.search.mockResolvedValue({ items: [item], nextCursor: "opaque" });
@@ -47,15 +48,15 @@ describe("REST v1 routes", () => {
  });
  it("creates through the use case and returns an explicit summary", async () => {
   const r = await create(req({ backlogKey: "test", type: "tache", title: "Title", parentKey: "TEST-2", labelIds: [uuid] }, "POST"));
-  expect(r.status).toBe(201); expect(await r.json()).toEqual({ item });
-  expect(m.create).toHaveBeenCalledWith(actor, { backlogId: "b", parentId: "i", type: "tache", title: "Title", labelIds: [uuid] });
+  expect(r.status).toBe(201); expect(await r.json()).toEqual({ item, replayed: false });
+  expect(m.create).toHaveBeenCalledWith(actor, { backlog: "TEST", parentKey: "TEST-2", type: "tache", title: "Title", labelIds: [uuid] });
  });
  it("transitions through the use case with token provenance", async () => {
   const r = await patch(req({ statusId: uuid }, "PATCH"), context);
   expect(r.status).toBe(200); expect(await r.json()).toEqual({ item });
   expect(m.update).toHaveBeenCalledWith(actor, { id: "i", statusId: uuid });
  });
- it.each([{}, { reporterId: "u" }, { title: "x", labelIds: [] }])("rejects empty or non-whitelisted patches %s", async (body) => { expect((await patch(req(body, "PATCH"), context)).status).toBe(400); expect(m.update).not.toHaveBeenCalled(); });
+ it.each([{}, { reporterId: "u" }, { title: "x", fixVersionIds: [] }])("rejects empty or non-whitelisted patches %s", async (body) => { expect((await patch(req(body, "PATCH"), context)).status).toBe(400); expect(m.update).not.toHaveBeenCalled(); });
  it("rejects malformed JSON", async () => {
   const r = await patch(new Request("http://localhost", { method: "PATCH", body: "{" }), context); expect(r.status).toBe(400);
  });
@@ -102,3 +103,15 @@ describe("REST v1 routes", () => {
  });
  it("uses a problem response with Allow for unsupported methods", async () => { const r = await unsupported(); expect(r.status).toBe(405); expect(r.headers.get("allow")).toContain("POST"); expect(r.headers.get("cache-control")).toBe("private, no-store"); });
 });
+
+ it("REST forwards the agreed opaque key, returns replay status, and rejects contradictions before mutation", async () => {
+  m.auth.mockResolvedValue({ ok: true, principal: { actorId: "u", tokenId: "t", scope: "write" } }); m.budget.mockResolvedValue({ allowed: true });
+  m.summary.mockResolvedValue(item); m.create.mockResolvedValue({ item: { key: "TEST-1" }, replayed: true });
+  m.create.mockClear();
+  const body = { backlogKey: "test", type: "composant", title: "Title", idempotencyKey: "Key" };
+  const request = (key: string) => new Request("http://localhost/api/v1/items", { method: "POST", headers: { "Idempotency-Key": key }, body: JSON.stringify(body) });
+  const replay = await create(request("Key")); expect(replay.status).toBe(200); expect(await replay.json()).toEqual({ item, replayed: true });
+  expect(m.create).toHaveBeenLastCalledWith(actor, { backlog: "TEST", type: "composant", title: "Title", idempotencyKey: "Key" });
+  const calls = m.create.mock.calls.length;
+  expect((await create(request("key"))).status).toBe(400); expect(m.create).toHaveBeenCalledTimes(calls);
+ });

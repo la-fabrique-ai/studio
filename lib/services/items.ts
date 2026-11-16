@@ -1,11 +1,12 @@
 import { currentActorContext } from "@/lib/auth/actor-context";
+import { ResourceNotFoundError } from "@/lib/auth/authorization";
 import { and, asc, desc, eq, exists, getTableColumns, inArray, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { randomUUID } from "node:crypto";
 import { browseAccessPredicate } from "@/lib/auth/accessible-backlogs";
 import { db } from "@/lib/db";
 import { binaryTextOrder } from "@/lib/db/order";
-import { activities, backlogs, itemFixVersions, itemLabels, items, labels, statuses } from "@/lib/db/schema/domain";
+import { activities, backlogs, itemFixVersions, itemLabels, itemCreationRequests, items, labels, statuses } from "@/lib/db/schema/domain";
 import { user } from "@/lib/db/schema/auth";
 import { nextItemKey } from "@/lib/items/key";
 import { canRestore } from "@/lib/items/trash";
@@ -203,7 +204,7 @@ export function listLabelsForBacklog(backlogId: string) {
     .select()
     .from(labels)
     .where(or(eq(labels.backlogId, backlogId), isNull(labels.backlogId)))
-    .orderBy(asc(labels.name));
+    .orderBy(asc(labels.name), asc(labels.id));
 }
 
 export async function getItemLabelIds(itemId: string): Promise<string[]> {
@@ -524,16 +525,82 @@ export async function createItem(
   actorId: string,
   requestCorrelationId: string = randomUUID(),
 ) {
+  const result = await createItemTransaction(input, actorId, requestCorrelationId);
+  return result.item;
+}
+
+type CreationRequest = { backlogId: string; key?: string; requestHash: string };
+type StoredItem = typeof items.$inferSelect;
+
+/**
+ * A locked replay probe skips obsolete creation references. Authorization and
+ * preparation use the pool (including FK-backed administrator audit writes),
+ * so they must run outside a locked transaction. The creation transaction
+ * checks again after its backlog lock: a concurrent winner is replayed there.
+ */
+export async function createItemWithRequest(
+  request: CreationRequest,
+  actorId: string,
+  prepare: () => Promise<unknown>,
+  authorizeReplay: (item: StoredItem) => Promise<void>,
+) {
+  const previous = request.key === undefined ? null : await withRetry(() => db.transaction(async (tx) => {
+    const [backlog] = await tx.select({ id: backlogs.id }).from(backlogs)
+      .where(eq(backlogs.id, request.backlogId)).for("update");
+    if (!backlog) throw new Error("Backlog introuvable.");
+    return findCreationReplayInTx(tx, request, actorId);
+  }));
+  const result = previous
+    ? { item: previous, replayed: true }
+    : await createItemTransaction(await prepare(), actorId, randomUUID(), request);
+  if (result.replayed) await authorizeReplay(result.item);
+  return result;
+}
+
+async function findCreationReplayInTx(tx: Tx, request: CreationRequest, actorId: string): Promise<StoredItem | null> {
+  if (request.key === undefined) return null;
+  const [previous] = await tx.select().from(itemCreationRequests).where(and(
+    eq(itemCreationRequests.actorId, actorId),
+    eq(itemCreationRequests.backlogId, request.backlogId),
+    eq(itemCreationRequests.key, request.key),
+  ));
+  if (!previous) return null;
+  if (previous.requestHash !== request.requestHash) {
+    throw new Error("Cette clé de création a déjà été utilisée avec un contenu différent.");
+  }
+  const [current] = previous.itemId ? await tx.select().from(items).where(and(
+    eq(items.id, previous.itemId), eq(items.backlogId, request.backlogId),
+  )).for("update") : [];
+  if (!current || current.deletedAt) {
+    throw new Error("L’item créé avec cette clé a été supprimé. Utilisez une nouvelle clé pour une nouvelle création.");
+  }
+  return current;
+}
+
+async function createItemTransaction(
+  input: unknown,
+  actorId: string,
+  requestCorrelationId: string,
+  request?: CreationRequest,
+) {
+  // Existing callers keep their validation timing and item-only return shape.
   const data = createItemSchema.parse(input);
+  const backlogId = request?.backlogId ?? data.backlogId;
   const correlationId = normalizeRequestCorrelationId(requestCorrelationId);
   return withRetry(() =>
     db.transaction(async (tx) => {
       const [backlog] = await tx
         .select({ id: backlogs.id, key: backlogs.key })
         .from(backlogs)
-        .where(eq(backlogs.id, data.backlogId))
+        .where(eq(backlogs.id, backlogId))
         .for("update");
       if (!backlog) throw new Error("Backlog introuvable.");
+
+      // The request is always checked AFTER the lock, including after the
+      // probe above. Item, activity and reservation commit or roll back together.
+      const previous = request ? await findCreationReplayInTx(tx, request, actorId) : null;
+      if (previous) return { item: previous, replayed: true };
+      if (data.backlogId !== backlogId) throw new Error("Inconsistent creation backlog");
 
       let parentPath: string | null = null;
       let parentDepth: number | null = null;
@@ -634,7 +701,7 @@ export async function createItem(
             ),
           );
         if (valid.length !== data.labelIds.length) {
-          throw new Error("Un ou plusieurs labels n'appartiennent pas à ce backlog.");
+          throw new ResourceNotFoundError("label", "initial-labels");
         }
         await tx.insert(itemLabels).values(data.labelIds.map((labelId) => ({ itemId: id, labelId })));
       }
@@ -660,7 +727,13 @@ export async function createItem(
         );
       }
 
-      return item!;
+      if (request?.key !== undefined) {
+        await tx.insert(itemCreationRequests).values({
+          actorId, backlogId, key: request.key, requestHash: request.requestHash,
+          itemId: item!.id, itemKey: item!.key,
+        });
+      }
+      return { item: item!, replayed: false };
     }),
   );
 }
@@ -792,7 +865,7 @@ export async function updateItem(
             ),
           );
         if (valid.length !== data.labelIds.length) {
-          throw new Error("Un ou plusieurs labels n'appartiennent pas à ce backlog.");
+          throw new ResourceNotFoundError("label", "replacement-labels");
         }
       }
       const current = await tx

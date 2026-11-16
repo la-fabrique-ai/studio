@@ -1,14 +1,13 @@
-import { addCommentInput, createItemInput, searchItemsInput, transitionItemInput, updateItemInput } from "@/lib/mcp/schemas";
-import { createItemSchema } from "@/lib/validation/item";
+import { addCommentInput, createItemInput, createLabelInput, searchItemsInput, transitionItemInput, updateItemInput } from "@/lib/mcp/schemas";
 
 export const createRestItemInput = createItemInput.omit({ backlog: true }).extend({
   backlogKey: createItemInput.shape.backlog,
-  labelIds: createItemSchema.shape.labelIds,
 }).strict();
 export const updateRestItemInput = updateItemInput.omit({ key: true }).extend({
   statusId: transitionItemInput.shape.statusId.optional(),
 }).strict().refine((input) => Object.keys(input).length > 0, "Indiquez au moins un champ à modifier.");
 export const commentRestInput = addCommentInput.omit({ key: true }).strict();
+export const createRestLabelInput = createLabelInput.omit({ backlog: true });
 export function parseSearchParams(url: string) {
   const params = new URL(url).searchParams;
   return searchItemsInput.parse({

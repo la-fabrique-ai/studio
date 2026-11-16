@@ -1,3 +1,4 @@
+import { createExternalItemUseCase } from "@/lib/use-cases/item-creation";
 import "server-only";
 import { ZodError, type z } from "zod";
 import { isoDate, toBacklogSummary, type ItemSummary } from "@/lib/api/dto";
@@ -6,21 +7,29 @@ import { withRequestCache } from "@/lib/auth/request-cache";
 import { requireBacklogPermissionByKey } from "@/lib/auth/action-authorization";
 import { getBacklogByKeyForUser, listBacklogsForUser } from "@/lib/services/backlogs";
 import { scopeAllows, type ApiPrincipal } from "@/lib/services/api-tokens";
-import { listComments } from "@/lib/services/comments";
+import { getApiItemDetail } from "@/lib/services/api-read";
 import { findItemSummaryByKey, InvalidCursorError, searchItemsForActor } from "@/lib/services/item-search";
-import { getItemByKeyForBacklog, listActivities, listUsersByIds } from "@/lib/services/items";
+import { getItemByKeyForBacklog } from "@/lib/services/items";
 import { listStatusesForBacklog } from "@/lib/services/statuses";
 import { addCommentUseCase } from "@/lib/use-cases/comments";
 import { describeDomainError } from "@/lib/use-cases/errors";
-import { createItemUseCase, updateItemUseCase } from "@/lib/use-cases/items";
+import { updateItemUseCase } from "@/lib/use-cases/items";
+import { addItemLabelUseCase, createLabelUseCase, listLabelsUseCase, removeItemLabelUseCase } from "@/lib/use-cases/labels";
+import { listDependenciesUseCase, addDependencyUseCase, removeDependencyUseCase } from "@/lib/use-cases/links";
 import type { ApiTokenScope } from "@/lib/validation/api-token";
 import {
   addCommentInput,
+  listDependenciesInput,
+  addDependencyInput,
+  removeDependencyInput,
   createItemInput,
+  createLabelInput,
   getItemInput,
   listBacklogsInput,
   listMyItemsInput,
   listStatusesInput,
+  listLabelsInput,
+  itemLabelInput,
   searchItemsInput,
   transitionItemInput,
   updateItemInput,
@@ -151,40 +160,18 @@ export const JIROO_TOOLS = [
   define({
     name: "get_item",
     title: "Get item",
-    description: "One item by key, with its description, comments and activity history." + UNTRUSTED_CONTENT_NOTE,
+    description: "One item by key, with its description, children, labels, dependencies, comments and activity history." + UNTRUSTED_CONTENT_NOTE,
     inputSchema: getItemInput,
     scope: "read",
     async handler({ key }, actor) {
-      const { backlog, item } = await resolveItem(actor.actorId, key);
-      const [summary, comments, activities] = await Promise.all([
-        summaryOf(actor.actorId, key),
-        listComments(item.id),
-        listActivities(item.id),
-      ]);
-      const actorIds = [...new Set(activities.map((a) => a.actorId))];
-      const names = new Map((await listUsersByIds(actorIds)).map((u) => [u.id, u.name]));
+      const item = await getApiItemDetail(actor.actorId, key);
       return {
         item: {
-          ...summary,
-          description: item.description,
-          url: `/b/${backlog.key}?item=${item.key}`,
-          comments: comments.map((c) => ({
-            id: c.id,
-            author: { id: c.authorId, name: c.authorName },
-            body: c.body,
-            createdAt: isoDate(c.createdAt),
-            editedAt: isoDate(c.editedAt),
-            deleted: c.deleted,
-          })),
-          activities: activities.map((a) => ({
-            id: a.id,
-            actor: { id: a.actorId, name: names.get(a.actorId) ?? a.actorId },
-            action: a.action,
-            field: a.field,
-            oldValue: a.oldValue,
-            newValue: a.newValue,
-            source: a.source,
-            at: isoDate(a.at),
+          ...item,
+          comments: item.comments.map((comment) => ({
+            ...comment,
+            editedAt: comment.updatedAt,
+            deleted: comment.deletedAt !== null,
           })),
         },
       };
@@ -208,18 +195,8 @@ export const JIROO_TOOLS = [
     inputSchema: createItemInput,
     scope: "write",
     async handler(input, actor) {
-      const backlog = await resolveBacklog(actor.actorId, input.backlog);
-      let parentId: string | null = null;
-      if (input.parentKey) {
-        const parent = await getItemByKeyForBacklog(input.parentKey, backlog.id);
-        if (!parent) throw new ToolRefusal(`Parent ${input.parentKey} : ${NOT_FOUND.toLowerCase()}`);
-        parentId = parent.id;
-      }
-      const { backlog: _backlogKey, parentKey: _parentKey, ...fields } = input;
-      void _backlogKey;
-      void _parentKey;
-      const { item } = await createItemUseCase(actor, { ...presentFields(fields), backlogId: backlog.id, parentId, type: input.type, title: input.title });
-      return { item: (await summaryOf(actor.actorId, item.key)) ?? { id: item.id, key: item.key } };
+      const { item, replayed } = await createExternalItemUseCase(actor, input);
+      return { item: (await summaryOf(actor.actorId, item.key)) ?? { id: item.id, key: item.key }, replayed };
     },
   }),
   define({
@@ -262,6 +239,84 @@ export const JIROO_TOOLS = [
       return {
         comment: { id: comment.id, itemKey: key, body: comment.body, createdAt: isoDate(comment.createdAt) },
       };
+    },
+  }),
+  define({
+    name: "list_labels",
+    title: "List labels",
+    description: "The local and global labels available in a backlog, with their id, name and colour.",
+    inputSchema: listLabelsInput,
+    scope: "read",
+    async handler({ backlog: key }, actor) {
+      const backlog = await resolveBacklog(actor.actorId, key);
+      return { labels: await listLabelsUseCase(actor, backlog.id) };
+    },
+  }),
+  define({
+    name: "create_label",
+    title: "Create label",
+    description: "Create a local label, or reuse a global or local label of the same name (case insensitive). Needs write scope and edit_items.",
+    inputSchema: createLabelInput,
+    scope: "write",
+    async handler({ backlog: key, name }, actor) {
+      const backlog = await resolveBacklog(actor.actorId, key);
+      return createLabelUseCase(actor, { backlogId: backlog.id, name });
+    },
+  }),
+  define({
+    name: "add_item_label",
+    title: "Add item label",
+    description: "Add an available label to an item. Repeating the operation has no further effect; returns changed. Needs write scope and edit_items.",
+    inputSchema: itemLabelInput,
+    scope: "write",
+    async handler({ key, labelId }, actor) {
+      const { item } = await resolveItem(actor.actorId, key);
+      return addItemLabelUseCase(actor, { itemId: item.id, labelId });
+    },
+  }),
+  define({
+    name: "remove_item_label",
+    title: "Remove item label",
+    description: "Remove an available label from an item. An absent label is a no-op; returns changed. Needs write scope and edit_items.",
+    inputSchema: itemLabelInput,
+    scope: "write",
+    async handler({ key, labelId }, actor) {
+      const { item } = await resolveItem(actor.actorId, key);
+      return removeItemLabelUseCase(actor, { itemId: item.id, labelId });
+    },
+  }),
+  define({
+    name: "list_dependencies",
+    title: "List dependencies",
+    description: "Blocking dependencies of an item, with direction relative to that item and the other item's current status." + UNTRUSTED_CONTENT_NOTE,
+    inputSchema: listDependenciesInput,
+    scope: "read",
+    async handler({ key }, actor) {
+      const { item } = await resolveItem(actor.actorId, key);
+      return { dependencies: await listDependenciesUseCase(actor, item.id) };
+    },
+  }),
+  define({
+    name: "add_dependency",
+    title: "Add dependency",
+    description: "Add a blocking dependency. Direction is relative to key: blocks or blocked_by otherKey. Both items must be in one backlog. Cycles and duplicates are refused. Needs write scope and link_items on both items.",
+    inputSchema: addDependencyInput,
+    scope: "write",
+    async handler({ key, otherKey, direction }, actor) {
+      const { item } = await resolveItem(actor.actorId, key);
+      const { item: other } = await resolveItem(actor.actorId, otherKey);
+      return addDependencyUseCase(actor, { itemId: item.id, otherId: other.id, direction });
+    },
+  }),
+  define({
+    name: "remove_dependency",
+    title: "Remove dependency",
+    description: "Remove a blocking dependency by id, attached to key. Other link types and missing dependencies are refused. Needs write scope and link_items on both items.",
+    inputSchema: removeDependencyInput,
+    scope: "write",
+    async handler({ key, id }, actor) {
+      const { item } = await resolveItem(actor.actorId, key);
+      return removeDependencyUseCase(actor, { itemId: item.id, id });
     },
   }),
 ] as const satisfies readonly ToolDefinition[];

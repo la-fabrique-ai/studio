@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { AssigneeField, DueDateField, EstimateField, ReporterField, StartDateField } from "@/components/items/detail/field-editors";
+import { AssigneeField, LabelsField, DueDateField, EstimateField, ReporterField, StartDateField } from "@/components/items/detail/field-editors";
 
 const mocks = vi.hoisted(() => ({
   refresh: vi.fn(),
@@ -205,5 +205,18 @@ describe("AssigneeField directory access", () => {
     const hint = screen.queryByText(/Il vous manque la permission globale/);
     if (canBrowseUsers) expect(hint).not.toBeInTheDocument();
     else expect(hint).toBeVisible();
+  });
+});
+describe("LabelsField", () => {
+  beforeEach(() => { vi.resetAllMocks(); });
+  it("shows the label not-found message and rolls back a refused selection", async () => {
+    const user = userEvent.setup();
+    mocks.updateItemAction.mockResolvedValueOnce({ ok: false, error: "Un label sélectionné est introuvable pour ce backlog." });
+    render(<LabelsField itemId="item-1" backlogKey="DEMO" backlogId="b" itemLabelIds={[]} backlogLabels={[{ id: "label-1", name: "Urgent", color: "--label-1" }]} />);
+    const trigger = screen.getByRole("button", { name: "Labels" });
+    await user.click(trigger);
+    await user.click(screen.getByRole("menuitemcheckbox", { name: "Urgent" }));
+    expect(await screen.findByText("Un label sélectionné est introuvable pour ce backlog.")).toBeVisible();
+    expect(trigger).toHaveTextContent("Aucun label");
   });
 });

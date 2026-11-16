@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { ITEM_DESCRIPTION_MAX, ITEM_TITLE_MAX } from "@/lib/validation/item";
+import { idempotencyKeySchema } from "@/lib/items/creation-request";
+import { ITEM_DESCRIPTION_MAX, ITEM_TITLE_MAX, labelIdsSchema } from "@/lib/validation/item";
 
 /**
  * Input schemas of the Jiroo MCP tools (JIR-158). Descriptions are read by
@@ -36,6 +37,16 @@ export const listStatusesInput = z.object({
   backlog: BACKLOG_KEY,
 });
 
+export const listLabelsInput = z.object({ backlog: BACKLOG_KEY }).strict();
+export const createLabelInput = z.object({
+  backlog: BACKLOG_KEY,
+  name: z.string().trim().min(1).max(50),
+}).strict();
+export const itemLabelInput = z.object({
+  key: ITEM_KEY,
+  labelId: uuid.transform((id) => id.toLowerCase()),
+}).strict();
+
 export const searchItemsInput = z.object({
   backlog: BACKLOG_KEY.optional().describe("Limit to one backlog; otherwise every backlog you can read."),
   query: z.string().trim().max(200).optional().describe("Free text, matched on the key and the title."),
@@ -53,12 +64,22 @@ export const getItemInput = z.object({
   key: ITEM_KEY,
 });
 
+export const listDependenciesInput = getItemInput.strict();
+export const dependencyBodyInput = z.object({
+  otherKey: ITEM_KEY,
+  direction: z.enum(["blocks", "blocked_by"]),
+}).strict();
+export const addDependencyInput = z.object({ key: ITEM_KEY, ...dependencyBodyInput.shape }).strict()
+  .refine((input) => input.key !== input.otherKey, { message: "Un item ne peut pas être lié à lui-même.", path: ["otherKey"] });
+export const removeDependencyInput = z.object({ key: ITEM_KEY, id: uuid.transform((id) => id.toLowerCase()) }).strict();
+
 export const listMyItemsInput = z.object({
   limit: z.number().int().min(1).max(100).default(50),
   cursor: z.string().optional().describe("The nextCursor of a previous page."),
 });
 
 export const createItemInput = z.object({
+  idempotencyKey: idempotencyKeySchema.optional().describe("Opaque, case-sensitive key (1–128 characters), shared by this user and backlog across REST/MCP and token rotation; no expiration."),
   backlog: BACKLOG_KEY,
   type: z.enum(["composant", "epic", "tache", "soustache"]).describe("Hierarchy level: composant > epic > tache > soustache."),
   title: z.string().trim().min(1).max(ITEM_TITLE_MAX),
@@ -72,10 +93,12 @@ export const createItemInput = z.object({
   dueDate: isoDate.optional(),
   kind: z.enum(["feature", "bug"]).optional(),
   sprintId: uuid.optional().describe("Plan the task in this sprint right away."),
-});
+  labelIds: labelIdsSchema.optional().describe("Initial global or backlog label ids, from list_labels; duplicates are ignored."),
+}).strict();
 
 export const updateItemInput = z.object({
   key: ITEM_KEY,
+  labelIds: labelIdsSchema.optional().describe("Replace all labels with these global or backlog label ids; duplicates are ignored. An empty list clears labels."),
   title: z.string().trim().min(1).max(ITEM_TITLE_MAX).optional(),
   description: z.string().max(ITEM_DESCRIPTION_MAX).nullable().optional().describe("Markdown; null clears it."),
   priority: priority.optional(),

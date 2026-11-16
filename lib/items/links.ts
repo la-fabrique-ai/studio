@@ -156,27 +156,6 @@ export const addLinkInput = z
 export type AddLinkInput = z.infer<typeof addLinkInput>;
 
 // ---------------------------------------------------------------------------
-// wouldCreateDirectCycle
-// ---------------------------------------------------------------------------
-
-/**
- * Returns true if adding a `blocks` link from `sourceId` → `targetId` would
- * create a 2-cycle, i.e. a `blocks` link already exists in the opposite
- * direction (`targetId` → `sourceId`).
- *
- * Only applies to `blocks` links — relates/duplicates are not cycle-checked.
- */
-export function wouldCreateDirectCycle(
-  existing: LinkRow[],
-  sourceId: string,
-  targetId: string,
-): boolean {
-  return existing.some(
-    (l) => l.type === "blocks" && l.sourceId === targetId && l.targetId === sourceId,
-  );
-}
-
-// ---------------------------------------------------------------------------
 // isDuplicateLink
 // ---------------------------------------------------------------------------
 

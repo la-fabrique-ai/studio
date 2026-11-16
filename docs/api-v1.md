@@ -27,11 +27,19 @@ Aucune réponse ne contient le secret ni son empreinte.
 | `GET /items` | read | `{ items: ItemSummary[], nextCursor: string|null }` |
 | `GET /items/{KEY}` | read | `{ item: ItemDetail }` |
 | `GET /me/items` | read | `{ items: ItemSummary[], nextCursor: string|null }`, items assignés au propriétaire et lisibles, 1 000 au plus par réponse ; poursuivre avec `?cursor=` |
-| `POST /items` | write | 201 `{ item: ItemSummary }` |
+| `POST /items` | write | 201 `{ item: ItemSummary, replayed: false }` ; rejeu : 200 avec `replayed: true` |
 | `PATCH /items/{KEY}` | write | 200 `{ item: ItemSummary }` |
 | `POST /items/{KEY}/comments` | write | 201 `{ comment: Comment }` |
+| `GET /backlogs/{key}/labels` | read | `{ labels: [{ id, backlogId, name, color }] }`, labels locaux et globaux |
+| `POST /backlogs/{key}/labels` | write | `{ label, created }`, 201 si créé, 200 si existant |
+| `PUT /items/{KEY}/labels/{labelId}` | write | 204, même si déjà affecté |
+| `DELETE /items/{KEY}/labels/{labelId}` | write | 204, même si absent |
+| `GET /items/{KEY}/dependencies` | read | `{ dependencies: Dependency[] }` |
+| `POST /items/{KEY}/dependencies` | write | 201 `{ dependency: Dependency }` |
+| `DELETE /items/{KEY}/dependencies/{id}` | write | 204 |
 
-Les clés sont insensibles à la casse à l’entrée, normalisées en majuscules.
+Les clés de backlog et d’item sont insensibles à la casse à l’entrée, normalisées en majuscules.
+Les clés d’idempotence sont sensibles à la casse et restent inchangées.
 Les items supprimés sont exclus. Les permissions des cas d’usage s’appliquent
 également aux écritures : création, modification, transition et assignation.
 
@@ -80,6 +88,7 @@ exposées sous forme de chaînes). Les références et dates facultatives valent
   parent: { id, key, title } | null,
   children: [{ id, key, title, statusId }],
   labels: [{ id, name, color }],
+  dependencies: Dependency[],
   comments: [{ id, author: { id, name }, body, createdAt, updatedAt, deletedAt }],
   activities: [{ id, actor: { id, name }, action, field, oldValue, newValue, source, at }],
   url
@@ -101,20 +110,98 @@ Les valeurs et règles de hiérarchie restent celles de Jiroo.
 
 - Création : `{ backlogKey, type, title, description?, parentKey?, statusId?,
   priority?, assigneeId?, estimatePoints?, startDate?, dueDate?, labelIds?, kind?,
-  sprintId? }`. Le titre est non vide (200 caractères maximum), la description
+  sprintId?, idempotencyKey? }`. Le titre est non vide (200 caractères maximum), la description
   limitée à 20 000 caractères. Le parent doit respecter la hiérarchie et appartenir
   au même backlog. Le statut initial par défaut est utilisé s’il est omis.
 - Modification : au moins un champ parmi `{ title, description, priority,
-  assigneeId, statusId, estimatePoints, startDate, dueDate }`. `null` efface la
+  assigneeId, statusId, estimatePoints, startDate, dueDate, labelIds }`. `null` efface la
   description, l’assignation, l’estimation ou une date. `statusId` effectue une
-  transition. Les labels, le rapporteur et le parent ne se modifient pas ici.
-- Commentaire : `{ body, mentionIds? }`. Corps non vide, 5 000 caractères maximum ;
+  transition. `labelIds` remplace tous les labels ; `[]` les retire tous.
+  Le rapporteur et le parent ne se modifient pas ici.
+- Commentaire : `{ body, mentionIds? }`. Corps non vide, 20 000 caractères maximum ;
   au plus 50 identifiants de personnes mentionnées. Les mentions inconnues sont
   ignorées par le service.
 
 Les écritures passent par les cas d’usage partagés et publient les changements
 en temps réel. Les activités portent `source=api` et l’identifiant du jeton
 ayant authentifié l’appel. Aucune invalidation de page Next n’est nécessaire.
+
+## Labels et dépendances
+
+Le catalogue de labels comprend les labels du backlog et les labels globaux
+(`backlogId: null`). La création reçoit `{ name }` (1 à 50 caractères après
+retrait des espaces de début/fin). Un nom déjà présent, sans distinction de casse,
+renvoie le label existant, y compris global ; seuls de nouveaux labels locaux
+peuvent être créés. La couleur est choisie par Jiroo. Créer, affecter ou retirer
+un label exige `edit_items`. À la création d’un item, `labelIds` utilise
+`create_items` ; les UUID répétés sont ignorés. Un label inconnu ou appartenant
+à un autre backlog est refusé avec la même réponse 404.
+
+Une dépendance est orientée du bloqueur vers l’item bloqué :
+
+```ts
+type Dependency = {
+  id, sourceKey, targetKey,
+  direction: "blocks" | "blocked_by", // relative to the requested item
+  other: { id, key, title, status: { id, name, category } }
+}
+```
+
+L’ajout reçoit `{ otherKey, direction: "blocks" | "blocked_by" }`.
+Les deux items doivent être vivants, lisibles, dans le même backlog ; `link_items`
+est requis sur les deux. Un auto-lien est refusé (400), un doublon ou tout cycle
+`blocks`, direct ou long, répond 409. Les dépendances ne changent pas les statuts.
+La suppression exige l’identifiant d’une dépendance `blocks` de cet item ; un lien
+étranger ou d’un autre type répond 404. Ajout et suppression journalisent les deux
+extrémités ; un refus ne les modifie pas.
+
+```sh
+curl "$JIROO_ORIGIN/api/v1/backlogs/CASS/labels" -H "Authorization: Bearer $JIROO_TOKEN"
+curl "$JIROO_ORIGIN/api/v1/backlogs/CASS/labels" -X POST \
+  -H "Authorization: Bearer $JIROO_TOKEN" -H 'Content-Type: application/json' \
+  --data '{"name":"À vérifier"}'
+# Use the returned label id in labelIds or /items/CASS-12/labels/{labelId} (PUT/DELETE).
+curl "$JIROO_ORIGIN/api/v1/items/CASS-12/dependencies" -X POST \
+  -H "Authorization: Bearer $JIROO_TOKEN" -H 'Content-Type: application/json' \
+  --data '{"otherKey":"CASS-13","direction":"blocks"}'
+# List with GET; remove with DELETE /items/CASS-12/dependencies/{id}.
+```
+
+## Création sans doublon et reprise après une réponse perdue
+
+Envoyez `Idempotency-Key` sur `POST /items` ; le champ JSON `idempotencyKey`
+reste accepté. S’ils sont tous deux fournis, ils doivent être identiques, sinon
+400. La clé est opaque, sensible à la casse, de 1 à 128 caractères, sans expiration.
+Elle appartient au couple **utilisateur + backlog**, commune à REST et MCP,
+même après renouvellement des jetons. **La même clé dans un autre backlog crée
+un autre item**, comme la même clé utilisée par un autre utilisateur.
+
+La première création répond 201 avec `replayed: false`. Répéter la même commande
+avec la même clé répond 200 avec `replayed: true` et **l’état actuel** de l’item,
+même s’il a été modifié. Deux appels simultanés identiques obtiennent le même
+item. Aucun rejeu n’ajoute d’activité. Les droits actuels et la portée `write`
+restent requis. Les anciennes références de création ne sont pas résolues au rejeu.
+
+La comparaison porte sur les champs client validés, avant résolution et sans
+valeur par défaut ; les `labelIds` sont triés et dédupliqués et la clé est exclue.
+Ajouter un champ jusque-là omis, même avec sa valeur par défaut, change la commande.
+Une même clé avec un autre contenu répond 409, sans mutation. Un item supprimé,
+même purgé, répond aussi 409 : la clé reste consommée et rien n’est recréé.
+Une erreur transactionnelle annule la réservation avec l’item et son activité ;
+la même commande peut alors être retentée. Sans clé, chaque appel crée un item.
+
+```sh
+# Save this key and body before sending; reuse both after a timeout or lost response.
+curl "$JIROO_ORIGIN/api/v1/items" -X POST \
+  -H "Authorization: Bearer $JIROO_TOKEN" -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: import-2026-11-16-composant-42' \
+  --data '{"backlogKey":"CASS","type":"composant","title":"Suivi des imports"}'
+# If the response is lost, repeat exactly the same request.
+# 201 + replayed:false if nothing committed; 200 + replayed:true if already created.
+```
+
+Vous pouvez aussi reprendre en MCP avec
+`create_item({backlog:"CASS",type:"composant",title:"Suivi des imports",idempotencyKey:"import-2026-11-16-composant-42"})`.
 
 ## Erreurs et budget
 
@@ -147,8 +234,9 @@ réservation atomique du budget, puis portée : toute requête authentifiée est
 comptée, y compris celles refusées pour leur portée ou au-delà du quota. Les
 requêtes non authentifiées ne consomment pas de budget ; limitez-les en amont
 (pare-feu ou proxy). Respectez
-`Retry-After` avant de reprendre ; ne réessayez pas automatiquement une écriture
-quand son résultat est incertain (absence de clé d’idempotence en v1).
+`Retry-After` avant de reprendre. Pour une création au résultat incertain,
+réutilisez la même clé d’idempotence et les mêmes champs. Les autres écritures
+ne bénéficient pas de cette protection de création.
 
 ## Exemples
 

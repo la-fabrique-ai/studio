@@ -784,7 +784,9 @@ export const labels = pgTable("labels", {
   backlogId: uuid("backlog_id").references(() => backlogs.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   color: text("color").notNull(),
-});
+}, (t) => [
+  uniqueIndex("labels_backlog_name_idx").on(t.backlogId, sql`lower(${t.name})`),
+]);
 
 /**
  * A backlog's ticket templates (JIR-43): shared by everyone who creates items
@@ -858,6 +860,25 @@ export const itemLabels = pgTable(
       .references(() => labels.id, { onDelete: "cascade" }),
   },
   (t) => [primaryKey({ columns: [t.itemId, t.labelId] })],
+);
+
+// A consumed key survives item deletion and token rotation. Only deleting the
+// actor or backlog removes its creation history; there is no expiration.
+export const itemCreationRequests = pgTable(
+  "item_creation_requests",
+  {
+    actorId: text("actor_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+    backlogId: uuid("backlog_id").notNull().references(() => backlogs.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    requestHash: text("request_hash").notNull(),
+    itemId: uuid("item_id").references(() => items.id, { onDelete: "set null" }),
+    itemKey: text("item_key").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.actorId, t.backlogId, t.key] }),
+    index("item_creation_requests_item_idx").on(t.itemId),
+  ],
 );
 
 export const comments = pgTable("comments", {

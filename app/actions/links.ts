@@ -1,15 +1,10 @@
 "use server";
 
 import { mapActionAuthorizationError } from "@/lib/auth/action-error";
-import {
-  requireItemPermission,
-  requireLinkPermission,
-} from "@/lib/auth/action-authorization";
-import { ResourceNotFoundError } from "@/lib/auth/authorization";
 import { getSession } from "@/lib/auth/session";
-import { invalidateBacklog } from "@/lib/realtime/publish";
+import { revalidateBacklogPages } from "@/lib/realtime/publish";
 import type { LinkType } from "@/lib/items/links";
-import { addLink, removeLink } from "@/lib/services/links";
+import { addLinkUseCase, removeLinkUseCase } from "@/lib/use-cases/links";
 
 async function authenticatedActorId(): Promise<string> {
   const session = await getSession();
@@ -23,7 +18,7 @@ function mapLinkError(e: unknown): string {
   if (msg.includes("introuvable")) return "Item introuvable.";
   if (msg.includes("même backlog")) return "Les deux items doivent appartenir au même backlog.";
   if (msg.includes("existe déjà")) return "Ce lien existe déjà.";
-  if (msg.includes("Cycle")) return msg; // surface the full cycle message verbatim
+  if (msg.includes("cycle de blocage")) return msg; // surface the full cycle message verbatim
   return "Action impossible sur le lien.";
 }
 
@@ -36,26 +31,8 @@ export async function addLinkAction(input: {
   const actorId = await authenticatedActorId();
   const { backlogKey, sourceId, targetId, type } = input;
   try {
-    const source = await requireItemPermission({
-      actorId,
-      itemId: input.sourceId,
-      permission: "link_items",
-    });
-    const target = await requireItemPermission({
-      actorId,
-      itemId: input.targetId,
-      permission: "link_items",
-    });
-    if (source.backlogId !== target.backlogId) {
-      throw new ResourceNotFoundError("item", target.resourceId);
-    }
-    const link = await addLink({ sourceId, targetId, type }, actorId);
-    await invalidateBacklog(backlogKey, {
-      kind: "item",
-      backlogId: source.backlogId,
-      itemIds: [sourceId, targetId],
-      actorId,
-    });
+    const link = await addLinkUseCase({ actorId, source: "ui" }, { sourceId, targetId, type });
+    revalidateBacklogPages(backlogKey);
     return { ok: true as const, link };
   } catch (e) {
     const authorizationError = mapActionAuthorizationError(e);
@@ -68,18 +45,8 @@ export async function removeLinkAction(input: { backlogKey: string; id: string }
   const actorId = await authenticatedActorId();
   const { backlogKey, id } = input;
   try {
-    const authorization = await requireLinkPermission({
-      actorId,
-      linkId: input.id,
-      permission: "link_items",
-    });
-    const removed = await removeLink(id);
-    await invalidateBacklog(backlogKey, {
-      kind: "item",
-      backlogId: authorization.backlogId,
-      ...(removed ? { itemIds: [removed.sourceId, removed.targetId] } : {}),
-      actorId,
-    });
+    await removeLinkUseCase({ actorId, source: "ui" }, id);
+    revalidateBacklogPages(backlogKey);
     return { ok: true as const };
   } catch (e) {
     const authorizationError = mapActionAuthorizationError(e);

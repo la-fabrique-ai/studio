@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { mapActionAuthorizationError } from "@/lib/auth/action-error";
+import { mapActionAuthorizationError, type ActionAuthorizationErrorResult } from "@/lib/auth/action-error";
 import {
   requireBacklogPermissionById,
   requireItemPermission,
@@ -63,6 +63,14 @@ function bulkPatchPermission(patch: BulkItemPatch): BacklogPermissionKey {
   }
 }
 
+function mapItemAuthorizationError(error: unknown): ActionAuthorizationErrorResult | null {
+  if (error instanceof Error && error.name === "ResourceNotFoundError"
+    && "resourceType" in error && error.resourceType === "label") {
+    return { ok: false as const, error: "Un label sélectionné est introuvable pour ce backlog." };
+  }
+  return mapActionAuthorizationError(error);
+}
+
 function mapCreateError(e: unknown): string {
   const s = String(e);
   if (s.includes("unique")) return "Cette clé est déjà utilisée.";
@@ -118,7 +126,7 @@ async function createItemActionBody(input: CreateItemActionInput) {
     const { item } = await createItemUseCase({ actorId, source: "ui" }, data);
     return { ok: true as const, item };
   } catch (e) {
-    const authorizationError = mapActionAuthorizationError(e);
+    const authorizationError = mapItemAuthorizationError(e);
     if (authorizationError) return authorizationError;
     const validationError = mapZodActionError(e);
     if (validationError) return { ok: false as const, ...validationError };
@@ -139,7 +147,7 @@ async function updateItemActionBody(input: UpdateItemActionInput) {
     const { item } = await updateItemUseCase({ actorId, source: "ui" }, data);
     return { ok: true as const, item };
   } catch (e) {
-    const authorizationError = mapActionAuthorizationError(e);
+    const authorizationError = mapItemAuthorizationError(e);
     if (authorizationError) return authorizationError;
     const validationError = mapZodActionError(e);
     if (validationError) return { ok: false as const, ...validationError };
