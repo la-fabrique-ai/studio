@@ -166,6 +166,8 @@ describe("deriveShellContext", () => {
     ["/b/pen/roadmap", "Roadmap"],
     ["/b/pen/reports", "Rapports"],
     ["/b/PEN/reports/detail", "Rapports"],
+    ["/b/pen/specs", "Spécifications"],
+    ["/b/PEN/specs/node-1", "Spécifications"],
   ] as const)("keeps the requested backlog for %s", (pathname, section) => {
     expect(deriveShellContext({
       pathname,
@@ -406,6 +408,7 @@ describe("deriveBreadcrumb (page header)", () => {
     ["/b/PEN/releases", "Pôle pénal", "/b/PEN", "Releases"],
     ["/b/pen/roadmap", "Pôle pénal", "/b/PEN", "Roadmap"],
     ["/b/pen/reports", "Pôle pénal", "/b/PEN", "Rapports"],
+    ["/b/pen/specs", "Pôle pénal", "/b/PEN", "Spécifications"],
     ["/aide", "Pôle civil", "/b/CASS", "Aide"],
     ["/admin", "Pôle civil", "/b/CASS", "Administration"],
     ["/mine", "Pôle civil", "/b/CASS", "Mes items"],
@@ -417,6 +420,13 @@ describe("deriveBreadcrumb (page header)", () => {
 
   it("shows the home page alone, above every project (JIR-82)", () => {
     expect(crumbs("/")).toEqual([{ label: "Backlogs" }]);
+  });
+
+  it("links the specifications from one of their documents", () => {
+    expect(crumbs("/b/PEN/specs/node-1")).toEqual([
+      { label: "Pôle pénal", href: "/b/PEN" },
+      { label: "Spécifications", href: "/b/PEN/specs" },
+    ]);
   });
 
   it("links the section of a page nested under it", () => {

@@ -23,7 +23,7 @@ const MODE_LABELS: Record<string, ShellMode> = {
 };
 
 // A backlog's own pages beside its item views, kept in that backlog's context.
-const FEATURE_SECTIONS = { "le-point": "Le point", roadmap: "Roadmap", releases: "Releases", reports: "Rapports" } as const;
+const FEATURE_SECTIONS = { "le-point": "Le point", roadmap: "Roadmap", releases: "Releases", reports: "Rapports", specs: "Spécifications" } as const;
 
 // A backlog's settings pages, kept in the current backlog context.
 const SETTINGS_ROUTE = /^\/b\/([^/]+)\/settings\/(access|development|templates)\/?$/;
@@ -72,7 +72,7 @@ export function deriveShellContext({
     };
   }
 
-  const completedFeatureMatch = /^\/b\/([^/]+)\/(le-point|roadmap|releases|reports)(?:\/.*)?$/.exec(pathname);
+  const completedFeatureMatch = /^\/b\/([^/]+)\/(le-point|roadmap|releases|reports|specs)(?:\/.*)?$/.exec(pathname);
   if (completedFeatureMatch) {
     const requestedKey = decodeURIComponent(completedFeatureMatch[1]!).toUpperCase();
     const backlog = backlogs.find(
@@ -256,7 +256,7 @@ export function deriveBreadcrumb(input: {
   if (!project) return [{ label: context.section }];
   if (context.section === backlog!.name) return [{ label: project.label }];
 
-  const nested = /^\/b\/[^/]+\/(releases|reports)\/.+$/.exec(input.pathname);
+  const nested = /^\/b\/[^/]+\/(releases|reports|specs)\/.+$/.exec(input.pathname);
   return [
     project,
     nested
