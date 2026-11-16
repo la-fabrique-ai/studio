@@ -18,7 +18,7 @@ async function main() {
   console.log(
     outcome === "created"
       ? `Administrateur ${email} créé : la double authentification lui sera demandée à la première connexion.`
-      : `${email} est déjà administrateur Jiroo : rien à créer.`,
+      : `${email} est déjà administrateur du Studio : rien à créer.`,
   );
 }
 

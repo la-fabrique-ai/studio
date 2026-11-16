@@ -377,7 +377,7 @@ describe("authorization administration Server Actions", () => {
       }),
     ).resolves.toEqual({
       ok: false,
-      error: "Vous n’avez pas la permission « Administrer Jiroo ».",
+      error: "Vous n’avez pas la permission « Administrer le Studio ».",
     });
     expect(mocks.requirePermission).toHaveBeenCalledWith({
       actorId: "actor-session",
@@ -472,7 +472,7 @@ describe("authorization administration Server Actions", () => {
 
     await expect(run()).resolves.toEqual({
       ok: false,
-      error: "Vous n’avez pas la permission « Administrer Jiroo ».",
+      error: "Vous n’avez pas la permission « Administrer le Studio ».",
     });
     expect(mocks.requirePermission).toHaveBeenCalledWith({
       actorId: "actor-session",

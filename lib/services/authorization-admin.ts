@@ -60,7 +60,7 @@ const SIMPLE_SHARED_MESSAGE =
 const SIMPLE_MATRIX_MESSAGE =
   "Le mode Simple est indisponible : ce schéma contient des autorisations avancées.";
 const PRIVILEGED_GROUP_MEMBERSHIP_MESSAGE =
-  "Seul un administrateur Jiroo peut modifier les membres de ce groupe.";
+  "Seul un administrateur du Studio peut modifier les membres de ce groupe.";
 // Group-reference writes take membership topology first. Scheme/configuration writes
 // then take scheme topology, scheme rows by ID, and backlog configurations by ID.
 const MEMBERSHIP_TOPOLOGY_LOCK = "authorization-membership-topology";

@@ -9,7 +9,7 @@ import {
 describe("accountFromTotpUri", () => {
   it("reads the e-mail from the key URI label", () => {
     expect(
-      accountFromTotpUri("otpauth://totp/Jiroo:marie%40example.test?secret=ABCDEF&issuer=Jiroo"),
+      accountFromTotpUri("otpauth://totp/Le%20Studio:marie%40example.test?secret=ABCDEF&issuer=Le%20Studio"),
     ).toBe("marie@example.test");
   });
 
@@ -28,7 +28,7 @@ describe("accountFromTotpUri", () => {
   it("returns null for a malformed URI", () => {
     expect(accountFromTotpUri("")).toBeNull();
     expect(accountFromTotpUri("otpauth://totp/?secret=A")).toBeNull();
-    expect(accountFromTotpUri("otpauth://totp/Jiroo:%E0%A4%A?secret=A")).toBeNull();
+    expect(accountFromTotpUri("otpauth://totp/Le%20Studio:%E0%A4%A?secret=A")).toBeNull();
   });
 });
 
@@ -37,7 +37,7 @@ describe("recovery codes export", () => {
   const codes = ["AAAA-1111", "BBBB-2222"];
 
   it("dates the file name in local time", () => {
-    expect(recoveryCodesFileName(date)).toBe("jiroo-codes-recuperation-2026-10-03.txt");
+    expect(recoveryCodesFileName(date)).toBe("le-studio-codes-recuperation-2026-10-03.txt");
   });
 
   it("copies the codes alone, one per line", () => {
@@ -47,7 +47,7 @@ describe("recovery codes export", () => {
   it("writes the account, the date, an explanation and the codes", () => {
     expect(recoveryCodesFileContent({ account: "marie@example.test", codes, date })).toBe(
       [
-        "Jiroo — codes de récupération de la double authentification",
+        "Le Studio — codes de récupération de la double authentification",
         "Compte : marie@example.test",
         "Générés le : 03/10/2026",
         "Chaque code remplace une seule fois le code à 6 chiffres de votre application ; ne les partagez avec personne.",

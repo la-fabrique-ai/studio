@@ -21,7 +21,7 @@ const backlogPermissionDefinition = (key: string, label: string) => ({
 });
 
 export const GLOBAL_PERMISSION_DEFINITIONS = {
-  administer_jiroo: globalPermissionDefinition("administer_jiroo", "Administrer Jiroo"),
+  administer_jiroo: globalPermissionDefinition("administer_jiroo", "Administrer le Studio"),
   manage_users_groups: globalPermissionDefinition(
     "manage_users_groups",
     "Gérer les utilisateurs et les groupes",

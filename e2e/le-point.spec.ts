@@ -145,7 +145,7 @@ async function shot(page: Page, name: string) {
 }
 async function open(page: Page) {
   await page.goto(`/b/${fixture.backlog.key}/le-point`);
-  await expect(page).toHaveTitle("Le point (pilote) — Jiroo");
+  await expect(page).toHaveTitle("Le point (pilote) — Le Studio");
   await expect(page.getByRole("heading", { level: 1, name: "Le point pilote", exact: true })).toBeVisible();
   await expect(page.getByRole("radiogroup", { name: "Portée", exact: true }).getByRole("radio", { name: "Toute l’équipe", exact: true })).toBeChecked();
   await expect(page.getByRole("radio", { name: "Développement", exact: true })).toBeChecked();

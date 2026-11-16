@@ -77,6 +77,6 @@ test("revient à l’accueil du backlog par le fil d’Ariane puis par le logo",
   await expect(page).toHaveURL(/\/b\/CASS$/);
 
   await page.goto("/aide");
-  await page.getByRole("link", { name: "Jiroo — accueil" }).click();
+  await page.getByRole("link", { name: "Le Studio — accueil" }).click();
   await expect(page).toHaveURL(/\/b\/CASS$/);
 });

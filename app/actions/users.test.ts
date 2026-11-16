@@ -186,7 +186,7 @@ describe("account recovery actions", () => {
 
     await expect(resetUserTwoFactorAction({ userId: "user-2" })).resolves.toEqual({
       ok: false,
-      error: "Vous n’avez pas la permission « Administrer Jiroo ».",
+      error: "Vous n’avez pas la permission « Administrer le Studio ».",
     });
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });

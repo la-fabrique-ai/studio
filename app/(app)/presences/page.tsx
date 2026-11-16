@@ -7,7 +7,7 @@ import { loadPresencePage } from "@/lib/presence/load";
 import type { View } from "@/lib/presence/view";
 import { isDay } from "@/lib/roadmap/days";
 
-export const metadata: Metadata = { title: "Calendrier d’équipe — Jiroo" };
+export const metadata: Metadata = { title: "Calendrier d’équipe — Le Studio" };
 
 const VIEWS: Record<string, View> = { mois: "month", sprint: "sprint", annee: "year" };
 

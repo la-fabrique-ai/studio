@@ -134,7 +134,7 @@ export function deriveShellContext({
 
   return {
     ...(firstKey ? { activeBacklogKey: firstKey } : {}),
-    section: firstBacklog?.name ?? "Jiroo",
+    section: firstBacklog?.name ?? "Le Studio",
     allItemsHref,
     activeNav: null,
   };

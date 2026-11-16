@@ -188,7 +188,7 @@ describe("UserAdmin account recovery", () => {
     const user = userEvent.setup();
     mocks.resetUserPasswordAction.mockResolvedValue({
       ok: false,
-      error: "Vous n’avez pas la permission « Administrer Jiroo ».",
+      error: "Vous n’avez pas la permission « Administrer le Studio ».",
     });
     renderRecovery();
 
@@ -199,7 +199,7 @@ describe("UserAdmin account recovery", () => {
     await user.click(within(dialog).getByRole("button", { name: "Réinitialiser le mot de passe" }));
 
     expect(await within(dialog).findByRole("alert")).toHaveTextContent(
-      "Vous n’avez pas la permission « Administrer Jiroo ».",
+      "Vous n’avez pas la permission « Administrer le Studio ».",
     );
     expect(dialog).toBeVisible();
     expect(mocks.toastSuccess).not.toHaveBeenCalled();

@@ -311,7 +311,7 @@ export function RepoConnectionsAdmin({
           <DialogHeader>
             <DialogTitle>Connecter un dépôt</DialogTitle>
             <DialogDescription>
-              Jiroo reçoit les webhooks du dépôt ; il n’y accède jamais et ne stocke aucun jeton d’accès.
+              Le Studio reçoit les webhooks du dépôt ; il n’y accède jamais et ne stocke aucun jeton d’accès.
             </DialogDescription>
           </DialogHeader>
           <form

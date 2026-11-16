@@ -12,7 +12,7 @@ import { keyPattern } from "./key-helpers";
 
 const RUN = process.env.JIROO_E2E_RUN_ID;
 if (!RUN) throw new Error("Browsing users E2E requires an isolated run id.");
-const HINT = "Il vous manque la permission globale « Parcourir les utilisateurs ». Demandez-la à un administrateur Jiroo.";
+const HINT = "Il vous manque la permission globale « Parcourir les utilisateurs ». Demandez-la à un administrateur du Studio.";
 const REMOVE = "Retirer Parcourir les utilisateurs pour Tous les utilisateurs authentifiés";
 const EVERYONE = and(eq(permissionGrants.scope, "global"), eq(permissionGrants.permissionKey, "browse_users"), eq(permissionGrants.principalType, "authenticated_user"));
 type Grant = typeof permissionGrants.$inferSelect;
@@ -171,7 +171,7 @@ test.describe("browsing users by default and its removal", () => {
     await expect(adminPage.getByRole("region", { name: "Administrateur du backlog", exact: true })).toBeVisible();
     await adminPage.getByRole("button", { name: `Profil de ${admin.name}`, exact: true }).click();
     await adminPage.getByRole("menuitem", { name: "Profil", exact: true }).click();
-    await expect(adminPage.getByRole("dialog", { name: "Profil", exact: true }).getByText("Administrateur Jiroo", { exact: true })).toBeVisible();
+    await expect(adminPage.getByRole("dialog", { name: "Profil", exact: true }).getByText("Administrateur du Studio", { exact: true })).toBeVisible();
   });
 
   test("explains inherited global rights on user creation and links to groups", async ({ pair: { adminPage } }) => {

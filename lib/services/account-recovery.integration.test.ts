@@ -312,7 +312,7 @@ describeDb("account recovery service", () => {
 
       await expect(
         resetUserPassword({ userId: target.id, temporaryPassword: "temporaire-2026" }, adminId),
-      ).rejects.toThrow("Ce compte n’a pas de mot de passe Jiroo.");
+      ).rejects.toThrow("Ce compte n’a pas de mot de passe du Studio.");
       expect(await sessionCount(target.id)).toBe(2);
       expect(await auditEventsFor(target.id)).toHaveLength(0);
     });

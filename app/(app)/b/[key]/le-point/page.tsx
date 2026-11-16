@@ -12,7 +12,7 @@ import { lastVisitBefore, VISIT_COOKIE } from "@/lib/le-point/visit";
 import { dayInZone } from "@/lib/roadmap/days";
 import { loadItemDetailData } from "@/lib/services/item-detail";
 
-export const metadata: Metadata = { title: "Le point (pilote) — Jiroo" };
+export const metadata: Metadata = { title: "Le point (pilote) — Le Studio" };
 
 /**
  * « Le point » pilot (JIR-107): a view of the project, like Jira's project

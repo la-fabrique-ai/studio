@@ -160,20 +160,20 @@ export function Sidebar({
         {/* The wordmark leads back to the active backlog home (JIR-72). */}
         <Link
           href={homeHref}
-          aria-label="Jiroo — accueil"
+          aria-label="Le Studio — accueil"
           className="rounded-md focus-visible:outline-2 focus-visible:outline-ring"
         >
           <div
             role="img"
-            aria-label="Jiroo"
-            title={collapsed ? "Jiroo" : undefined}
+            aria-label="Le Studio"
+            title={collapsed ? "Le Studio" : undefined}
             className="t-h2 overflow-hidden font-semibold"
           >
             {collapsed ? (
-              <span aria-hidden="true">J</span>
+              <span aria-hidden="true">S</span>
             ) : (
               <span aria-hidden="true">
-                Jir<span className="text-[var(--primary)]">oo</span>
+                Le <span className="text-[var(--primary)]">Studio</span>
               </span>
             )}
           </div>

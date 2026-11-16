@@ -365,6 +365,6 @@ export async function runTool(
     if (described) return refusal(described);
     // Logged without the message, which may carry SQL and its parameters (JIR-160).
     console.error(`[mcp] ${tool.name} failed: ${error instanceof Error ? error.name : typeof error}`);
-    return refusal("Une erreur interne a empêché l’opération. Réessayez ou prévenez l’équipe Jiroo.");
+    return refusal("Une erreur interne a empêché l’opération. Réessayez ou prévenez l’équipe du Studio.");
   }
 }

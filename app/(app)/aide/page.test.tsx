@@ -359,7 +359,7 @@ describe("HelpPage", () => {
     expect(api).toHaveTextContent("Si vous changez vous-même votre mot de passe, vos jetons sont conservés.");
     expect(api).toHaveTextContent("300 requêtes par minute et par jeton");
     expect(api).toHaveTextContent(
-      "Un administrateur Jiroo peut aussi révoquer l’un de vos jetons depuis « Administration » → « Jetons d’accès ». L’outil qui utilise ce jeton perd alors son accès à Jiroo : si cet accès reste nécessaire, créez un nouveau jeton et remplacez l’ancien dans sa configuration.",
+      "Un administrateur du Studio peut aussi révoquer l’un de vos jetons depuis « Administration » → « Jetons d’accès ». L’outil qui utilise ce jeton perd alors son accès au Studio : si cet accès reste nécessaire, créez un nouveau jeton et remplacez l’ancien dans sa configuration.",
     );
     expect(api).toHaveTextContent("compte « Agents »");
     expect(api).toHaveTextContent("Contributeur");

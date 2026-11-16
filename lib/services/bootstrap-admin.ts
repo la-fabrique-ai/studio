@@ -50,7 +50,7 @@ export async function bootstrapAdministrator(input: {
     if (existing) {
       if (!administrators.has(existing.id)) {
         throw new BootstrapAdminError(
-          "Un compte existe déjà avec cet e-mail sans être administrateur Jiroo : ce script ne modifie pas un compte existant.",
+          "Un compte existe déjà avec cet e-mail sans être administrateur du Studio : ce script ne modifie pas un compte existant.",
         );
       }
       if (!(await authorizationDefaultsExist())) {
@@ -60,7 +60,7 @@ export async function bootstrapAdministrator(input: {
     }
     if (administrators.size > 0) {
       throw new BootstrapAdminError(
-        "Un administrateur Jiroo existe déjà : créez les autres comptes depuis l’administration.",
+        "Un administrateur du Studio existe déjà : créez les autres comptes depuis l’administration.",
       );
     }
 

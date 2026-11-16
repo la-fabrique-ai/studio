@@ -195,7 +195,7 @@ test.describe("account recovery", () => {
     const downloadEvent = userPage.waitForEvent("download");
     await userPage.getByRole("button", { name: "Télécharger (.txt)" }).click();
     const download = await downloadEvent;
-    expect(download.suggestedFilename()).toMatch(/^jiroo-codes-recuperation-\d{4}-\d{2}-\d{2}\.txt$/u);
+    expect(download.suggestedFilename()).toMatch(/^le-studio-codes-recuperation-\d{4}-\d{2}-\d{2}\.txt$/u);
     const fileText = await readFile(await download.path(), "utf8");
     expect(fileText).toContain(`Compte : ${target.email}\r\n`);
     expect(fileText).toMatch(/Générés le : \d{2}\/\d{2}\/\d{4}\r\n/u);

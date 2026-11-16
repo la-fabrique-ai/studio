@@ -18,7 +18,7 @@ import {
 import { loadPage } from "@/lib/navigation/load-page";
 
 const ROLE_LABELS: Record<string, string> = {
-  admin: "Administrateur Jiroo",
+  admin: "Administrateur du Studio",
   contributor: "Contributeur",
   viewer: "Lecteur",
 };

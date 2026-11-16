@@ -362,7 +362,7 @@ describeDb("transactional authorization administration", () => {
         secondMemberId,
         correlation("escalation-group-add"),
       ),
-    ).rejects.toThrow("Seul un administrateur Jiroo peut modifier les membres de ce groupe.");
+    ).rejects.toThrow("Seul un administrateur du Studio peut modifier les membres de ce groupe.");
     expect(
       await db.select({ id: groupMembers.id }).from(groupMembers).where(
         and(eq(groupMembers.groupId, group.id), eq(groupMembers.userId, secondMemberId)),

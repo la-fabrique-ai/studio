@@ -34,7 +34,7 @@ export const SELF_PASSWORD_RESET_MESSAGE =
 export const SELF_TWO_FACTOR_RESET_MESSAGE =
   "Vous ne pouvez pas réinitialiser votre propre double authentification.";
 export const MISSING_USER_MESSAGE = "Utilisateur introuvable.";
-export const MISSING_CREDENTIAL_MESSAGE = "Ce compte n’a pas de mot de passe Jiroo.";
+export const MISSING_CREDENTIAL_MESSAGE = "Ce compte n’a pas de mot de passe du Studio.";
 
 export class AccountRecoveryError extends Error {
   constructor(message: string) {

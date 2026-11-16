@@ -111,7 +111,7 @@ export function ApiTokensAdmin({ tokens, now }: { tokens: AdministeredApiToken[]
               <DialogHeader>
                 <DialogTitle>Révoquer ce jeton ?</DialogTitle>
                 <DialogDescription className="[overflow-wrap:anywhere]">
-                  Le jeton « {revoking.name} » du compte « {revoking.owner.name} » ne pourra plus être utilisé pour accéder à Jiroo.
+                  Le jeton « {revoking.name} » du compte « {revoking.owner.name} » ne pourra plus être utilisé pour accéder au Studio.
                   Cette révocation est définitive et sera enregistrée dans le journal de sécurité.
                 </DialogDescription>
               </DialogHeader>
