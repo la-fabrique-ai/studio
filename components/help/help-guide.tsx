@@ -835,7 +835,7 @@ url = "https://jiroo-dev.vercel.app/api/mcp"
 bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
           <p className="t-body">
             Les outils de lecture sont <code>list_backlogs</code>, <code>list_statuses</code>,{" "}
-            <code>search_items</code>, <code>get_item</code> et <code>list_my_items</code>.
+            <code>search_items</code>, <code>get_item</code>, <code>list_my_items</code>, <code>list_labels</code> et <code>list_dependencies</code>.
             Avec la portée <Ui>Lecture et écriture</Ui>, l’agent peut aussi utiliser{" "}
             <code>create_item</code>, <code>update_item</code>, <code>transition_item</code> et <code>add_comment</code>,
             dans les limites des droits du compte.
@@ -844,6 +844,61 @@ bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
             La configuration et le rôle de chaque outil figurent dans{" "}
             <a href="https://github.com/DVLPR-Consulting/jiroo/blob/main/docs/mcp.md" className="underline underline-offset-4">docs/mcp.md</a>.
           </p>
+        </GuideTopic>
+
+        <GuideTopic
+          title="Gérer les labels et les dépendances"
+          purpose="Classer les tickets et indiquer ce qui doit être terminé avant un autre item."
+          steps={[
+            <>Consultez les labels avec <code>GET /api/v1/backlogs/CASS/labels</code> ou <code>list_labels</code>. Le catalogue inclut les labels du backlog et les labels globaux. Créez un label avec <code>POST /api/v1/backlogs/CASS/labels</code> (champ <code>name</code>) ou <code>create_label</code> : un nom déjà présent renvoie le label existant.</>,
+            <>Utilisez les identifiants reçus dans <code>labelIds</code> à la création. Pour affecter ou retirer un label ensuite, utilisez <code>PUT</code> ou <code>DELETE /api/v1/items/CASS-12/labels/IDENTIFIANT</code>, ou les outils <code>add_item_label</code> et <code>remove_item_label</code>. Répéter ces actions ne change rien de plus. Dans <code>update_item</code> ou <code>PATCH /api/v1/items/CASS-12</code>, <code>labelIds</code> remplace tous les labels ; une liste vide les retire tous.</>,
+            <>Consultez les dépendances avec <code>GET /api/v1/items/CASS-12/dependencies</code> ou <code>list_dependencies</code>. Pour en ajouter une, envoyez <code>otherKey</code> et <code>direction</code> à cette route en <code>POST</code>, ou utilisez <code>add_dependency</code>. <code>blocks</code> signifie « cet item bloque l’autre » ; <code>blocked_by</code> signifie « cet item est bloqué par l’autre ».</>,
+            <>Pour retirer une dépendance, utilisez son identifiant avec <code>DELETE /api/v1/items/CASS-12/dependencies/IDENTIFIANT</code> ou <code>remove_dependency</code>.</>,
+          ]}
+        >
+          <GuideNote>
+            Les dépendances relient deux items du même backlog. Jiroo refuse les doublons,
+            les liens d’un item vers lui-même et tous les cycles de blocage, même indirects.
+            Les statuts ne changent pas automatiquement. Gérer les labels demande le droit de modifier les items ;
+            gérer les dépendances demande le droit de lier les deux items.
+          </GuideNote>
+          <p className="t-body">
+            <code>get_item</code> renvoie aussi le rapporteur (<code>reporter</code>), le parent,
+            les enfants, les labels et les dépendances. Le texte d’un commentaire supprimé est vide ;
+            sa date de suppression reste disponible.
+          </p>
+        </GuideTopic>
+
+        <GuideTopic
+          title="Créer sans doublon après une interruption"
+          purpose="Retrouver le même item si un outil n’a pas reçu la réponse de création."
+          steps={[
+            <>Avant l’envoi, conservez une clé de création et les champs de la demande. En REST, envoyez la clé dans l’en-tête <code>Idempotency-Key</code> de <code>POST /api/v1/items</code>. En MCP, passez-la dans l’argument <code>idempotencyKey</code> de <code>create_item</code>.</>,
+            <>Si la réponse est perdue, renvoyez les mêmes champs avec la même clé. Jiroo crée l’item si le premier appel n’a rien enregistré, ou renvoie son état actuel avec <code>replayed: true</code> s’il existe déjà. Aucune activité de création supplémentaire n’est ajoutée.</>,
+          ]}
+        >
+          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`create_item({
+  backlog: "CASS", type: "composant", title: "Suivi des imports",
+  idempotencyKey: "import-2026-11-16-composant-42"
+})
+// Réponse perdue : répétez cet appel avec les mêmes champs et la même clé.`}</code></pre>
+          <p className="t-body">
+            En REST, la réponse est <code>201</code> à la création et <code>200</code> au rejeu.
+            Le champ JSON <code>idempotencyKey</code> reste accepté ; s’il est fourni avec l’en-tête,
+            les deux valeurs doivent être identiques, sinon la réponse est <code>400</code>.
+          </p>
+          <GuideNote>
+            La clé fait de 1 à 128 caractères, distingue majuscules et minuscules et n’expire pas.
+            Elle appartient au compte et au backlog : elle reste valable après un remplacement de jeton
+            et entre REST et MCP. La même clé dans un autre backlog crée un autre item.
+            Les droits actuels du compte restent nécessaires.
+          </GuideNote>
+          <GuideNote>
+            Une clé déjà utilisée avec un autre contenu est refusée (<code>409</code> en REST).
+            Gardez exactement les champs de départ, même ceux que vous aviez omis ; l’ordre et les doublons
+            des identifiants de labels ne comptent pas. Si l’item a été supprimé, même purgé,
+            la clé reste consommée et rien n’est recréé. Sans clé, chaque appel crée un nouvel item.
+          </GuideNote>
         </GuideTopic>
 
         <GuideTopic
