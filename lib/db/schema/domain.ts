@@ -784,7 +784,9 @@ export const labels = pgTable("labels", {
   backlogId: uuid("backlog_id").references(() => backlogs.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   color: text("color").notNull(),
-});
+}, (t) => [
+  uniqueIndex("labels_backlog_name_idx").on(t.backlogId, sql`lower(${t.name})`),
+]);
 
 /**
  * A backlog's ticket templates (JIR-43): shared by everyone who creates items
