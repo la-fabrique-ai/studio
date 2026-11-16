@@ -29,13 +29,16 @@ describe("MCP auth info", () => {
   it("registers every tool with its schema and read-only annotation", () => {
     const registerTool = vi.fn();
     registerStudioTools({ registerTool } as never);
-    expect(registerTool).toHaveBeenCalledTimes(16);
+    expect(registerTool).toHaveBeenCalledTimes(23);
     const [name, config] = registerTool.mock.calls[0]!;
     expect(name).toBe("list_backlogs");
     expect(config).toMatchObject({ title: "List backlogs", annotations: { readOnlyHint: true, destructiveHint: false } });
     expect(registerTool.mock.calls.find(([n]) => n === "add_comment")![1]).toMatchObject({ annotations: { readOnlyHint: false } });
     expect(registerTool.mock.calls.find(([n]) => n === "list_dependencies")![1]).toMatchObject({ annotations: { readOnlyHint: true } });
-    for (const name of ["add_dependency", "remove_dependency"]) {
+    for (const name of ["list_specs", "get_spec"]) {
+      expect(registerTool.mock.calls.find(([n]) => n === name)![1]).toMatchObject({ annotations: { readOnlyHint: true } });
+    }
+    for (const name of ["add_dependency", "remove_dependency", "create_spec", "update_spec", "delete_spec"]) {
       expect(registerTool.mock.calls.find(([n]) => n === name)![1]).toMatchObject({ annotations: { readOnlyHint: false } });
     }
   });

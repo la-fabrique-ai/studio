@@ -6,7 +6,6 @@ vi.mock("@/app/actions/specs", () => ({ updateSpecContentAction: vi.fn() }));
 
 const props = {
   backlogKey: "ATL",
-  backlogId: "backlog-1",
   id: "doc-1",
   currentUserId: "reader-1",
   revision: "2026-11-16T10:00:00.000Z",

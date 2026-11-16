@@ -4,6 +4,8 @@ import { describeDomainError } from "@/lib/use-cases/errors";
 
 /** The largest JSON body the API reads (JIR-160); item descriptions stay far below. */
 export const MAX_JSON_BODY_BYTES = 64 * 1024;
+/** Specification documents (PRD, UX) can be long: their routes read up to 1 MB. */
+export const MAX_SPEC_JSON_BODY_BYTES = 1024 * 1024;
 
 const problems = {
   validation_error: [400, "Les données de la requête sont invalides."],
@@ -30,9 +32,15 @@ export function jsonOk(data: unknown, status = 200, headers?: HeadersInit): Resp
 }
 // Problem type URIs are part of the public API v1 contract: they keep the
 // pre-rename "jiroo.dev" base so existing clients matching on `type` still work.
-export function problem(code: ProblemCode, options: { detail?: string; errors?: unknown; headers?: HeadersInit } = {}): Response {
+export function problem(code: ProblemCode, options: {
+  detail?: string;
+  errors?: unknown;
+  headers?: HeadersInit;
+  /** RFC 9457 extension members, e.g. the current revision of a conflict. */
+  extensions?: Record<string, unknown>;
+} = {}): Response {
   const [status, title] = problems[code];
-  return new Response(JSON.stringify({ type: `https://jiroo.dev/problems/${code}`, title, status,
+  return new Response(JSON.stringify({ ...options.extensions, type: `https://jiroo.dev/problems/${code}`, title, status,
     ...(options.detail !== undefined ? { detail: options.detail } : {}),
     ...(options.errors !== undefined ? { errors: options.errors } : {}),
   }), { status, headers: headersFor("application/problem+json", options.headers) });
@@ -40,10 +48,10 @@ export function problem(code: ProblemCode, options: { detail?: string; errors?: 
 class InvalidJsonError extends Error {}
 export class PayloadTooLargeError extends Error {}
 
-/** Reads at most MAX_JSON_BODY_BYTES, whatever Content-Length claims. */
-export async function readBoundedText(request: Request): Promise<string> {
+/** Reads at most `maxBytes` (64 KB by default), whatever Content-Length claims. */
+export async function readBoundedText(request: Request, maxBytes = MAX_JSON_BODY_BYTES): Promise<string> {
   const declared = Number(request.headers.get("content-length") ?? "");
-  if (Number.isFinite(declared) && declared > MAX_JSON_BODY_BYTES) throw new PayloadTooLargeError();
+  if (Number.isFinite(declared) && declared > maxBytes) throw new PayloadTooLargeError();
   if (!request.body) return "";
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -52,7 +60,7 @@ export async function readBoundedText(request: Request): Promise<string> {
     const { done, value } = await reader.read();
     if (done) break;
     size += value.byteLength;
-    if (size > MAX_JSON_BODY_BYTES) {
+    if (size > maxBytes) {
       await reader.cancel();
       throw new PayloadTooLargeError();
     }
@@ -61,8 +69,8 @@ export async function readBoundedText(request: Request): Promise<string> {
   return new TextDecoder().decode(Buffer.concat(chunks));
 }
 
-export async function parseJson<T>(request: Request, schema: ZodType<T>): Promise<T> {
-  const text = await readBoundedText(request);
+export async function parseJson<T>(request: Request, schema: ZodType<T>, maxBytes = MAX_JSON_BODY_BYTES): Promise<T> {
+  const text = await readBoundedText(request, maxBytes);
   let body: unknown;
   try { body = JSON.parse(text); } catch { throw new InvalidJsonError(); }
   return schema.parse(body);
@@ -77,6 +85,10 @@ export function mapErrorToProblem(error: unknown): Response {
   if (error instanceof InvalidJsonError || (error instanceof Error && error.name === "InvalidCursorError")) return problem("validation_error");
   if (error instanceof Error && error.name === "ResourceNotFoundError") return problem("not_found");
   if (error instanceof Error && error.name === "PermissionDeniedError") return problem("forbidden");
+  // A specification rule (cycle, document as parent…) carries its French message.
+  if (error instanceof Error && (error.name === "SpecRuleError" || error.name === "SpecConflictError")) {
+    return problem("domain_error", { detail: error.message });
+  }
   const detail = describeDomainError(error);
   if (detail) return problem("domain_error", { detail });
   // Logged without the message, which may carry SQL and its parameters (JIR-160).

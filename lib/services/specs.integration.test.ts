@@ -19,6 +19,7 @@ import {
   SpecRuleError,
   trashSpecNode,
   updateSpecContent,
+  updateSpecNode,
 } from "@/lib/services/specs";
 
 const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
@@ -65,6 +66,17 @@ describeDb("specification tree service", () => {
     expect((await getSpecNode(backlogId, doc.id))?.content).toBe("");
   });
 
+  it("creates a document with its text in one call, but never a folder with text", async () => {
+    const created = await create(null, "document", "Note");
+    expect((await getSpecNode(backlogId, created.id))?.content).toBe("");
+    const filled = await createSpecNode({ backlogId, parentId: null, kind: "document", title: "Brief agent", content: "# Problème" }, actorId);
+    expect((await getSpecNode(backlogId, filled.id))?.content).toBe("# Problème");
+    await expect(createSpecNode({ backlogId, parentId: null, kind: "folder", title: "X", content: "y" }, actorId))
+      .rejects.toMatchObject({ code: "folder_content", message: "Un dossier n’a pas de contenu : créez un document." });
+    await trashSpecNode({ backlogId, id: created.id }, actorId);
+    await trashSpecNode({ backlogId, id: filled.id }, actorId);
+  });
+
   it("refuses a document as parent and a parent from another backlog", async () => {
     const doc = (await listSpecNodes(backlogId)).find((n) => n.title === "Contexte")!;
     await expect(create(doc.id, "document", "Enfant")).rejects.toMatchObject({ code: "parent_not_folder" });
@@ -106,9 +118,44 @@ describeDb("specification tree service", () => {
     expect(same.revision.getTime()).toBe(first.revision.getTime());
   });
 
-  it("refuses content on a folder", async () => {
+  it("refuses content on a folder with a rule, not a missing node", async () => {
     const prd = (await listSpecNodes(backlogId)).find((n) => n.title === "PRD")!;
-    await expect(updateSpecContent({ backlogId, id: prd.id, content: "x", revision: prd.updatedAt }, actorId)).rejects.toThrow();
+    await expect(updateSpecContent({ backlogId, id: prd.id, content: "x", revision: prd.updatedAt }, actorId))
+      .rejects.toMatchObject({ code: "folder_content" });
+    await expect(updateSpecNode({ backlogId, id: prd.id, content: "x", revision: prd.updatedAt }, actorId))
+      .rejects.toMatchObject({ code: "folder_content" });
+  });
+
+  it("changes title and text in one transaction, or nothing on a stale revision", async () => {
+    const doc = (await listSpecNodes(backlogId)).find((n) => n.title === "Contexte")!;
+    const stale = new Date(doc.updatedAt.getTime() - 1);
+    await expect(updateSpecNode({ backlogId, id: doc.id, title: "Renommé", content: "z", revision: stale }, actorId))
+      .rejects.toBeInstanceOf(SpecConflictError);
+    expect((await getSpecNode(backlogId, doc.id))?.title).toBe("Contexte");
+    expect(await updateSpecNode({ backlogId, id: doc.id, title: "Contexte v2", content: "# v2", revision: doc.updatedAt }, actorId))
+      .toEqual({ changed: true });
+    const after = await getSpecNode(backlogId, doc.id);
+    expect(after).toMatchObject({ title: "Contexte v2", content: "# v2" });
+    await updateSpecNode({ backlogId, id: doc.id, title: "Contexte" }, actorId);
+  });
+
+  it("bounds a document in bytes, accents included", async () => {
+    const accents = "é".repeat(400_001); // 800 002 bytes
+    await expect(createSpecNode({ backlogId, parentId: null, kind: "document", title: "Trop long", content: accents }, actorId))
+      .rejects.toThrow("800 Ko");
+  });
+
+  it("moves to the end of the new folder when no afterId is given", async () => {
+    const nodes = await listSpecNodes(backlogId);
+    const ux = nodes.find((n) => n.title === "UX")!;
+    const first = await create(ux.id, "document", "Premier");
+    const second = await create(null, "document", "Second");
+    await moveSpecNode({ backlogId, id: second.id, parentId: ux.id }, actorId);
+    expect(buildSpecTree(await listSpecNodes(backlogId)).find((n) => n.id === ux.id)!.children.map((n) => n.id))
+      .toEqual([first.id, second.id]);
+    expect(await moveSpecNode({ backlogId, id: second.id, parentId: ux.id }, actorId)).toEqual({ changed: false });
+    await trashSpecNode({ backlogId, id: first.id }, actorId);
+    await trashSpecNode({ backlogId, id: second.id }, actorId);
   });
 
   it("trashes a subtree and restores it in place", async () => {

@@ -835,11 +835,13 @@ url = "https://jiroo-dev.vercel.app/api/mcp"
 bearer_token_env_var = "STUDIO_TOKEN"`}</code></pre>
           <p className="t-body">
             Les outils de lecture sont <code>list_backlogs</code>, <code>list_statuses</code>,{" "}
-            <code>search_items</code>, <code>get_item</code>, <code>list_my_items</code>, <code>list_labels</code> et <code>list_dependencies</code>.
+            <code>search_items</code>, <code>get_item</code>, <code>list_my_items</code>, <code>list_labels</code>, <code>list_dependencies</code>,{" "}
+            <code>list_specs</code> et <code>get_spec</code>.
             Avec la portée <Ui>Lecture et écriture</Ui>, l’agent peut aussi utiliser{" "}
             <code>create_item</code>, <code>update_item</code>, <code>transition_item</code>, <code>add_comment</code>,{" "}
             <code>create_label</code>, <code>add_item_label</code>, <code>remove_item_label</code>,{" "}
-            <code>add_dependency</code> et <code>remove_dependency</code>,
+            <code>add_dependency</code>, <code>remove_dependency</code>, <code>create_spec</code>, <code>update_spec</code>,{" "}
+            <code>move_spec</code>, <code>delete_spec</code> et <code>restore_spec</code>,
             dans les limites des droits du compte.
           </p>
           <p className="t-body">
@@ -869,6 +871,23 @@ bearer_token_env_var = "STUDIO_TOKEN"`}</code></pre>
             les enfants, les labels et les dépendances. Le texte d’un commentaire supprimé est vide ;
             sa date de suppression reste disponible.
           </p>
+        </GuideTopic>
+
+        <GuideTopic
+          title="Faire écrire les spécifications par un agent"
+          purpose="Laisser Claude Code ou Codex rédiger le brief, le PRD et l’UX directement dans le Studio."
+          steps={[
+            <>L’agent lit l’arborescence avec <code>list_specs</code> (ou <code>GET /api/v1/backlogs/CASS/specs</code>), puis un document par son chemin avec <code>get_spec</code>, par exemple <code>PRD/Stories/Story 1</code>.</>,
+            <>Il crée un dossier ou un document avec <code>create_spec</code>, en indiquant le dossier parent par son chemin (<code>parentPath</code>) ; un document peut recevoir son texte dès sa création.</>,
+            <>Pour modifier un texte, il renvoie avec <code>update_spec</code> la révision lue. Si quelqu’un a enregistré entre-temps, rien n’est écrasé : l’agent reçoit la révision actuelle et doit relire le document.</>,
+          ]}
+        >
+          <GuideNote>
+            Lire demande le droit de parcourir le backlog ; écrire demande le droit de modifier les items
+            et un jeton en <Ui>Lecture et écriture</Ui>. Quand l’agent écrit, les pages ouvertes du backlog affichent
+            le bandeau <Ui>Ce backlog a été modifié par quelqu’un d’autre</Ui> : cliquez sur <Ui>Actualiser</Ui>
+            pour voir son travail. Un document peut atteindre 800 Ko.
+          </GuideNote>
         </GuideTopic>
 
         <GuideTopic

@@ -86,3 +86,46 @@ export function checkSpecMove(
   if (descendantIds(nodes, nodeId).includes(parentId)) return "cycle";
   return null;
 }
+
+export type FlatSpecNode<T extends SpecTreeNode = SpecTreeNode> = T & { path: string; depth: number };
+
+/** Nodes in tree order (depth first), each with its slash-separated title path. */
+export function flattenSpecTree<T extends SpecTreeNode>(nodes: readonly T[]): FlatSpecNode<T>[] {
+  const out: FlatSpecNode<T>[] = [];
+  const walk = (level: SpecTree<T>[], prefix: string, depth: number) => {
+    for (const { children, ...node } of level) {
+      const path = prefix ? `${prefix}/${node.title}` : node.title;
+      out.push({ ...(node as unknown as T), path, depth });
+      walk(children, path, depth + 1);
+    }
+  };
+  walk(buildSpecTree(nodes), "", 0);
+  return out;
+}
+
+export type SpecPathLookup = { ok: true; id: string } | { ok: false; reason: "not_found" | "ambiguous" };
+
+/**
+ * Finds a node from its title path (`PRD/Stories/Story 1`), as agents name
+ * documents. Segments are trimmed; an exact title wins, otherwise a single
+ * case-insensitive match does. A title containing « / » cannot be reached by
+ * path (use its id).
+ */
+export function findSpecByPath(nodes: readonly SpecTreeNode[], path: string): SpecPathLookup {
+  const segments = path.split("/").map((segment) => segment.trim()).filter(Boolean);
+  if (segments.length === 0) return { ok: false, reason: "not_found" };
+  let parentId: string | null = null;
+  let found: SpecTreeNode | undefined;
+  for (const segment of segments) {
+    const siblings = nodes.filter((node) => node.parentId === parentId);
+    const exact = siblings.filter((node) => node.title.trim() === segment);
+    const loose = exact.length > 0
+      ? exact
+      : siblings.filter((node) => node.title.trim().toLocaleLowerCase("fr") === segment.toLocaleLowerCase("fr"));
+    if (loose.length === 0) return { ok: false, reason: "not_found" };
+    if (loose.length > 1) return { ok: false, reason: "ambiguous" };
+    found = loose[0]!;
+    parentId = found.id;
+  }
+  return { ok: true, id: found!.id };
+}

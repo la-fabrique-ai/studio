@@ -37,6 +37,14 @@ Aucune réponse ne contient le secret ni son empreinte.
 | `GET /items/{KEY}/dependencies` | read | `{ dependencies: Dependency[] }` |
 | `POST /items/{KEY}/dependencies` | write | 201 `{ dependency: Dependency }` |
 | `DELETE /items/{KEY}/dependencies/{id}` | write | 204 |
+| `GET /backlogs/{key}/specs` | read | `{ backlog, nodes: SpecListEntry[] }`, arborescence des spécifications dans l’ordre de l’arbre |
+| `GET /backlogs/{key}/specs/lookup?path=…` | read | `{ node: SpecNode }`, nœud désigné par son chemin de titres |
+| `POST /backlogs/{key}/specs` | write | 201 `{ node: SpecNode }` |
+| `GET /specs/{id}` | read | `{ node: SpecNode }` |
+| `PATCH /specs/{id}` | write | 200 `{ node: SpecNode }` ; révision périmée : 409 avec `currentRevision` |
+| `POST /specs/{id}/move` | write | 200 `{ node: SpecNode }` |
+| `DELETE /specs/{id}` | write | 200 `{ trashedIds: string[] }` |
+| `POST /specs/{id}/restore` | write | 200 `{ node: SpecNode }` |
 
 Les clés de backlog et d’item sont insensibles à la casse à l’entrée, normalisées en majuscules.
 Les clés d’idempotence sont sensibles à la casse et restent inchangées.
@@ -165,6 +173,60 @@ curl "$STUDIO_ORIGIN/api/v1/items/CASS-12/dependencies" -X POST \
   -H "Authorization: Bearer $STUDIO_TOKEN" -H 'Content-Type: application/json' \
   --data '{"otherKey":"CASS-13","direction":"blocks"}'
 # List with GET; remove with DELETE /items/CASS-12/dependencies/{id}.
+```
+
+## Spécifications
+
+Chaque backlog a une arborescence de **dossiers** et de **documents** Markdown
+(Brief, PRD et UX par défaut, méthode BMAD) ; seuls les dossiers ont des
+enfants. La lecture exige `browse_backlog`, l’écriture `edit_items` et un jeton
+`write`. Un nœud est toujours autorisé par son propre backlog : un nœud d’un
+backlog illisible, inconnu ou à la corbeille répond 404.
+
+```ts
+type SpecListEntry = { id, parentId, kind: "folder" | "document", title, path, depth, updatedAt };
+type SpecNode = {
+  id, backlog: { id, key }, parentId, kind, title, path, updatedAt,
+  updatedBy: { name } | null,
+  content?: string,   // documents : texte Markdown
+  revision?: string,  // documents : à renvoyer pour modifier le texte
+  children?: { id, kind, title }[], // dossiers : enfants directs, dans l’ordre
+};
+```
+
+`path` est le chemin des titres depuis la racine (`PRD/Stories/Story 1`).
+`lookup?path=` le suit en ignorant la casse et les espaces autour des segments ;
+un titre exact l’emporte. Plusieurs nœuds frères au même titre répondent 409 :
+utilisez leur identifiant. Un titre contenant « / » ne s’atteint que par
+identifiant.
+
+La création reçoit `{ kind, title, content?, parentId? | parentPath? }` ; sans
+parent, le nœud va à la racine, en dernier. Seul un document accepte `content`.
+`PATCH` reçoit `title` et/ou `content` ; `content` remplace tout le texte et
+exige la `revision` lue. Si le document a été enregistré depuis, la réponse est
+409 avec `currentRevision`, et **rien** n’est modifié, titre compris : relisez,
+fusionnez, renvoyez avec la nouvelle révision (comme la version d’une page
+Confluence). Le titre et le texte changent dans une même transaction. Envoyer
+`content` à un dossier répond 409. Le déplacement reçoit `{ parentId, afterId? }`
+(`parentId: null` pour la racine ; `afterId: null` pour la première place,
+absent pour la dernière, comme une création) ; un dossier
+ne peut pas entrer dans lui-même. La suppression met le nœud et son sous-arbre à
+la corbeille ; `restore` les ramène, à la racine si le dossier parent est encore
+supprimé.
+
+Les routes de spécifications acceptent un corps JSON jusqu’à **1 Mo** (64 Ko
+ailleurs) ; un document fait au plus **800 Ko** en UTF-8 (400 en cas de
+dépassement). Les écritures sont journalisées avec leur origine et le jeton ; sur les onglets
+ouverts du backlog, un bandeau propose d’actualiser.
+
+```sh
+curl "$STUDIO_ORIGIN/api/v1/backlogs/CASS/specs" -H "Authorization: Bearer $STUDIO_TOKEN"
+curl "$STUDIO_ORIGIN/api/v1/backlogs/CASS/specs" -X POST \
+  -H "Authorization: Bearer $STUDIO_TOKEN" -H 'Content-Type: application/json' \
+  --data '{"kind":"document","title":"Brief quotas","parentPath":"Brief","content":"# Problème"}'
+curl "$STUDIO_ORIGIN/api/v1/specs/{id}" -X PATCH \
+  -H "Authorization: Bearer $STUDIO_TOKEN" -H 'Content-Type: application/json' \
+  --data '{"content":"# Problème\n\nVersion 2","revision":"2026-11-16T10:00:00.000Z"}'
 ```
 
 ## Création sans doublon et reprise après une réponse perdue

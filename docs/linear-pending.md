@@ -26,10 +26,17 @@ l'écrit pas : en revue, il signale ses constats dans son rapport.
   prévue : projet P-JIR-37 « Évolutions à venir » (ou nouveau projet si le
   propriétaire le décide), un ticket Feature et un document de plan. Source :
   [`docs/superpowers/specs/2026-11-16-studio-specifications-design.md`](superpowers/specs/2026-11-16-studio-specifications-design.md)
-  (contenu complet). État : validé par le propriétaire en session, en cours
-  d'exécution sur la branche `lot-specs-documents`. Limite constatée : aucun
+  (contenu complet). État : validé par le propriétaire en session ; PR #189
+  fusionnée dans `main` (branche `lot-specs-documents`). Limite constatée : aucun
   outil Linear disponible dans la session. Prochaine action : créer le ticket et
   le document dans Linear, puis y relier la PR.
+- **16 novembre 2026 — NON SYNCHRONISÉ — Spécifications, accès API et MCP
+  (lot 2).** Cible prévue : même projet que le lot 1, un ticket Feature lié.
+  Source :
+  [`docs/superpowers/specs/2026-11-16-studio-specifications-api-design.md`](superpowers/specs/2026-11-16-studio-specifications-api-design.md)
+  (contenu complet). État : validé par le propriétaire en session ; PR #190
+  ouverte vers `main` (branche `lot-specs-api`), non fusionnée. Prochaine
+  action : créer le ticket dans Linear et y relier la PR.
 - **16 novembre 2026 — NON SYNCHRONISÉ — Mise à jour de sécurité Next.js
   16.4.1 → 16.4.6.** Cible prévue : projet P-JIR-36 « Plateforme, sécurité et
   déploiement », un ticket `Chore`. Source : `next dev` signale le 16 novembre
@@ -37,9 +44,9 @@ l'écrit pas : en revue, il signale ses constats dans son rapport.
   l'avis modéré GHSA-mfr8-8qww-v76h (`use cache` via `unstable_cache`), corrigé
   en 16.4.5 avec six autres avis modérés. Changement : `next` et
   `eslint-config-next` passent en 16.4.6 (branche
-  `lot-next-16-4-6-security`), aucune autre dépendance. État : PR ouverte,
-  non fusionnée. Limite constatée : aucun outil Linear disponible dans la
-  session. Prochaine action : créer le ticket dans Linear et y relier la PR.
+  `lot-next-16-4-6-security`), aucune autre dépendance. État : PR #191
+  fusionnée dans `main`. Limite constatée : aucun outil Linear disponible dans
+  la session. Prochaine action : créer le ticket dans Linear et y relier la PR.
 
 ## Historique (clos)
 

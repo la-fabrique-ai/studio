@@ -43,14 +43,12 @@ export function revalidateBacklogPages(backlogKey: string): void {
 }
 
 /**
- * After a change to a backlog's specification tree: re-renders the
- * specifications pages (and the sidebar's folders) for the author and tells
- * the other open tabs to refresh. Document bodies are not published: each
- * autosave would refresh every reader.
+ * Re-renders the specifications pages (and the sidebar's folders) for the
+ * author, in the response of the Server Action; the use case publishes the
+ * change to the other tabs itself.
  */
-export async function invalidateSpecs(backlogKey: string, change: Omit<BacklogChange, "kind" | "itemIds">): Promise<void> {
+export function revalidateSpecPages(backlogKey: string): void {
   revalidatePath(`/b/${backlogKey}/specs`, "layout");
-  await publishBacklogChange({ ...change, kind: "backlog" });
 }
 
 /**

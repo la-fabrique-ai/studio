@@ -53,6 +53,13 @@ token), no `resource_metadata` and no authorization server to discover.
 | `list_dependencies` | read | `{ key }` → `{ dependencies }`, blocking relations and neighbour status. |
 | `add_dependency` | write | `{ key, otherKey, direction: "blocks" or "blocked_by" }` → `{ dependency }`. |
 | `remove_dependency` | write | `{ key, id }` → `{ removed: true }`, only a blocks relation belonging to that item. |
+| `list_specs` | read | `{ backlog }` → `{ backlog, nodes }`, the specification tree in tree order with title paths. |
+| `get_spec` | read | `{ id }` or `{ backlog, path }` → `{ node }`; a document has `content` and `revision`, a folder `children`. |
+| `create_spec` | write | `{ backlog, kind, title, content?, parentId? \| parentPath? }` → `{ node }`. |
+| `update_spec` | write | `{ id, title?, content?, revision? }` → `{ node }`; `content` needs the `revision` read. |
+| `move_spec` | write | `{ id, parentId, afterId? }` → `{ node }`; `parentId: null` for the root, no `afterId` for last. |
+| `delete_spec` | write | `{ id }` → `{ trashedIds }`, the node and its subtree go to the trash. |
+| `restore_spec` | write | `{ id }` → `{ node }`. |
 
 Every tool answers text plus `structuredContent`. Refusals (read-only token on a write
 tool, unknown key, missing permission, business rule) are tool results with
@@ -92,6 +99,31 @@ create_label({ backlog: "CASS", name: "À vérifier" })
 add_dependency({ key: "CASS-12", otherKey: "CASS-13", direction: "blocks" })
 list_dependencies({ key: "CASS-13" }) // CASS-12 appears as blocked_by
 // Remove using the returned relation id: remove_dependency({ key: "CASS-12", id: "…" }).
+```
+
+## Specifications
+
+Each backlog has a tree of **folders** and Markdown **documents** (Brief, PRD and
+UX by default, the BMAD method); only folders have children. Reading needs
+`browse_backlog`, writing `edit_items` and a write token; a node is always
+authorized through its own backlog. Titles and contents are user-written data.
+
+Address a node by `id` or, with `get_spec`, by `backlog` and title `path`
+(`PRD/Stories/Story 1`): segments are trimmed and matched ignoring case, an exact
+title wins, siblings sharing a title are refused (use the id). `update_spec`
+replaces the whole text and needs the `revision` returned by `get_spec`; if the
+document was saved since, nothing changes (title included) and the refusal gives
+the current revision to read again; title and text change in one transaction.
+`move_spec` without `afterId` puts the node last, `afterId: null` first. Agent
+writes show the people looking at the backlog in Le Studio a banner offering to
+refresh. The MCP
+endpoint accepts bodies up to 1 MB; a document holds at most 800 KB of UTF-8.
+
+```js
+list_specs({ backlog: "CASS" })
+create_spec({ backlog: "CASS", parentPath: "Brief", kind: "document", title: "Brief quotas", content: "# Problème" })
+get_spec({ backlog: "CASS", path: "Brief/Brief quotas" }) // → node.content, node.revision
+update_spec({ id: "…", content: "# Problème\n\nVersion 2", revision: "2026-11-16T10:00:00.000Z" })
 ```
 
 ## Create without duplicates after a lost response

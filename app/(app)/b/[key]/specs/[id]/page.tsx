@@ -52,7 +52,6 @@ export default async function SpecNodePage({ params }: { params: Promise<{ key: 
       {node.kind === "document" ? (
         <SpecDocumentEditor
           backlogKey={backlog.key}
-          backlogId={backlog.id}
           id={node.id}
           currentUserId={session.user.id}
           content={node.content}

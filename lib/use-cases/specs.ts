@@ -1,6 +1,8 @@
 import "server-only";
 import { runWithActor, type Actor } from "@/lib/auth/actor-context";
-import { requireBacklogPermissionById } from "@/lib/auth/action-authorization";
+import { requireBacklogPermissionById, requireSpecNodePermission } from "@/lib/auth/action-authorization";
+import type { BacklogPermissionKey } from "@/lib/auth/permissions";
+import { publishBacklogChange } from "@/lib/realtime/publish";
 import {
   createSpecNode,
   getSpecNode,
@@ -10,53 +12,93 @@ import {
   restoreSpecNode,
   trashSpecNode,
   updateSpecContent,
+  updateSpecNode,
 } from "@/lib/services/specs";
 
 // Specifications reuse the item permissions: whoever browses the backlog
-// reads them, whoever edits its items edits them (no new permission).
-const read = (actor: Actor, backlogId: string) =>
-  requireBacklogPermissionById({ actorId: actor.actorId, backlogId, permission: "browse_backlog" });
-const write = (actor: Actor, backlogId: string) =>
-  requireBacklogPermissionById({ actorId: actor.actorId, backlogId, permission: "edit_items" });
+// reads them, whoever edits its items edits them (no new permission). A node
+// is always authorized through its own backlog, never one the caller names.
+const READ: BacklogPermissionKey = "browse_backlog";
+const WRITE: BacklogPermissionKey = "edit_items";
+
+const backlogFor = (actor: Actor, backlogId: string, permission: BacklogPermissionKey) =>
+  requireBacklogPermissionById({ actorId: actor.actorId, backlogId, permission });
+const nodeFor = (actor: Actor, nodeId: string, permission: BacklogPermissionKey) =>
+  requireSpecNodePermission({ actorId: actor.actorId, nodeId, permission });
+
+/** Other open tabs refresh their tree (and the sidebar folders). */
+const publish = (actor: Actor, backlogId: string) =>
+  publishBacklogChange({ kind: "backlog", backlogId, actorId: actor.actorId });
 
 export async function listSpecNodesUseCase(actor: Actor, backlogId: string) {
-  await read(actor, backlogId);
+  await backlogFor(actor, backlogId, READ);
   return listSpecNodes(backlogId);
 }
 
-export async function getSpecNodeUseCase(actor: Actor, backlogId: string, id: string) {
-  await read(actor, backlogId);
-  return getSpecNode(backlogId, id);
+/** A live node with its body and its backlog; null when it is in the trash. */
+export async function getSpecNodeUseCase(actor: Actor, id: string) {
+  const { backlogId } = await nodeFor(actor, id, READ);
+  const node = await getSpecNode(backlogId, id);
+  return node ? { ...node, backlogId } : null;
 }
 
-type Scoped = { backlogId: string };
-
-function writing<I extends Scoped, R>(run: (input: I, actorId: string) => Promise<R>) {
-  return (actor: Actor, input: I) =>
-    runWithActor(actor, async () => {
-      await write(actor, input.backlogId);
-      return run(input, actor.actorId);
-    });
+export function createSpecNodeUseCase(
+  actor: Actor,
+  input: { backlogId: string; parentId: string | null; kind: "folder" | "document"; title: string; content?: string },
+) {
+  return runWithActor(actor, async () => {
+    await backlogFor(actor, input.backlogId, WRITE);
+    const node = await createSpecNode(input, actor.actorId);
+    await publish(actor, input.backlogId);
+    return { ...node, backlogId: input.backlogId };
+  });
 }
 
-export const createSpecNodeUseCase = writing(
-  (input: Scoped & { parentId: string | null; kind: "folder" | "document"; title: string }, actorId) =>
-    createSpecNode(input, actorId),
-);
-export const renameSpecNodeUseCase = writing(
-  (input: Scoped & { id: string; title: string }, actorId) => renameSpecNode(input, actorId),
-);
-export const moveSpecNodeUseCase = writing(
-  (input: Scoped & { id: string; parentId: string | null; afterId: string | null }, actorId) =>
-    moveSpecNode(input, actorId),
-);
-export const updateSpecContentUseCase = writing(
-  (input: Scoped & { id: string; content: string; revision: string }, actorId) =>
-    updateSpecContent(input, actorId),
-);
-export const trashSpecNodeUseCase = writing(
-  (input: Scoped & { id: string }, actorId) => trashSpecNode(input, actorId),
-);
-export const restoreSpecNodeUseCase = writing(
-  (input: Scoped & { id: string }, actorId) => restoreSpecNode(input, actorId),
-);
+/**
+ * Writes one node after authorizing it through its own backlog, then lets
+ * the other tabs refresh (`publishFromUi: false` keeps UI writes silent).
+ */
+async function writeNode<R>(
+  actor: Actor,
+  id: string,
+  run: (backlogId: string) => Promise<R>,
+  { publishFromUi = true }: { publishFromUi?: boolean } = {},
+): Promise<R & { backlogId: string }> {
+  return runWithActor(actor, async () => {
+    const { backlogId } = await nodeFor(actor, id, WRITE);
+    const result = await run(backlogId);
+    if (publishFromUi || actor.source !== "ui") await publish(actor, backlogId);
+    return { ...result, backlogId };
+  });
+}
+
+export function renameSpecNodeUseCase(actor: Actor, input: { id: string; title: string }) {
+  return writeNode(actor, input.id, (backlogId) => renameSpecNode({ ...input, backlogId }, actor.actorId));
+}
+
+export function moveSpecNodeUseCase(actor: Actor, input: { id: string; parentId: string | null; afterId?: string | null }) {
+  return writeNode(actor, input.id, (backlogId) => moveSpecNode({ ...input, backlogId }, actor.actorId));
+}
+
+/**
+ * Each autosave of the editor would refresh every reader: only an agent's
+ * write (API, MCP) is published, so people watch the document fill in.
+ */
+export function updateSpecContentUseCase(actor: Actor, input: { id: string; content: string; revision: string }) {
+  return writeNode(actor, input.id, (backlogId) => updateSpecContent({ ...input, backlogId }, actor.actorId), {
+    publishFromUi: false,
+  });
+}
+
+/** Title and/or text at once, for the API and MCP (one transaction). */
+export function updateSpecNodeUseCase(actor: Actor, input: { id: string; title?: string; content?: string; revision?: string }) {
+  return writeNode(actor, input.id, (backlogId) => updateSpecNode({ ...input, backlogId }, actor.actorId));
+}
+
+export function trashSpecNodeUseCase(actor: Actor, input: { id: string }) {
+  return writeNode(actor, input.id, (backlogId) => trashSpecNode({ ...input, backlogId }, actor.actorId));
+}
+
+export function restoreSpecNodeUseCase(actor: Actor, input: { id: string }) {
+  return writeNode(actor, input.id, (backlogId) => restoreSpecNode({ ...input, backlogId }, actor.actorId));
+}

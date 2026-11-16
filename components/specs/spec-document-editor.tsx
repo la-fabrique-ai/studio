@@ -15,7 +15,6 @@ const PLACEHOLDER = "Écrivez, ou tapez « / » pour insérer un bloc…";
 
 type Props = {
   backlogKey: string;
-  backlogId: string;
   id: string;
   currentUserId: string;
   content: string;
@@ -37,13 +36,13 @@ export function SpecDocumentEditor(props: Props) {
 
 type Conflict = { content: string; revision: string };
 
-function SpecDocumentEditorBody({ backlogKey, backlogId, id, currentUserId, content, revision, readOnly }: Props) {
+function SpecDocumentEditorBody({ backlogKey, id, currentUserId, content, revision, readOnly }: Props) {
   const base = useRef(revision);
   const [conflict, setConflict] = useState<Conflict | null>(null);
 
   const save = useCallback(async (next: string): Promise<SaveResult> => {
     try {
-      const result = await updateSpecContentAction({ backlogKey, backlogId, id, content: next, revision: base.current });
+      const result = await updateSpecContentAction({ backlogKey, id, content: next, revision: base.current });
       if (result.ok) {
         base.current = result.revision;
         return { ok: true, revision: Date.parse(result.revision) };
@@ -53,7 +52,7 @@ function SpecDocumentEditorBody({ backlogKey, backlogId, id, currentUserId, cont
     } catch {
       return { ok: false, error: "Le serveur est injoignable." };
     }
-  }, [backlogKey, backlogId, id]);
+  }, [backlogKey, id]);
 
   const autosave = useAutosave({
     user: currentUserId,

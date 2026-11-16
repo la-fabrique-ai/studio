@@ -4,7 +4,7 @@ const m = vi.hoisted(() => ({
   session: vi.fn(), revalidate: vi.fn(), create: vi.fn(), content: vi.fn(), move: vi.fn(),
 }));
 vi.mock("server-only", () => ({}));
-vi.mock("@/lib/realtime/publish", () => ({ invalidateSpecs: m.revalidate }));
+vi.mock("@/lib/realtime/publish", () => ({ revalidateSpecPages: m.revalidate }));
 vi.mock("@/lib/auth/session", () => ({ getSession: m.session }));
 vi.mock("@/lib/use-cases/specs", () => ({
   createSpecNodeUseCase: m.create,
@@ -32,7 +32,7 @@ describe("specification actions", () => {
       { actorId: "writer-1", source: "ui" },
       { backlogId: "backlog-1", parentId: null, kind: "document", title: "Brief" },
     );
-    expect(m.revalidate).toHaveBeenCalledWith("ATL", { backlogId: "backlog-1", actorId: "writer-1" });
+    expect(m.revalidate).toHaveBeenCalledWith("ATL");
   });
 
   it("returns a permission denial without revalidating", async () => {
@@ -44,13 +44,13 @@ describe("specification actions", () => {
 
   it("explains a refused move in French", async () => {
     m.move.mockRejectedValueOnce(new SpecRuleError("cycle"));
-    await expect(moveSpecNodeAction({ ...target, id: "a", parentId: "b", afterId: null }))
+    await expect(moveSpecNodeAction({ backlogKey: "ATL", id: "a", parentId: "b", afterId: null }))
       .resolves.toEqual({ ok: false, error: "Un dossier ne peut pas être déplacé dans lui-même." });
   });
 
   it("returns the new revision of a saved document, without revalidating", async () => {
     m.content.mockResolvedValue({ revision: new Date("2026-11-16T10:00:00.000Z") });
-    await expect(updateSpecContentAction({ ...target, id: "doc", content: "# A", revision: "2026-11-16T09:00:00.000Z" }))
+    await expect(updateSpecContentAction({ backlogKey: "ATL", id: "doc", content: "# A", revision: "2026-11-16T09:00:00.000Z" }))
       .resolves.toEqual({ ok: true, revision: "2026-11-16T10:00:00.000Z" });
     expect(m.revalidate).not.toHaveBeenCalled();
   });
@@ -58,16 +58,25 @@ describe("specification actions", () => {
   it("explains an invalid document without blaming the title", async () => {
     const { ZodError } = await import("zod");
     m.content.mockRejectedValueOnce(new ZodError([]));
-    await expect(updateSpecContentAction({ ...target, id: "doc", content: "x", revision: "2026-11-16T09:00:00.000Z" }))
+    await expect(updateSpecContentAction({ backlogKey: "ATL", id: "doc", content: "x", revision: "2026-11-16T09:00:00.000Z" }))
       .resolves.toEqual({ ok: false, error: "Le document est trop long pour être enregistré." });
   });
 
   it("hands back the server version on a conflict", async () => {
     m.content.mockRejectedValueOnce(new SpecConflictError({ content: "serveur", revision: new Date("2026-11-16T11:00:00.000Z") }));
-    await expect(updateSpecContentAction({ ...target, id: "doc", content: "local", revision: "2026-11-16T09:00:00.000Z" }))
+    await expect(updateSpecContentAction({ backlogKey: "ATL", id: "doc", content: "local", revision: "2026-11-16T09:00:00.000Z" }))
       .resolves.toEqual({
         ok: false, conflict: true, error: "Ce document a été modifié entre-temps.",
         content: "serveur", revision: "2026-11-16T11:00:00.000Z",
       });
+  });
+});
+
+describe("node actions", () => {
+  it("authorize a node through its own backlog, never one the browser names", async () => {
+    m.move.mockResolvedValue({ changed: true, backlogId: "backlog-1" });
+    await moveSpecNodeAction({ backlogKey: "ATL", id: "a", parentId: null, afterId: null });
+    expect(m.move).toHaveBeenCalledWith({ actorId: "writer-1", source: "ui" }, { id: "a", parentId: null, afterId: null });
+    expect(m.revalidate).toHaveBeenCalledWith("ATL");
   });
 });
