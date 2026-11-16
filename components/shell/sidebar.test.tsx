@@ -86,19 +86,18 @@ describe("Sidebar", () => {
   });
 
   it.each(["open", "collapsed"])(
-    "allows the whole %s sidebar to scroll while keeping filters usable (JIR-125)",
+    "allows the whole %s sidebar to scroll, filters included (JIR-125)",
     async (state) => {
       document.documentElement.dataset.sidebar = state;
       const { container } = renderSidebar();
       const sidebar = container.firstElementChild;
 
-      const filters = screen.getByText("Filtres").parentElement;
-
       await waitFor(() => {
         // JSDOM has no layout: Chromium separately checks wheel/Tab reachability.
         expect(sidebar).toHaveClass("overflow-y-auto", "overflow-x-hidden");
         expect(sidebar).not.toHaveClass("overflow-hidden");
-        expect(filters).toHaveClass("min-h-32", "overflow-y-auto");
+        // The filters scroll with the sidebar: no box of their own, no gap under them.
+        expect(screen.getByText("Filtres").parentElement).not.toHaveClass("min-h-32");
       });
     },
   );

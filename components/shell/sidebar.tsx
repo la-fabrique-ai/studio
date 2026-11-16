@@ -262,8 +262,6 @@ export function Sidebar({
           </span>
         </NavLink>
 
-        {/* Keep filters usable; short windows scroll the whole sidebar instead (JIR-125). */}
-        <div className="flex min-h-32 flex-col gap-0.5 overflow-y-auto">
         <div
           className={cn(
             "t-meta px-2 pt-2 pb-1 font-medium uppercase tracking-wide text-muted-foreground",
@@ -319,7 +317,6 @@ export function Sidebar({
             backlogs={backlogs}
           />
         )}
-        </div>
       </SidebarSection>
 
       {/* Steering the team and its agents: the section is announced, its pages come later. */}
