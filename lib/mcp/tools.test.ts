@@ -80,7 +80,7 @@ beforeEach(() => {
 });
 
 describe("the tool catalogue", () => {
-  it("exposes the item, label and dependency tools with their scopes", () => {
+  it("exposes the item, label, dependency and specification tools with their scopes", () => {
     expect(STUDIO_TOOLS.map((t) => [t.name, t.scope])).toEqual([
       ["list_backlogs", "read"],
       ["list_statuses", "read"],
@@ -98,6 +98,13 @@ describe("the tool catalogue", () => {
       ["list_dependencies", "read"],
       ["add_dependency", "write"],
       ["remove_dependency", "write"],
+      ["list_specs", "read"],
+      ["get_spec", "read"],
+      ["create_spec", "write"],
+      ["update_spec", "write"],
+      ["move_spec", "write"],
+      ["delete_spec", "write"],
+      ["restore_spec", "write"],
     ]);
   });
 });
