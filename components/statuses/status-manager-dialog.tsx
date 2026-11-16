@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<StatusCategory, string> = {
   done: "Terminé",
 };
 
-const PRESET_COLORS = ["#9aa0a6", "#d99a2b", "#8b5cf6", "#3aa675", "#2b6cb0", "#7c3030"];
+const PRESET_COLORS = ["#858ba0", "#c47a12", "#7a57c9", "#2e7d46", "#3b7fc4", "#3d4fd1"];
 
 type EditorMode =
   | { type: "create" }
@@ -64,7 +64,7 @@ export function StatusManagerDialog({
   const [mode, setMode] = useState<EditorMode>(null);
   const [name, setName] = useState("");
   const [category, setCategory] = useState<StatusCategory>("in_progress");
-  const [color, setColor] = useState("#8b5cf6");
+  const [color, setColor] = useState("#7a57c9");
   const [replacementStatusId, setReplacementStatusId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -74,7 +74,7 @@ export function StatusManagerDialog({
     setMode(null);
     setName("");
     setCategory("in_progress");
-    setColor("#8b5cf6");
+    setColor("#7a57c9");
     setReplacementStatusId("");
     setError(null);
   }

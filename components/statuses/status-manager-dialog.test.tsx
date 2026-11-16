@@ -76,7 +76,7 @@ describe("StatusManagerDialog", () => {
         id: "ready",
         name: "Prêt pour livraison",
         category: "in_progress",
-        color: "#2b6cb0",
+        color: "#3b7fc4",
         order: 4,
       },
     });
@@ -88,7 +88,7 @@ describe("StatusManagerDialog", () => {
     await user.click(within(dialog).getByRole("button", { name: "Ajouter une colonne" }));
     await user.type(within(dialog).getByRole("textbox", { name: "Nom" }), "Prêt pour livraison");
     await user.selectOptions(within(dialog).getByRole("combobox", { name: "Catégorie" }), "in_progress");
-    await user.click(within(dialog).getByRole("button", { name: "Couleur #2b6cb0" }));
+    await user.click(within(dialog).getByRole("button", { name: "Couleur #3b7fc4" }));
     await user.click(within(dialog).getByRole("button", { name: "Ajouter la colonne" }));
 
     await waitFor(() =>
@@ -97,7 +97,7 @@ describe("StatusManagerDialog", () => {
         backlogKey: "DEMO",
         name: "Prêt pour livraison",
         category: "in_progress",
-        color: "#2b6cb0",
+        color: "#3b7fc4",
       }),
     );
     expect(await within(dialog).findByText("Prêt pour livraison")).toBeVisible();
@@ -193,7 +193,7 @@ describe("StatusManagerDialog", () => {
       id: "empty",
       name: "Prêt",
       category: "in_progress" as const,
-      color: "#2b6cb0",
+      color: "#3b7fc4",
       order: 4,
       itemCount: 0,
     };

@@ -205,7 +205,7 @@ export function NotificationBell({
                 {!n.read && (
                   <span
                     aria-hidden
-                    className="mr-2 mt-[5px] size-1.5 shrink-0 rounded-full bg-blue-500"
+                    className="mr-2 mt-[5px] size-1.5 shrink-0 rounded-full bg-[var(--primary)]"
                   />
                 )}
 
