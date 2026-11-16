@@ -8,6 +8,7 @@ vi.mock("@/lib/services/comments", () => ({ listComments: async () => [] }));
 vi.mock("@/lib/services/api-read", () => ({ getApiItemDetail: m.detail }));
 vi.mock("@/lib/services/item-search", () => ({ findItemSummaryByKey: m.summary, InvalidCursorError: class extends Error {} }));
 vi.mock("@/lib/use-cases/labels", () => ({ listLabelsUseCase: m.list, createLabelUseCase: m.create, addItemLabelUseCase: m.add, removeItemLabelUseCase: m.remove }));
+vi.mock("@/lib/use-cases/item-creation", () => ({ createExternalItemUseCase: m.createItem }));
 vi.mock("@/lib/use-cases/items", () => ({ createItemUseCase: m.createItem, updateItemUseCase: m.updateItem }));
 import { JIROO_TOOLS, runTool, type ToolDefinition } from "@/lib/mcp/tools";
 const labelId = "11111111-1111-4111-8111-111111111111";

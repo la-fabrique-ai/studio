@@ -1,3 +1,5 @@
+import { createExternalItemUseCase } from "@/lib/use-cases/item-creation";
+import { restIdempotencyKey } from "@/lib/items/creation-request";
 import { withApiAuth } from "@/lib/api/handler";
 import { jsonOk, parseJson } from "@/lib/api/http";
 import { commentRestInput, createRestItemInput, createRestLabelInput, parseSearchParams, updateRestItemInput } from "@/lib/api/schemas";
@@ -5,7 +7,7 @@ import { BACKLOG_KEY, ITEM_KEY, itemLabelInput, addDependencyInput, dependencyBo
 import { getApiComment, getApiItemDetail, getApiItemSummary, getApiMe, listApiBacklogs, listApiStatuses, resolveApiBacklog, resolveApiItem } from "@/lib/services/api-read";
 import { searchItemsForActor } from "@/lib/services/item-search";
 import { addCommentUseCase } from "@/lib/use-cases/comments";
-import { createItemUseCase, updateItemUseCase } from "@/lib/use-cases/items";
+import { updateItemUseCase } from "@/lib/use-cases/items";
 import { addItemLabelUseCase, createLabelUseCase, listLabelsUseCase, removeItemLabelUseCase } from "@/lib/use-cases/labels";
 
 import { listDependenciesUseCase, addDependencyUseCase, removeDependencyUseCase } from "@/lib/use-cases/links";
@@ -62,11 +64,11 @@ export const getMyItems = withApiAuth("read", async (request, actor) => {
   return jsonOk({ items, nextCursor: cursor });
 });
 export const postItem = withApiAuth("write", async (request, actor) => {
-  const { backlogKey, parentKey, ...input } = await parseJson(request, createRestItemInput);
-  const backlog = await resolveApiBacklog(actor.actorId, backlogKey);
-  const parent = parentKey ? await resolveApiItem(actor.actorId, parentKey) : null;
-  const result = await createItemUseCase(actor, { ...input, backlogId: backlog.backlogId, parentId: parent?.id ?? null });
-  return jsonOk({ item: await getApiItemSummary(actor.actorId, result.item.key) }, 201);
+  const { backlogKey, ...fields } = await parseJson(request, createRestItemInput);
+  const idempotencyKey = restIdempotencyKey(request.headers.get("Idempotency-Key"), fields.idempotencyKey);
+  const input = { ...fields, backlog: backlogKey, ...(idempotencyKey === undefined ? {} : { idempotencyKey }) };
+  const result = await createExternalItemUseCase(actor, input);
+  return jsonOk({ item: await getApiItemSummary(actor.actorId, result.item.key), replayed: result.replayed }, result.replayed ? 200 : 201);
 });
 export const patchItem = withApiAuth<{ key: string }>("write", async (request, actor, params) => {
   const key = ITEM_KEY.parse(params.key);

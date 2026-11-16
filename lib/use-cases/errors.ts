@@ -8,6 +8,8 @@ import { ZodError } from "zod";
  */
 export const DOMAIN_ERROR_MESSAGES = [
   // Items
+  "Cette clé de création a déjà été utilisée avec un contenu différent.",
+  "L’item créé avec cette clé a été supprimé. Utilisez une nouvelle clé pour une nouvelle création.",
   "Aucun statut par défaut pour ce backlog.",
   "Backlog introuvable.",
   "Cycle : le nouveau parent est dans le sous-arbre déplacé.",

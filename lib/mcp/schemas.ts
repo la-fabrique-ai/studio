@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { idempotencyKeySchema } from "@/lib/items/creation-request";
 import { ITEM_DESCRIPTION_MAX, ITEM_TITLE_MAX, labelIdsSchema } from "@/lib/validation/item";
 
 /**
@@ -78,6 +79,7 @@ export const listMyItemsInput = z.object({
 });
 
 export const createItemInput = z.object({
+  idempotencyKey: idempotencyKeySchema.optional().describe("Opaque, case-sensitive key (1–128 characters), shared by this user and backlog across REST/MCP and token rotation; no expiration."),
   backlog: BACKLOG_KEY,
   type: z.enum(["composant", "epic", "tache", "soustache"]).describe("Hierarchy level: composant > epic > tache > soustache."),
   title: z.string().trim().min(1).max(ITEM_TITLE_MAX),
@@ -92,7 +94,7 @@ export const createItemInput = z.object({
   kind: z.enum(["feature", "bug"]).optional(),
   sprintId: uuid.optional().describe("Plan the task in this sprint right away."),
   labelIds: labelIdsSchema.optional().describe("Initial global or backlog label ids, from list_labels; duplicates are ignored."),
-});
+}).strict();
 
 export const updateItemInput = z.object({
   key: ITEM_KEY,

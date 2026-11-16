@@ -40,6 +40,7 @@ vi.mock("@/lib/services/items", () => ({
 }));
 vi.mock("@/lib/services/statuses", () => ({ listStatusesForBacklog: mocks.listStatusesForBacklog }));
 vi.mock("@/lib/use-cases/comments", () => ({ addCommentUseCase: mocks.addCommentUseCase }));
+vi.mock("@/lib/use-cases/item-creation", () => ({ createExternalItemUseCase: mocks.createItemUseCase }));
 vi.mock("@/lib/use-cases/items", () => ({
   createItemUseCase: mocks.createItemUseCase,
   updateItemUseCase: mocks.updateItemUseCase,
@@ -188,9 +189,9 @@ describe("runTool", () => {
     expect(result.isError).toBeUndefined();
     expect(mocks.createItemUseCase).toHaveBeenCalledWith(
       { actorId: "user-1", source: "mcp", tokenId: "token-2" },
-      { backlogId: "backlog-1", parentId: "parent-1", type: "tache", title: "Nouvelle tâche", priority: 2 },
+      { backlog: "CASS", parentKey: "CASS-1", type: "tache", title: "Nouvelle tâche", priority: 2 },
     );
-    expect(mocks.getItemByKeyForBacklog).toHaveBeenCalledWith("CASS-1", "backlog-1");
+    expect(mocks.getItemByKeyForBacklog).not.toHaveBeenCalled();
   });
 
   it("updates only the fields the agent sent and refuses an empty update", async () => {
@@ -243,3 +244,10 @@ describe("runTool", () => {
     consoleError.mockRestore();
   });
 });
+
+ it("MCP forwards an opaque key and reports a replay", async () => {
+  mocks.createItemUseCase.mockResolvedValue({ item: { key: "CASS-12" }, replayed: true });
+  const result = await runTool(tool("create_item"), { backlog: "CASS", type: "composant", title: "Root", idempotencyKey: " Key " }, writer);
+  expect(result.structuredContent).toMatchObject({ replayed: true });
+  expect(mocks.createItemUseCase).toHaveBeenLastCalledWith(expect.anything(), { backlog: "CASS", type: "composant", title: "Root", idempotencyKey: " Key " });
+ });

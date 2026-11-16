@@ -1,3 +1,4 @@
+import { createExternalItemUseCase } from "@/lib/use-cases/item-creation";
 import "server-only";
 import { ZodError, type z } from "zod";
 import { isoDate, toBacklogSummary, type ItemSummary } from "@/lib/api/dto";
@@ -12,7 +13,7 @@ import { getItemByKeyForBacklog } from "@/lib/services/items";
 import { listStatusesForBacklog } from "@/lib/services/statuses";
 import { addCommentUseCase } from "@/lib/use-cases/comments";
 import { describeDomainError } from "@/lib/use-cases/errors";
-import { createItemUseCase, updateItemUseCase } from "@/lib/use-cases/items";
+import { updateItemUseCase } from "@/lib/use-cases/items";
 import { addItemLabelUseCase, createLabelUseCase, listLabelsUseCase, removeItemLabelUseCase } from "@/lib/use-cases/labels";
 import { listDependenciesUseCase, addDependencyUseCase, removeDependencyUseCase } from "@/lib/use-cases/links";
 import type { ApiTokenScope } from "@/lib/validation/api-token";
@@ -194,18 +195,8 @@ export const JIROO_TOOLS = [
     inputSchema: createItemInput,
     scope: "write",
     async handler(input, actor) {
-      const backlog = await resolveBacklog(actor.actorId, input.backlog);
-      let parentId: string | null = null;
-      if (input.parentKey) {
-        const parent = await getItemByKeyForBacklog(input.parentKey, backlog.id);
-        if (!parent) throw new ToolRefusal(`Parent ${input.parentKey} : ${NOT_FOUND.toLowerCase()}`);
-        parentId = parent.id;
-      }
-      const { backlog: _backlogKey, parentKey: _parentKey, ...fields } = input;
-      void _backlogKey;
-      void _parentKey;
-      const { item } = await createItemUseCase(actor, { ...presentFields(fields), backlogId: backlog.id, parentId, type: input.type, title: input.title });
-      return { item: (await summaryOf(actor.actorId, item.key)) ?? { id: item.id, key: item.key } };
+      const { item, replayed } = await createExternalItemUseCase(actor, input);
+      return { item: (await summaryOf(actor.actorId, item.key)) ?? { id: item.id, key: item.key }, replayed };
     },
   }),
   define({

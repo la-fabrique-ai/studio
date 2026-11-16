@@ -6,6 +6,7 @@ vi.mock("@/lib/api/rate-limit", () => ({ reserveApiRequest: m.budget }));
 vi.mock("@/lib/services/api-tokens", () => ({ scopeAllows: (g: string, r: string) => g === "write" || r === "read" }));
 vi.mock("@/lib/services/api-read", () => ({ resolveApiBacklog: m.backlog, resolveApiItem: m.item, getApiItemSummary: m.summary }));
 vi.mock("@/lib/use-cases/labels", () => ({ listLabelsUseCase: m.list, createLabelUseCase: m.create, addItemLabelUseCase: m.add, removeItemLabelUseCase: m.remove }));
+vi.mock("@/lib/use-cases/item-creation", () => ({ createExternalItemUseCase: m.createItem }));
 vi.mock("@/lib/use-cases/items", () => ({ createItemUseCase: m.createItem, updateItemUseCase: m.updateItem }));
 import { postItem, patchItem } from "@/lib/api/routes";
 import { GET as getLabels, POST as postLabel, OPTIONS as catalogueOptions, PUT as unsupportedCatalogue } from "@/app/api/v1/backlogs/[key]/labels/route";

@@ -1,9 +1,7 @@
 import { addCommentInput, createItemInput, createLabelInput, searchItemsInput, transitionItemInput, updateItemInput } from "@/lib/mcp/schemas";
-import { createItemSchema } from "@/lib/validation/item";
 
 export const createRestItemInput = createItemInput.omit({ backlog: true }).extend({
   backlogKey: createItemInput.shape.backlog,
-  labelIds: createItemSchema.shape.labelIds,
 }).strict();
 export const updateRestItemInput = updateItemInput.omit({ key: true }).extend({
   statusId: transitionItemInput.shape.statusId.optional(),
