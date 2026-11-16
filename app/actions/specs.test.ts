@@ -55,6 +55,13 @@ describe("specification actions", () => {
     expect(m.revalidate).not.toHaveBeenCalled();
   });
 
+  it("explains an invalid document without blaming the title", async () => {
+    const { ZodError } = await import("zod");
+    m.content.mockRejectedValueOnce(new ZodError([]));
+    await expect(updateSpecContentAction({ ...target, id: "doc", content: "x", revision: "2026-11-16T09:00:00.000Z" }))
+      .resolves.toEqual({ ok: false, error: "Le document est trop long pour être enregistré." });
+  });
+
   it("hands back the server version on a conflict", async () => {
     m.content.mockRejectedValueOnce(new SpecConflictError({ content: "serveur", revision: new Date("2026-11-16T11:00:00.000Z") }));
     await expect(updateSpecContentAction({ ...target, id: "doc", content: "local", revision: "2026-11-16T09:00:00.000Z" }))

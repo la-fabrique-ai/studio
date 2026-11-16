@@ -29,11 +29,13 @@ async function actor() {
   return { actorId: session.user.id, source: "ui" as const };
 }
 
-function failure(error: unknown, fallback: string): Failure {
+const TITLE_INVALID = "Le titre doit contenir entre 1 et 200 caractères.";
+
+function failure(error: unknown, fallback: string, invalid: string = fallback): Failure {
   const authorization = mapActionAuthorizationError(error);
   if (authorization) return authorization;
   if (error instanceof SpecRuleError) return { ok: false, error: RULE_MESSAGES[error.code] ?? fallback };
-  if (error instanceof ZodError) return { ok: false, error: "Le titre doit contenir entre 1 et 200 caractères." };
+  if (error instanceof ZodError) return { ok: false, error: invalid };
   return { ok: false, error: fallback };
 }
 
@@ -57,7 +59,7 @@ export async function createSpecNodeAction(
     await invalidate(input, who.actorId);
     return { ok: true as const, id: node.id };
   } catch (error) {
-    return failure(error, input.kind === "folder" ? "Création du dossier impossible." : "Création du document impossible.");
+    return failure(error, input.kind === "folder" ? "Création du dossier impossible." : "Création du document impossible.", TITLE_INVALID);
   }
 }
 
@@ -68,7 +70,7 @@ export async function renameSpecNodeAction(input: Target & { id: string; title: 
     await invalidate(input, who.actorId);
     return { ok: true as const };
   } catch (error) {
-    return failure(error, "Renommage impossible.");
+    return failure(error, "Renommage impossible.", TITLE_INVALID);
   }
 }
 
@@ -104,7 +106,7 @@ export async function updateSpecContentAction(
         revision: error.current.revision.toISOString(),
       };
     }
-    return failure(error, "Enregistrement impossible.");
+    return failure(error, "Enregistrement impossible.", "Le document est trop long pour être enregistré.");
   }
 }
 
