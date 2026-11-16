@@ -30,6 +30,16 @@ l'écrit pas : en revue, il signale ses constats dans son rapport.
   d'exécution sur la branche `lot-specs-documents`. Limite constatée : aucun
   outil Linear disponible dans la session. Prochaine action : créer le ticket et
   le document dans Linear, puis y relier la PR.
+- **16 novembre 2026 — NON SYNCHRONISÉ — Mise à jour de sécurité Next.js
+  16.4.1 → 16.4.6.** Cible prévue : projet P-JIR-36 « Plateforme, sécurité et
+  déploiement », un ticket `Chore`. Source : `next dev` signale le 16 novembre
+  2026 que la version 16.4.1 est vulnérable ; `pnpm audit --prod` relève
+  l'avis modéré GHSA-mfr8-8qww-v76h (`use cache` via `unstable_cache`), corrigé
+  en 16.4.5 avec six autres avis modérés. Changement : `next` et
+  `eslint-config-next` passent en 16.4.6 (branche
+  `lot-next-16-4-6-security`), aucune autre dépendance. État : PR ouverte,
+  non fusionnée. Limite constatée : aucun outil Linear disponible dans la
+  session. Prochaine action : créer le ticket dans Linear et y relier la PR.
 
 ## Historique (clos)
 
