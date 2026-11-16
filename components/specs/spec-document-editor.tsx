@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { updateSpecContentAction } from "@/app/actions/specs";
@@ -67,6 +67,22 @@ function SpecDocumentEditorBody({ backlogKey, backlogId, id, currentUserId, cont
   const [value, setValue] = useState(() =>
     autosave.adopt(content, Date.parse(revision)) ? content : autosave.current(),
   );
+
+  // A newer server state (a refresh after someone else saved) replaces the
+  // text only when no local change is pending; adopt refuses it otherwise,
+  // and the next save then reports the conflict.
+  const [seen, setSeen] = useState({ content, revision });
+  const [adopted, setAdopted] = useState<string | null>(null);
+  if (content !== seen.content || revision !== seen.revision) {
+    setSeen({ content, revision });
+    if (autosave.adopt(content, Date.parse(revision))) {
+      setAdopted(revision);
+      if (content !== value) setValue(content);
+    }
+  }
+  useEffect(() => {
+    if (adopted && Date.parse(adopted) > Date.parse(base.current)) base.current = adopted;
+  }, [adopted]);
 
   function onChange(next: string) {
     setValue(next);

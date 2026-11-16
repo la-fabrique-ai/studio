@@ -117,3 +117,13 @@ describe("SpecTree", () => {
     expect(screen.getByRole("link", { name: "Brief" })).toBeInTheDocument();
   });
 });
+
+describe("SpecTree navigation", () => {
+  it("reveals a nested node opened from elsewhere", () => {
+    const { rerender } = renderTree();
+    expect(screen.queryByRole("link", { name: "Story 1" })).not.toBeInTheDocument();
+    m.params = { id: DEEP };
+    rerender(<SpecTree backlogKey="ATL" backlogId="backlog-1" nodes={nodes} canEdit />);
+    expect(screen.getByRole("link", { name: "Story 1" })).toHaveAttribute("aria-current", "page");
+  });
+});

@@ -71,6 +71,15 @@ export function SpecTree({ backlogKey, backlogId, nodes, canEdit }: SpecTreeProp
     ...nodes.filter((node) => node.parentId === null && node.kind === "folder").map((node) => node.id),
     ...(activeId ? ancestorsOf(nodes, activeId).map((node) => node.id) : []),
   ]));
+  // Opening another node (sidebar, folder page, link) reveals it in the tree.
+  const [revealed, setRevealed] = useState(activeId);
+  if (activeId !== revealed) {
+    setRevealed(activeId);
+    const path = activeId ? ancestorsOf(nodes, activeId).slice(0, -1) : [];
+    if (path.some((node) => !open.has(node.id))) {
+      setOpen(new Set([...open, ...path.map((node) => node.id)]));
+    }
+  }
   const toggle = (id: string, next?: boolean) =>
     setOpen((current) => {
       const copy = new Set(current);
