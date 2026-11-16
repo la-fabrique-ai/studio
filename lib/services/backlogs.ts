@@ -12,7 +12,7 @@ import { activities, backlogStars, backlogs, items, statuses } from "@/lib/db/sc
 import { STATUS_CATEGORY, type StatusId } from "@/lib/design/constants";
 import { planItemKeyRewrite } from "@/lib/items/backlog-key";
 import { provisionBacklogAuthorization } from "@/lib/services/authorization-seed";
-import { seedDefaultSpecFolders } from "@/lib/services/specs";
+import { seedDefaultSpecFolders } from "@/lib/specs/seed";
 import {
   listActiveSprintProgress,
   type ActiveSprintProgress,

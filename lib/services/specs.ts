@@ -8,7 +8,6 @@ import { user } from "@/lib/db/schema/auth";
 import { backlogs, specActivities, specNodes } from "@/lib/db/schema/domain";
 import {
   checkSpecMove,
-  DEFAULT_SPEC_FOLDERS,
   descendantIds,
   SPEC_TITLE_MAX,
   type SpecMoveError,
@@ -114,16 +113,6 @@ export async function getSpecNode(backlogId: string, id: string): Promise<SpecDo
   return row ? { ...row, content: row.content ?? "" } : null;
 }
 
-/** Creates the BMAD folders of a new backlog, inside its creation transaction. */
-export async function seedDefaultSpecFolders(tx: Tx, backlogId: string) {
-  let rank: string | null = null;
-  const rows = DEFAULT_SPEC_FOLDERS.map((folder) => {
-    rank = rankLast(rank);
-    return { backlogId, kind: "folder" as const, title: folder, rank };
-  });
-  await tx.insert(specNodes).values(rows);
-}
-
 /** Serialises structural changes of one backlog's tree (no concurrent cycle). */
 async function lockTree(tx: Tx, backlogId: string) {
   const [backlog] = await tx.select({ id: backlogs.id }).from(backlogs)
@@ -215,11 +204,26 @@ export async function moveSpecNode(input: unknown, actorId: string) {
     const live = nodes.filter((n) => n.deletedAt === null);
     const node = liveNode(nodes, data.id);
     assertParent(live, data.id, data.parentId);
-    const siblings = live
+    if (data.afterId !== null) {
+      const after = live.find((n) => n.id === data.afterId);
+      if (!after || after.parentId !== data.parentId || after.id === data.id) {
+        throw new ResourceNotFoundError("spec_node", data.afterId);
+      }
+    }
+    // Trashed siblings keep their place too, as in createSpecNode, so a
+    // restore never lands on the rank given to a moved node.
+    const order = (a: { rank: string; id: string }, b: { rank: string; id: string }) =>
+      a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : a.id < b.id ? -1 : 1;
+    const liveSiblings = live.filter((n) => n.parentId === data.parentId).sort(order);
+    if (node.parentId === data.parentId) {
+      const position = liveSiblings.findIndex((n) => n.id === data.id);
+      const before = position > 0 ? liveSiblings[position - 1]!.id : null;
+      if (before === data.afterId) return { changed: false };
+    }
+    const siblings = nodes
       .filter((n) => n.parentId === data.parentId && n.id !== data.id)
-      .sort((a, b) => (a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : a.id < b.id ? -1 : 1));
+      .sort(order);
     const index = data.afterId === null ? -1 : siblings.findIndex((n) => n.id === data.afterId);
-    if (data.afterId !== null && index < 0) throw new ResourceNotFoundError("spec_node", data.afterId);
     const prev = index >= 0 ? siblings[index]!.rank : null;
     const next = siblings[index + 1]?.rank ?? null;
     const rank = prev === null
@@ -227,7 +231,6 @@ export async function moveSpecNode(input: unknown, actorId: string) {
       : next === null || next === prev
         ? rankLast(prev)
         : rankBetween(prev, next);
-    if (node.parentId === data.parentId && node.rank === rank) return { changed: false };
     await tx.update(specNodes)
       .set({ parentId: data.parentId, rank, updatedBy: actorId })
       .where(eq(specNodes.id, data.id));

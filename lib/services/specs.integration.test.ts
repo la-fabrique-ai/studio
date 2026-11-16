@@ -6,6 +6,7 @@ import { runWithActor } from "@/lib/auth/actor-context";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema/auth";
 import { backlogs, specActivities, specNodes } from "@/lib/db/schema/domain";
+import { seedDefaultSpecFolders } from "@/lib/specs/seed";
 import { buildSpecTree } from "@/lib/specs/tree";
 import {
   createSpecNode,
@@ -14,7 +15,6 @@ import {
   moveSpecNode,
   renameSpecNode,
   restoreSpecNode,
-  seedDefaultSpecFolders,
   SpecConflictError,
   SpecRuleError,
   trashSpecNode,
@@ -88,6 +88,9 @@ describeDb("specification tree service", () => {
     expect(await titles()).toEqual(["UX", ["Brief", ["Contexte"]], ["PRD", ["Recherche"]]]);
     await moveSpecNode({ backlogId, id: find("UX").id, parentId: null, afterId: find("PRD").id }, actorId);
     expect(await titles()).toEqual([["Brief", ["Contexte"]], ["PRD", ["Recherche"]], "UX"]);
+    // Dropping a node where it already is changes nothing.
+    expect(await moveSpecNode({ backlogId, id: find("UX").id, parentId: null, afterId: find("PRD").id }, actorId))
+      .toEqual({ changed: false });
     await expect(moveSpecNode({ backlogId, id: find("PRD").id, parentId: find("Recherche").id, afterId: null }, actorId))
       .rejects.toMatchObject({ code: "cycle" });
   });

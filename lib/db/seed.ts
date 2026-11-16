@@ -9,7 +9,7 @@ import { nextItemKey } from "@/lib/items/key";
 import { buildPath, childDepth } from "@/lib/tree/path";
 import { rankLast } from "@/lib/tree/rank";
 import { seedAuthorizationDefaults } from "@/lib/services/authorization-seed";
-import { seedDefaultSpecFolders } from "@/lib/services/specs";
+import { seedDefaultSpecFolders } from "@/lib/specs/seed";
 
 const STATUS_SEED = [
   { id: "todo", name: "À faire", color: "#858ba0" },
