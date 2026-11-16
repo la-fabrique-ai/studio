@@ -47,7 +47,7 @@ it.each(["list_dependencies", "add_dependency", "remove_dependency"])("%s masks 
   expect(results[0]).toEqual(results[1]); expect(results[0]?.isError).toBe(true);
 });
 it("returns public domain errors for cycles and duplicates", async () => {
-  for (const message of ["Ce lien existe déjà.", "Cycle : cette dépendance créerait un blocage circulaire."]) {
+  for (const message of ["Ce lien existe déjà.", "Impossible d'ajouter ce lien : il créerait un cycle de blocage."]) {
     m.add.mockRejectedValueOnce(new Error(message));
     const response = await runTool(tool("add_dependency"), { key: "TEST-1", otherKey: "TEST-2", direction: "blocks" }, writer);
     expect(response.isError).toBe(true); expect(response.content[0]!.text).toBe(message);

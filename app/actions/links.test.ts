@@ -100,9 +100,9 @@ describe("link action permissions", () => {
 it("surfaces a long-cycle refusal from the common service without invalidation", async () => {
   mocks.getSession.mockResolvedValue({ user: { id: "writer-1" } });
   mocks.requireItemPermission.mockResolvedValue({ backlogId: "backlog-1" });
-  mocks.addLink.mockRejectedValueOnce(new Error("Cycle : cette dépendance créerait un blocage circulaire."));
+  mocks.addLink.mockRejectedValueOnce(new Error("Impossible d'ajouter ce lien : il créerait un cycle de blocage."));
   mocks.invalidateBacklog.mockClear();
   const response = await addLinkAction({ backlogKey: "TEST", sourceId: "11111111-1111-4111-8111-111111111111", targetId: "22222222-2222-4222-8222-222222222222", type: "blocks" });
-  expect(response).toEqual({ ok: false, error: "Cycle : cette dépendance créerait un blocage circulaire." });
+  expect(response).toEqual({ ok: false, error: "Impossible d'ajouter ce lien : il créerait un cycle de blocage." });
   expect(mocks.invalidateBacklog).not.toHaveBeenCalled();
 });

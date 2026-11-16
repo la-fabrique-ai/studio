@@ -46,7 +46,7 @@ describeDb("concurrent link invariants", () => {
       const result = await pending;
       expect(result.filter((r) => r.status === "fulfilled")).toHaveLength(1);
       const refused = result.find((r) => r.status === "rejected") as PromiseRejectedResult;
-      expect(refused.reason.message).toContain(type === "blocks" ? "Cycle" : "existe déjà");
+      expect(refused.reason.message).toContain(type === "blocks" ? "cycle de blocage" : "existe déjà");
       const links = await db.select().from(itemLinks).where(inArray(itemLinks.sourceId, ids));
       expect(links).toHaveLength(1);
     } finally {
@@ -86,7 +86,7 @@ describeDb("backlog-wide cycle serialization", () => {
       expect(blocked).toBe(true); await gate.query("commit");
       const result = await pending;
       expect(result.filter((r) => r.status === "fulfilled")).toHaveLength(1);
-      expect((result.find((r) => r.status === "rejected") as PromiseRejectedResult).reason.message).toContain("Cycle");
+      expect((result.find((r) => r.status === "rejected") as PromiseRejectedResult).reason.message).toContain("cycle de blocage");
       expect(await db.select().from(itemLinks).where(inArray(itemLinks.sourceId, ids))).toHaveLength(2);
     } finally { await gate.query("rollback"); await pending; await gate.end(); await db.delete(backlogs).where(eq(backlogs.id, backlog!.id)); }
   });

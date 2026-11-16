@@ -40,7 +40,7 @@ beforeEach(() => {
 });
 it("rejects an indirect blocks cycle before inserting or logging", async () => {
   m.execute.mockResolvedValueOnce({ rows: [{ id: sourceId }] });
-  await expect(addLink({ sourceId, targetId, type: "blocks" }, "actor")).rejects.toThrow("Cycle");
+  await expect(addLink({ sourceId, targetId, type: "blocks" }, "actor")).rejects.toThrow("cycle de blocage");
   expect(m.insert).not.toHaveBeenCalled();
 });
 it("records both endpoints with source/token attribution in the mutation transaction", async () => {

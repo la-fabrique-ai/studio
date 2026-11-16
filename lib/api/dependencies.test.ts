@@ -51,7 +51,7 @@ it("rejects malformed dependency ids before resolving the item", async () => {
   expect((await DELETE(req("DELETE"), { params: Promise.resolve({ key: "TEST-1", id: "bad" }) })).status).toBe(400); expect(m.item).not.toHaveBeenCalled();
 });
 it("maps cycles and duplicates to 409, hiding unknown errors", async () => {
-  for (const message of ["Ce lien existe déjà.", "Cycle : cette dépendance créerait un blocage circulaire."]) {
+  for (const message of ["Ce lien existe déjà.", "Impossible d'ajouter ce lien : il créerait un cycle de blocage."]) {
     m.add.mockRejectedValueOnce(new Error(message));
     expect((await POST(req("POST", { otherKey: "TEST-2", direction: "blocks" }), context)).status).toBe(409);
   }

@@ -43,7 +43,7 @@ export const DOMAIN_ERROR_MESSAGES = [
   "Une release archivée ne peut pas être ajoutée.",
   // Links
   "Ce lien existe déjà.",
-  "Cycle : cette dépendance créerait un blocage circulaire.",
+  "Impossible d'ajouter ce lien : il créerait un cycle de blocage.",
   // Comments
   "Action réservée à l'auteur du commentaire.",
   "Commentaire introuvable.",

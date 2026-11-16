@@ -18,7 +18,7 @@ function mapLinkError(e: unknown): string {
   if (msg.includes("introuvable")) return "Item introuvable.";
   if (msg.includes("même backlog")) return "Les deux items doivent appartenir au même backlog.";
   if (msg.includes("existe déjà")) return "Ce lien existe déjà.";
-  if (msg.includes("Cycle")) return msg; // surface the full cycle message verbatim
+  if (msg.includes("cycle de blocage")) return msg; // surface the full cycle message verbatim
   return "Action impossible sur le lien.";
 }
 

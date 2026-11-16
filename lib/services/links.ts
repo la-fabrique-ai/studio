@@ -145,7 +145,7 @@ async function insertLink(tx: Tx, data: AddLinkInput, actorId: string) {
       )
       select id from reachable where id = ${source.id}::uuid limit 1
     `);
-    if (path.rows.length) throw new Error("Cycle : cette dépendance créerait un blocage circulaire.");
+    if (path.rows.length) throw new Error("Impossible d'ajouter ce lien : il créerait un cycle de blocage.");
   }
   const [link] = await tx.insert(itemLinks).values({ ...data, createdBy: actorId }).returning();
   await logLinkChange(tx, link!, source, target, actorId, true);

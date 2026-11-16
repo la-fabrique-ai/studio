@@ -97,14 +97,14 @@ describeDb("blocking dependencies across REST and MCP", () => {
   });
   it("refuses direct and long cycles through the common service, including a pre-existing cycle", async () => {
     const first = await addLink({ sourceId: f.liveA.id, targetId: neighbour.id, type: "blocks" }, f.actorA);
-    await expect(addLink({ sourceId: neighbour.id, targetId: f.liveA.id, type: "blocks" }, f.actorA)).rejects.toThrow("Cycle");
+    await expect(addLink({ sourceId: neighbour.id, targetId: f.liveA.id, type: "blocks" }, f.actorA)).rejects.toThrow("cycle de blocage");
     await addLink({ sourceId: neighbour.id, targetId: third.id, type: "blocks" }, f.actorA);
     const long = await POST(request("POST", { otherKey: f.liveA.key, direction: "blocks" }), context(third.key)); expect(long.status).toBe(409);
     const screen = await addLinkAction({ backlogKey: f.backlogA.key, sourceId: third.id, targetId: f.liveA.id, type: "blocks" });
-    expect(screen).toMatchObject({ ok: false, error: expect.stringContaining("Cycle") });
+    expect(screen).toMatchObject({ ok: false, error: expect.stringContaining("cycle de blocage") });
     // Legacy graph cycles must terminate UNION traversal rather than looping.
     await db.insert(itemLinks).values({ sourceId: third.id, targetId: neighbour.id, type: "blocks" });
-    await expect(addLink({ sourceId: third.id, targetId: f.liveA.id, type: "blocks" }, f.actorA)).rejects.toThrow("Cycle");
+    await expect(addLink({ sourceId: third.id, targetId: f.liveA.id, type: "blocks" }, f.actorA)).rejects.toThrow("cycle de blocage");
     expect((await DELETE(request("DELETE"), context(f.liveA.key, first.id))).status).toBe(204);
   });
   it("also refuses a cycle whose existing path crosses a deleted item", async () => {
@@ -113,7 +113,7 @@ describeDb("blocking dependencies across REST and MCP", () => {
       { sourceId: f.trashA.id, targetId: third.id, type: "blocks" },
     ]).returning();
     try {
-      await expect(addLink({ sourceId: third.id, targetId: f.liveA.id, type: "blocks" }, f.actorA)).rejects.toThrow("Cycle");
+      await expect(addLink({ sourceId: third.id, targetId: f.liveA.id, type: "blocks" }, f.actorA)).rejects.toThrow("cycle de blocage");
     } finally { await db.delete(itemLinks).where(inArray(itemLinks.id, path.map((link) => link.id))); }
   });
   it("hides relates and historical cross-backlog/deleted links from dependency reads and deletes", async () => {
