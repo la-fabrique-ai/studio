@@ -17,7 +17,7 @@ import { rankBetween, rankFirst, rankLast } from "@/lib/tree/rank";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-export type SpecRuleCode = SpecMoveError | "conflict" | "folder_content";
+export type SpecRuleCode = SpecMoveError | "conflict" | "folder_content" | "ambiguous_path";
 
 /** The user-facing message of each refused change, shared by the UI, the API and MCP. */
 export const SPEC_RULE_MESSAGES: Record<SpecRuleCode, string> = {
@@ -26,6 +26,7 @@ export const SPEC_RULE_MESSAGES: Record<SpecRuleCode, string> = {
   cycle: "Un dossier ne peut pas être déplacé dans lui-même.",
   conflict: "Ce document a été modifié entre-temps.",
   folder_content: "Un dossier n’a pas de contenu : créez un document.",
+  ambiguous_path: "Plusieurs éléments portent ce titre à cet endroit : utilisez leur identifiant.",
 };
 
 /** A tree rule refused the change; its message is the French explanation. */
