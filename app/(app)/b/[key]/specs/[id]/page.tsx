@@ -8,7 +8,7 @@ import { projectBacklogCapabilities } from "@/lib/auth/capabilities";
 import { requireAppPageSession } from "@/lib/auth/session";
 import { getBacklogByKeyForUser } from "@/lib/services/backlogs";
 import { getSpecNode, listSpecNodes } from "@/lib/services/specs";
-import { ancestorsOf, buildSpecTree } from "@/lib/specs/tree";
+import { ancestorsOf } from "@/lib/specs/tree";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -60,7 +60,7 @@ export default async function SpecNodePage({ params }: { params: Promise<{ key: 
           readOnly={!canEdit}
         />
       ) : (
-        <FolderContents base={base} entries={buildSpecTree(nodes.filter((n) => n.parentId === node.id).map((n) => ({ ...n, parentId: null })))} />
+        <FolderContents base={base} entries={nodes.filter((n) => n.parentId === node.id)} />
       )}
     </article>
   );

@@ -14,9 +14,12 @@ import { RealtimeProvider } from "@/components/realtime/realtime-provider";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await requireAppPageSession();
-  const [backlogs, views, notifCount, notifications, counts, adminDecisions] = await Promise.all([
+  const backlogsLoad = listBacklogsWithStarsForUser(session.user.id);
+  const [backlogs, specFolders, views, notifCount, notifications, counts, adminDecisions] = await Promise.all([
     // Favourites first, as in the selector (JIR-82).
-    listBacklogsWithStarsForUser(session.user.id),
+    backlogsLoad,
+    // Only for backlogs the user can see: the list above is already filtered.
+    backlogsLoad.then((visible) => listRootSpecFolders(visible.map((backlog) => backlog.id))),
     listVisibleViews(session.user.id),
     unreadCount(session.user.id),
     listRecentNotifications(session.user.id),
@@ -25,8 +28,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       checkPermission({ actorId: session.user.id, permission, scope: { type: "global" } }),
     )),
   ]);
-  // Only for backlogs the user can see: the list above is already filtered.
-  const specFolders = await listRootSpecFolders(backlogs.map((backlog) => backlog.id));
   const role = (session.user as { role?: string }).role ?? "viewer";
   return (
     // Around the whole shell: the topbar's bell listens too.
