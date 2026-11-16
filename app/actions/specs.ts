@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { mapActionAuthorizationError } from "@/lib/auth/action-error";
 import { getSession } from "@/lib/auth/session";
+import { invalidateSpecs } from "@/lib/realtime/publish";
 import { SpecConflictError, SpecRuleError } from "@/lib/services/specs";
 import {
   createSpecNodeUseCase,
@@ -37,17 +37,24 @@ function failure(error: unknown, fallback: string): Failure {
   return { ok: false, error: fallback };
 }
 
-function revalidate(backlogKey: string) {
-  revalidatePath(`/b/${backlogKey}/specs`, "layout");
+/** The use case's input: the key only serves to re-render the pages. */
+function scoped<T extends Target>(input: T): Omit<T, "backlogKey"> {
+  const copy: Partial<T> = { ...input };
+  delete copy.backlogKey;
+  return copy as Omit<T, "backlogKey">;
+}
+
+function invalidate(target: Target, actorId: string) {
+  return invalidateSpecs(target.backlogKey, { backlogId: target.backlogId, actorId });
 }
 
 export async function createSpecNodeAction(
   input: Target & { parentId: string | null; kind: "folder" | "document"; title: string },
 ) {
   try {
-    const { backlogKey, ...rest } = input;
-    const node = await createSpecNodeUseCase(await actor(), rest);
-    revalidate(backlogKey);
+    const who = await actor();
+    const node = await createSpecNodeUseCase(who, scoped(input));
+    await invalidate(input, who.actorId);
     return { ok: true as const, id: node.id };
   } catch (error) {
     return failure(error, input.kind === "folder" ? "Création du dossier impossible." : "Création du document impossible.");
@@ -56,9 +63,9 @@ export async function createSpecNodeAction(
 
 export async function renameSpecNodeAction(input: Target & { id: string; title: string }) {
   try {
-    const { backlogKey, ...rest } = input;
-    await renameSpecNodeUseCase(await actor(), rest);
-    revalidate(backlogKey);
+    const who = await actor();
+    await renameSpecNodeUseCase(who, scoped(input));
+    await invalidate(input, who.actorId);
     return { ok: true as const };
   } catch (error) {
     return failure(error, "Renommage impossible.");
@@ -69,9 +76,9 @@ export async function moveSpecNodeAction(
   input: Target & { id: string; parentId: string | null; afterId: string | null },
 ) {
   try {
-    const { backlogKey, ...rest } = input;
-    await moveSpecNodeUseCase(await actor(), rest);
-    revalidate(backlogKey);
+    const who = await actor();
+    await moveSpecNodeUseCase(who, scoped(input));
+    await invalidate(input, who.actorId);
     return { ok: true as const };
   } catch (error) {
     return failure(error, "Déplacement impossible.");
@@ -103,9 +110,9 @@ export async function updateSpecContentAction(
 
 export async function trashSpecNodeAction(input: Target & { id: string }) {
   try {
-    const { backlogKey, ...rest } = input;
-    const { ids } = await trashSpecNodeUseCase(await actor(), rest);
-    revalidate(backlogKey);
+    const who = await actor();
+    const { ids } = await trashSpecNodeUseCase(who, scoped(input));
+    await invalidate(input, who.actorId);
     return { ok: true as const, ids };
   } catch (error) {
     return failure(error, "Suppression impossible.");
@@ -114,9 +121,9 @@ export async function trashSpecNodeAction(input: Target & { id: string }) {
 
 export async function restoreSpecNodeAction(input: Target & { id: string }) {
   try {
-    const { backlogKey, ...rest } = input;
-    await restoreSpecNodeUseCase(await actor(), rest);
-    revalidate(backlogKey);
+    const who = await actor();
+    await restoreSpecNodeUseCase(who, scoped(input));
+    await invalidate(input, who.actorId);
     return { ok: true as const };
   } catch (error) {
     return failure(error, "Restauration impossible.");

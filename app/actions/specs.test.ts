@@ -4,7 +4,7 @@ const m = vi.hoisted(() => ({
   session: vi.fn(), revalidate: vi.fn(), create: vi.fn(), content: vi.fn(), move: vi.fn(),
 }));
 vi.mock("server-only", () => ({}));
-vi.mock("next/cache", () => ({ revalidatePath: m.revalidate }));
+vi.mock("@/lib/realtime/publish", () => ({ invalidateSpecs: m.revalidate }));
 vi.mock("@/lib/auth/session", () => ({ getSession: m.session }));
 vi.mock("@/lib/use-cases/specs", () => ({
   createSpecNodeUseCase: m.create,
@@ -32,7 +32,7 @@ describe("specification actions", () => {
       { actorId: "writer-1", source: "ui" },
       { backlogId: "backlog-1", parentId: null, kind: "document", title: "Brief" },
     );
-    expect(m.revalidate).toHaveBeenCalledWith("/b/ATL/specs", "layout");
+    expect(m.revalidate).toHaveBeenCalledWith("ATL", { backlogId: "backlog-1", actorId: "writer-1" });
   });
 
   it("returns a permission denial without revalidating", async () => {
