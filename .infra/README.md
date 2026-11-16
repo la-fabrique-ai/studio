@@ -94,7 +94,9 @@ uncommitted scripts from a sibling working directory. Updating shared tooling
 requires committing and publishing it there, then updating Studio's submodule
 revision in a reviewed change.
 
-The current application builds and release workflows do not invoke shared-bin,
-so they do not fetch it or require a cross-repository token. The submodule is
+The GitHub build and release workflows do not invoke shared-bin,
+so they do not fetch it or require a cross-repository token. Local commands use
+the `.bin/product` launcher; see [local image builds](../docs/releases.md#build-and-publish-images-from-your-computer).
+The submodule is
 excluded from Docker build contexts. When wiring shared commands into CI, use
 credentials scoped to the La Fabrique repository, never the Portail's credentials.
