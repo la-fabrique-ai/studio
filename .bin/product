@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if (( BASH_VERSINFO[0] < 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] < 4) )); then
+  echo "Bash 4.4+ is required (on macOS, use Homebrew Bash on PATH)." >&2
+  exit 1
+fi
+
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export ROOT_DIR
+export PRODUCT_NAME="studio"
+export SCRIPTS_SHARED_DIR="$ROOT_DIR/.bin/shared/scripts"
+if [[ ! -f "$ROOT_DIR/.bin/shared/commands.sh" ]]; then
+  echo "Initialize shared tooling: git submodule update --init .bin/shared" >&2
+  exit 1
+fi
+source "$ROOT_DIR/.bin/shared/commands.sh"
+
+_local_docker_login__help="Log in to ghcr.io (token entered without echo)"
+_local_docker_login() { "$ROOT_DIR/.bin/scripts/docker-login.sh" "$@"; }
+_local_build_image__help="Build image: <X.Y.Z[-prerelease]> <load|push|print> [app]"
+_local_build_image() { "$ROOT_DIR/.bin/scripts/build-images.sh" "$@"; }
+_local_release_build_local__help="Build local-source image: [version] [load|push|print]; defaults to local version and load"
+_local_release_build_local() {
+  local version="${1:-}"
+  local mode="${2:-load}"
+  if [[ $# -gt 2 ]]; then
+    echo "Usage: .bin/product release:build:local [version] [load|push|print]" >&2
+    return 1
+  fi
+  if [[ -z "$version" ]]; then
+    local base
+    base=$(node -p 'require(process.argv[1]).version' "$ROOT_DIR/package.json")
+    version="${base}-local.$(date -u +%Y%m%d%H%M%S)"
+  fi
+  _local_build_image "$version" "$mode"
+}
+
+_register docker:login _local_docker_login
+_register build:image _local_build_image
+_register release:build:local _local_release_build_local
+_register dev:dependencies:check
+_register dev:setup
+_register vault:edit
+
+# Docker commands do not implicitly require GPG, SOPS or a password manager.
+case "${1:-help}" in
+  help|-h|--help) _help ;;
+  *) _dispatch "$@" ;;
+esac

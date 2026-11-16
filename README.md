@@ -28,17 +28,23 @@ ignores this project's `pnpm.overrides` and is not supported.
 ## Getting started
 
 ```bash
-cp .env.example .env      # dev values target the Docker Postgres (host port 5433)
-docker compose up -d      # Postgres 17 locally
-pnpm install
+corepack pnpm install --frozen-lockfile
+pnpm env:setup            # .infra/local/.env, linked to .env; generated secrets
+pnpm services:start       # Postgres 17 locally; waits until healthy
 pnpm db:migrate           # apply Drizzle migrations
 pnpm db:seed              # demo data (admin, CASS backlog, statuses, items)
 pnpm dev
 ```
 
-Reset the database: `docker compose down -v`.
+Stop the database without deleting data: `pnpm services:stop`.
+To deliberately delete all local data: `docker compose down -v`.
 
-> Local Postgres is published on host port **5433** (container 5432) to avoid clashing with a system Postgres on 5432.
+> Local Postgres is published on **127.0.0.1:5434** (container 5432).
+> Configure the port and both database URLs together in `.infra/local/.env`.
+
+See [infrastructure](.infra/README.md) for local environment management and the
+future single-VM Compose stack, and [releases](docs/releases.md) for versioned
+Docker images and GitHub releases. `.vscode` includes optional development tasks.
 
 ## Scripts
 
@@ -208,7 +214,13 @@ every move writes an audit row.
 
 ## Environments
 
-`DATABASE_URL` switches the app between local Docker, Neon (pooled, EU) and the future internal server. Migrations and realtime `LISTEN` use `DIRECT_DATABASE_URL` (direct/unpooled, never Neon's transaction pooler); realtime falls back to `DATABASE_URL` if it is unset. Auth secrets live in `.env` / host env; never commit them. The auth API route runs on the Node.js runtime (not edge).
+Development uses local Docker PostgreSQL. The target deployment runs the app and
+PostgreSQL in separate containers on the same VM. `DATABASE_URL` selects the
+runtime connection; migrations use the owner's `DIRECT_DATABASE_URL`. Realtime
+`LISTEN` uses `DIRECT_DATABASE_URL` when supplied and otherwise `DATABASE_URL`.
+The VM application receives only the runtime URL. Secrets live in ignored env
+files or host environment variables, never in images. The auth API route runs
+on the Node.js runtime (not edge).
 
 ## Design system
 

@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "env:setup": "node scripts/setup-local-env.mjs",
+    "services:start": "docker compose up -d --wait db",
+    "services:stop": "docker compose stop db",
+    "services:logs": "docker compose logs -f db",
+    "services:status": "docker compose ps",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

@@ -1,0 +1,10 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Local: configure environment", "type": "shell", "command": "corepack pnpm env:setup", "problemMatcher": [] },
+    { "label": "Local: start PostgreSQL", "type": "shell", "command": "corepack pnpm services:start", "problemMatcher": [] },
+    { "label": "Local: stop PostgreSQL", "type": "shell", "command": "corepack pnpm services:stop", "problemMatcher": [] },
+    { "label": "Database: migrate", "type": "shell", "command": "corepack pnpm db:migrate", "problemMatcher": [] },
+    { "label": "App: dev", "type": "shell", "command": "corepack pnpm dev", "problemMatcher": [] }
+  ]
+}

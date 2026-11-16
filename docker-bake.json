@@ -1,0 +1,29 @@
+{
+  "variable": {
+    "VERSION": { "default": "local" },
+    "REVISION": { "default": "unknown" },
+    "SOURCE_DIRTY": { "default": "unknown" },
+    "PLATFORM": { "default": "linux/amd64" }
+  },
+  "group": {
+    "default": { "targets": ["app"] }
+  },
+  "target": {
+    "common": {
+      "context": ".",
+      "dockerfile": "Dockerfile",
+      "platforms": ["${PLATFORM}"],
+      "labels": {
+        "org.opencontainers.image.source": "https://github.com/la-fabrique-ai/studio",
+        "org.opencontainers.image.version": "${VERSION}",
+        "org.opencontainers.image.revision": "${REVISION}",
+        "io.la-fabrique.studio.source-dirty": "${SOURCE_DIRTY}"
+      }
+    },
+    "app": {
+      "inherits": ["common"],
+      "target": "runner",
+      "tags": ["ghcr.io/la-fabrique-ai/studio:${VERSION}"]
+    }
+  }
+}
