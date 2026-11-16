@@ -5,7 +5,7 @@ import { NoFlashScript } from "@/components/theme/no-flash-script";
 describe("NoFlashScript", () => {
   beforeEach(() => {
     localStorage.clear();
-    localStorage.setItem("jiroo-theme", "light");
+    localStorage.setItem("studio-theme", "light");
     delete document.documentElement.dataset.sidebar;
   });
 
@@ -13,7 +13,7 @@ describe("NoFlashScript", () => {
     ["true", "collapsed"],
     ["false", "open"],
   ])("applies sidebar preference %s before hydration", (stored, expected) => {
-    localStorage.setItem("jiroo-sidebar-collapsed", stored);
+    localStorage.setItem("studio-sidebar-collapsed", stored);
     const host = document.createElement("div");
     host.innerHTML = renderToStaticMarkup(<NoFlashScript />);
     const code = host.querySelector("script")?.textContent;

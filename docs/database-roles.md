@@ -1,6 +1,6 @@
 # Database roles
 
-Jiroo connects with two PostgreSQL roles (JIR-114):
+Le Studio connects with two PostgreSQL roles (JIR-114):
 
 | Role | Used by | Rights |
 | -- | -- | -- |
@@ -25,7 +25,7 @@ The runtime role cannot create, alter, drop or truncate persistent tables, nor r
 
    ```sh
    pnpm db:migrate
-   JIROO_RUNTIME_ROLE=jiroo_runtime pnpm db:grant-runtime
+   STUDIO_RUNTIME_ROLE=jiroo_runtime pnpm db:grant-runtime
    ```
 
    Both read `DIRECT_DATABASE_URL`, the schema owner's direct connection (not a transaction pooler).

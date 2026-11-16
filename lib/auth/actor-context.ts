@@ -8,7 +8,7 @@ export type ActivitySource = (typeof ACTIVITY_SOURCES)[number];
 
 /**
  * The authenticated principal a use case runs for: the user whose rights
- * apply and whose id the activities carry, plus how they reached Jiroo.
+ * apply and whose id the activities carry, plus how they reached Studio.
  */
 export type Actor = {
   actorId: string;

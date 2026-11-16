@@ -14,7 +14,7 @@ describe("assertE2eResetAllowed", () => {
       databaseName: "jiroo_e2e",
       expectedSystemIdentifier: undefined,
       systemIdentifier: "1234567890123456789",
-    })).toThrow("JIROO_E2E_DATABASE_SYSTEM_IDENTIFIER");
+    })).toThrow("STUDIO_E2E_DATABASE_SYSTEM_IDENTIFIER");
   });
 
   it("refuse un nom de base effectif différent de jiroo_e2e", () => {
@@ -69,7 +69,7 @@ describe("assertE2eResetAllowed", () => {
     expect(() => assertE2eResetAllowed({
       allowReset: undefined,
       databaseUrl: LOCAL_DATABASE_URL,
-    })).toThrow("JIROO_ALLOW_E2E_RESET=1");
+    })).toThrow("STUDIO_ALLOW_E2E_RESET=1");
   });
 
   it("refuse une base distante même avec consentement", () => {
@@ -119,7 +119,7 @@ describe("assertE2eResetAllowed", () => {
   it("conserve les paramètres TLS sans effet sur la destination", () => {
     expect(assertE2eResetAllowed({
       allowReset: "1",
-      databaseUrl: `${LOCAL_DATABASE_URL}?sslmode=require&application_name=jiroo-e2e`,
+      databaseUrl: `${LOCAL_DATABASE_URL}?sslmode=require&application_name=studio-e2e`,
     })).toEqual({
       databaseName: "jiroo_e2e",
       hostname: "localhost",

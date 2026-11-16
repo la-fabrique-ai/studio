@@ -14,7 +14,7 @@ import { recentItems, searchItems } from "@/lib/services/search";
 
 vi.mock("server-only", () => ({}));
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 
 function randomBacklogKey(): string {
   return randomUUID().replace(/[^a-f]/gi, "").slice(0, 6).toUpperCase();

@@ -10,7 +10,7 @@ export class TeamProfileSeedError extends Error {}
 
 /** Run before importing any module that opens a database connection. */
 export function assertTeamProfileSeedAllowed(env: Readonly<Record<string, string | undefined>>): void {
-  if (env.JIROO_ALLOW_TEAM_PROFILE_SEED !== "1") throw new TeamProfileSeedError("Set JIROO_ALLOW_TEAM_PROFILE_SEED=1 explicitly.");
+  if (env.STUDIO_ALLOW_TEAM_PROFILE_SEED !== "1") throw new TeamProfileSeedError("Set STUDIO_ALLOW_TEAM_PROFILE_SEED=1 explicitly.");
   let url: URL;
   try { url = new URL(env.DATABASE_URL ?? ""); } catch { throw new TeamProfileSeedError("An explicit local PostgreSQL URL is required."); }
   if (!["postgres:", "postgresql:"].includes(url.protocol) || !["127.0.0.1", "localhost"].includes(url.hostname) ||
@@ -31,12 +31,12 @@ export type TeamProfile = {
 /** A fresh migrated database only: no reset, delete, sequence rewind, or shared namespace. */
 export async function seedTeamProfile(): Promise<TeamProfile> {
   assertTeamProfileSeedAllowed(process.env);
-  const password = process.env.JIROO_PERF_PASSWORD;
-  if (!password || password.length < 16) throw new TeamProfileSeedError("Supply a synthetic JIROO_PERF_PASSWORD of at least 16 characters in memory.");
+  const password = process.env.STUDIO_PERF_PASSWORD;
+  if (!password || password.length < 16) throw new TeamProfileSeedError("Supply a synthetic STUDIO_PERF_PASSWORD of at least 16 characters in memory.");
   const { db, databasePool } = await import("@/lib/db");
   const lock = await databasePool.connect();
   try {
-    await lock.query("select pg_advisory_lock(hashtext('jiroo:team-profile-seed'))");
+    await lock.query("select pg_advisory_lock(hashtext('studio:team-profile-seed'))");
     const actual = await lock.query<{ name: string }>("select current_database() as name");
     if (actual.rows[0]?.name !== new URL(process.env.DATABASE_URL!).pathname.slice(1)) throw new TeamProfileSeedError("Unexpected database target.");
     const occupied = await db.select({ id: user.id }).from(user).limit(1);
@@ -46,10 +46,10 @@ export async function seedTeamProfile(): Promise<TeamProfile> {
       import("@/lib/services/items"), import("@/lib/services/bootstrap-admin"), import("@/lib/services/users"), import("@/lib/services/backlogs"),
       import("@/lib/services/authorization-admin"), import("@/lib/services/sprints"), import("@/lib/services/sprint-lifecycle"), import("@/lib/services/releases"),
     ]);
-    const admin = await bootstrapAdministrator({ email: "person00@perf.jiroo.local", name: "Performance administrator", password });
-    const people = [{ id: admin.userId, email: "person00@perf.jiroo.local" }];
+    const admin = await bootstrapAdministrator({ email: "person00@perf.studio.local", name: "Performance administrator", password });
+    const people = [{ id: admin.userId, email: "person00@perf.studio.local" }];
     for (let i = 1; i < 50; i++) {
-      const email = `person${String(i).padStart(2, "0")}@perf.jiroo.local`;
+      const email = `person${String(i).padStart(2, "0")}@perf.studio.local`;
       const person = await createUser({ name: `Performance member ${String(i).padStart(2, "0")}`, email, password });
       people.push({ id: person.id, email });
     }
@@ -155,7 +155,7 @@ export async function seedTeamProfile(): Promise<TeamProfile> {
     await lock.query("analyze");
     return result;
   } finally {
-    await lock.query("select pg_advisory_unlock(hashtext('jiroo:team-profile-seed'))").catch(() => {});
+    await lock.query("select pg_advisory_unlock(hashtext('studio:team-profile-seed'))").catch(() => {});
     lock.release();
   }
 }

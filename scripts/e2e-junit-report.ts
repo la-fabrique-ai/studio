@@ -17,7 +17,7 @@ export function exclusiveJunitPaths(input: {
   const ownerPid = input.ownerPid ?? process.pid;
   const lockRoot = resolve(
     input.lockRoot
-      ?? process.env.JIROO_E2E_RUN_LOCK_ROOT?.trim()
+      ?? process.env.STUDIO_E2E_RUN_LOCK_ROOT?.trim()
       ?? ".playwright/run-locks",
   );
   return {

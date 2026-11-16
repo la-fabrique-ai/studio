@@ -3,8 +3,8 @@ import { idempotencyKeySchema } from "@/lib/items/creation-request";
 import { ITEM_DESCRIPTION_MAX, ITEM_TITLE_MAX, labelIdsSchema } from "@/lib/validation/item";
 
 /**
- * Input schemas of the Jiroo MCP tools (JIR-158). Descriptions are read by
- * the agents, so they say what a field means in Jiroo's terms. The REST API
+ * Input schemas of the Studio MCP tools (JIR-158). Descriptions are read by
+ * the agents, so they say what a field means in Studio's terms. The REST API
  * (JIR-157) accepts the same shapes.
  */
 

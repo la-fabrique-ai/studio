@@ -168,7 +168,7 @@ export function SprintSectionHeader({
             <span>{`${points.format(metrics.estimatedPoints)} / ${pointsLabel(metrics.capacityPoints, points.format)}`}</span>
           )}
           {metrics.overCapacityPoints > 0 && (
-            <span className="font-medium text-amber-700 dark:text-amber-300">
+            <span className="font-medium text-[var(--warning-foreground)]">
               {`Dépassement de ${pointsLabel(metrics.overCapacityPoints, points.format)}`}
             </span>
           )}
@@ -239,7 +239,7 @@ function VelocityComparison({
       </p>
       {currentScope}
       {warnAboveAverage && aboveAverage && (
-        <p className="font-medium text-amber-700 dark:text-amber-300">
+        <p className="font-medium text-[var(--warning-foreground)]">
           Engagement supérieur à la moyenne des sprints précédents : avertissement non bloquant.
         </p>
       )}

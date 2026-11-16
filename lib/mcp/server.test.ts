@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { authInfoFor, principalFrom, registerJirooTools } from "@/lib/mcp/server";
+import { authInfoFor, principalFrom, registerStudioTools } from "@/lib/mcp/server";
 
 const principal = { actorId: "user-1", tokenId: "token-1", scope: "write" as const };
 
@@ -28,7 +28,7 @@ describe("MCP auth info", () => {
 
   it("registers every tool with its schema and read-only annotation", () => {
     const registerTool = vi.fn();
-    registerJirooTools({ registerTool } as never);
+    registerStudioTools({ registerTool } as never);
     expect(registerTool).toHaveBeenCalledTimes(16);
     const [name, config] = registerTool.mock.calls[0]!;
     expect(name).toBe("list_backlogs");
@@ -42,7 +42,7 @@ describe("MCP auth info", () => {
 
   it("answers an unauthenticated call with a refusal result", async () => {
     const registerTool = vi.fn();
-    registerJirooTools({ registerTool } as never);
+    registerStudioTools({ registerTool } as never);
     const callback = registerTool.mock.calls[0]![2] as (args: unknown, ctx: unknown) => Promise<{ isError?: boolean }>;
     await expect(callback({}, { http: undefined })).resolves.toMatchObject({ isError: true });
   });

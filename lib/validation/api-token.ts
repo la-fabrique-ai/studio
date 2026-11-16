@@ -2,7 +2,9 @@ import { z } from "zod";
 
 export const API_TOKEN_NAME_MAX = 60;
 
-/** The secret starts with this, so scanners and readers recognise it. */
+/** The secret starts with this, so scanners and readers recognise it.
+ * Kept from before the rename to Le Studio: tokens already issued carry it and
+ * the format check and the masked display rely on it. */
 export const API_TOKEN_PREFIX = "jiroo_pat_";
 
 /** Live tokens one user may hold; bounds the budget rows and the blast radius. */

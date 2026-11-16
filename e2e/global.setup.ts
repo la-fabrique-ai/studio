@@ -40,15 +40,15 @@ import { reserveE2eRunId } from "../scripts/e2e-run-reservation";
 import { collectAndWriteE2eRunManifest } from "../scripts/e2e-run-manifest";
 import { generateTotp } from "../test-utils/totp";
 
-const PASSWORD = process.env.JIROO_PLAYWRIGHT_PASSWORD ?? "Audit-Local-2026!";
+const PASSWORD = process.env.STUDIO_PLAYWRIGHT_PASSWORD ?? "Audit-Local-2026!";
 
 const ACCOUNTS = [
-  { key: "admin", email: "platform-admin@jiroo.local", name: "Administrateur E2E", role: "admin" as const, path: ".playwright/.auth/platform-admin.json" },
-  { key: "member", email: "member@jiroo.local", name: "Membre E2E", role: "contributor" as const, path: ".playwright/.auth/member.json" },
-  { key: "specialist", email: "specialist@jiroo.local", name: "Spécialiste E2E", role: "contributor" as const, path: ".playwright/.auth/specialist.json" },
-  { key: "editor", email: "editor-releases@jiroo.local", name: "Éditeur Releases E2E", role: "contributor" as const, path: ".playwright/.auth/editor.json" },
-  { key: "reader", email: "reader@jiroo.local", name: "Lecteur E2E", role: "viewer" as const, path: ".playwright/.auth/reader.json" },
-  { key: "noAccess", email: "no-access@jiroo.local", name: "Sans accès E2E", role: "contributor" as const, path: ".playwright/.auth/no-access.json" },
+  { key: "admin", email: "platform-admin@studio.local", name: "Administrateur E2E", role: "admin" as const, path: ".playwright/.auth/platform-admin.json" },
+  { key: "member", email: "member@studio.local", name: "Membre E2E", role: "contributor" as const, path: ".playwright/.auth/member.json" },
+  { key: "specialist", email: "specialist@studio.local", name: "Spécialiste E2E", role: "contributor" as const, path: ".playwright/.auth/specialist.json" },
+  { key: "editor", email: "editor-releases@studio.local", name: "Éditeur Releases E2E", role: "contributor" as const, path: ".playwright/.auth/editor.json" },
+  { key: "reader", email: "reader@studio.local", name: "Lecteur E2E", role: "viewer" as const, path: ".playwright/.auth/reader.json" },
+  { key: "noAccess", email: "no-access@studio.local", name: "Sans accès E2E", role: "contributor" as const, path: ".playwright/.auth/no-access.json" },
 ] as const;
 
 type AccountKey = (typeof ACCOUNTS)[number]["key"];
@@ -61,17 +61,17 @@ async function resetBrowserDatabase(input: {
   startedAt: string;
 }) {
   assertE2eResetAllowed({
-    allowReset: process.env.JIROO_ALLOW_E2E_RESET,
+    allowReset: process.env.STUDIO_ALLOW_E2E_RESET,
     databaseUrl: process.env.DATABASE_URL,
   });
   const client = await databasePool.connect();
   try {
     const verifiedIdentity = await verifyE2eDatabaseIdentity(
       client,
-      process.env.JIROO_E2E_DATABASE_SYSTEM_IDENTIFIER,
+      process.env.STUDIO_E2E_DATABASE_SYSTEM_IDENTIFIER,
     );
     const databaseVerifiedAt = new Date().toISOString();
-    const junitPath = process.env.JIROO_E2E_PERSIST_AUDIT === "1"
+    const junitPath = process.env.STUDIO_E2E_PERSIST_AUDIT === "1"
       ? `audit/runs/${input.runId}-junit.xml`
       : `.playwright/reports/${input.runId}-junit.xml`;
     await collectAndWriteE2eRunManifest({
@@ -304,23 +304,23 @@ async function seedPermissionFixtures(accountIds: Record<AccountKey, string>, ca
 }
 
 export default async function globalSetup(config: FullConfig) {
-  const runId = process.env.JIROO_E2E_RUN_ID;
-  if (!runId) throw new Error("JIROO_E2E_RUN_ID est absent du processus Playwright.");
+  const runId = process.env.STUDIO_E2E_RUN_ID;
+  if (!runId) throw new Error("STUDIO_E2E_RUN_ID est absent du processus Playwright.");
   reserveE2eRunId(runId);
 
   const startedAt = new Date().toISOString();
   const baseURL = config.projects[0]?.use.baseURL;
   if (typeof baseURL !== "string") throw new Error("Playwright baseURL manquante.");
-  const command = process.env.JIROO_E2E_COMMAND_LABEL?.trim()
+  const command = process.env.STUDIO_E2E_COMMAND_LABEL?.trim()
     || process.argv.join(" ");
-  const scenarios = process.env.JIROO_E2E_SCENARIOS?.trim()
+  const scenarios = process.env.STUDIO_E2E_SCENARIOS?.trim()
     || "ensemble Playwright sélectionné par la ligne de commande";
   if (
-    process.env.JIROO_E2E_PERSIST_AUDIT === "1"
-    && (!process.env.JIROO_E2E_COMMAND_LABEL?.trim() || !process.env.JIROO_E2E_SCENARIOS?.trim())
+    process.env.STUDIO_E2E_PERSIST_AUDIT === "1"
+    && (!process.env.STUDIO_E2E_COMMAND_LABEL?.trim() || !process.env.STUDIO_E2E_SCENARIOS?.trim())
   ) {
     throw new Error(
-      "Un audit persistant exige JIROO_E2E_COMMAND_LABEL et JIROO_E2E_SCENARIOS.",
+      "Un audit persistant exige STUDIO_E2E_COMMAND_LABEL et STUDIO_E2E_SCENARIOS.",
     );
   }
   await rm(".playwright/.auth", { recursive: true, force: true });

@@ -193,7 +193,7 @@ export function StartSprintDialog({
             <MetricsSummary metrics={{ ...metrics, capacityPoints: selectedCapacity }} />
           </div>
           {overCapacityPoints > 0 && (
-            <p className="rounded-lg bg-amber-500/10 p-2 text-sm text-amber-800 dark:text-amber-300" role="alert">
+            <p className="rounded-lg bg-[var(--status-doing-bg)] p-2 text-sm text-[var(--warning-foreground)]" role="alert">
               {`Dépassement de ${pointsLabel(overCapacityPoints)}. Vous pouvez tout de même démarrer.`}
             </p>
           )}

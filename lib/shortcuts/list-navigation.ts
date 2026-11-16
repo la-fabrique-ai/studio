@@ -11,7 +11,7 @@ export const SHORTCUT_ITEM_SELECTOR = "[data-shortcut-item]";
  * Sent on `window` when « j » is pressed on the last item: a view loaded by
  * windows (the Liste, JIR-145) loads its next one.
  */
-export const LOAD_MORE_SHORTCUT_EVENT = "jiroo:load-more-items";
+export const LOAD_MORE_SHORTCUT_EVENT = "studio:load-more-items";
 
 function isShown(element: HTMLElement): boolean {
   if (element.closest("[hidden], [inert]")) return false;

@@ -23,7 +23,7 @@ describe("window probe", () => {
   });
 });
 
-describe.skipIf(process.env.JIROO_RUN_BROWSER_PROBE_TESTS !== "1")("browser discovery against a real local page", () => {
+describe.skipIf(process.env.STUDIO_RUN_BROWSER_PROBE_TESTS !== "1")("browser discovery against a real local page", () => {
   let server, base, posts, sideReads;
   beforeAll(async () => {
     posts = []; sideReads = [];

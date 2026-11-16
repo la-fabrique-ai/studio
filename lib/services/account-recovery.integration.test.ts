@@ -15,7 +15,7 @@ import { generateTotp } from "@/test-utils/totp";
 
 vi.mock("server-only", () => ({}));
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 const fixtureId = randomUUID();
 const adminId = `recovery-admin-${fixtureId}`;
 const memberId = `recovery-member-${fixtureId}`;
@@ -162,7 +162,7 @@ describeDb("account recovery service", () => {
       { id: memberId, name: "Membre récupération", email: `${memberId}@example.test`, role: "contributor", twoFactorEnabled: true },
       { id: userManagerId, name: "Gestionnaire récupération", email: `${userManagerId}@example.test`, role: "contributor", twoFactorEnabled: true },
     ]);
-    // Holds the Users tab permission, but not Jiroo administration.
+    // Holds the Users tab permission, but not Studio administration.
     await db.insert(permissionGrants).values({
       scope: "global",
       permissionKey: "manage_users_groups",
@@ -282,7 +282,7 @@ describeDb("account recovery service", () => {
       expect(JSON.stringify(events[0])).not.toContain("temporaire-audit");
     });
 
-    it("rejects an actor who is not a Jiroo administrator", async () => {
+    it("rejects an actor who is not a Studio administrator", async () => {
       const target = await createTarget("password-denied");
       await addSessions(target.id, 1);
 
@@ -294,7 +294,7 @@ describeDb("account recovery service", () => {
       expect(await auditEventsFor(target.id)).toHaveLength(0);
     });
 
-    it("rejects a user manager who is not a Jiroo administrator", async () => {
+    it("rejects a user manager who is not a Studio administrator", async () => {
       const target = await createTarget("password-user-manager");
 
       await expect(
@@ -312,7 +312,7 @@ describeDb("account recovery service", () => {
 
       await expect(
         resetUserPassword({ userId: target.id, temporaryPassword: "temporaire-2026" }, adminId),
-      ).rejects.toThrow("Ce compte n’a pas de mot de passe Jiroo.");
+      ).rejects.toThrow("Ce compte n’a pas de mot de passe du Studio.");
       expect(await sessionCount(target.id)).toBe(2);
       expect(await auditEventsFor(target.id)).toHaveLength(0);
     });
@@ -374,7 +374,7 @@ describeDb("account recovery service", () => {
       expect(JSON.stringify(events[0])).not.toContain("encrypted-backup-codes");
     });
 
-    it("rejects an actor who is not a Jiroo administrator", async () => {
+    it("rejects an actor who is not a Studio administrator", async () => {
       const target = await createTarget("two-factor-denied");
       await enrollTwoFactor(target.id);
       await addSessions(target.id, 1);
@@ -432,7 +432,7 @@ describeDb("account recovery service", () => {
       await expectChallengeRejected(attacker, secret);
     });
 
-    it("rejects a user manager who is not a Jiroo administrator", async () => {
+    it("rejects a user manager who is not a Studio administrator", async () => {
       const target = await createTarget("two-factor-user-manager");
       await enrollTwoFactor(target.id);
 

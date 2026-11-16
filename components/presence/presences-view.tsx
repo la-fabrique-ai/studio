@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type FormEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
 import { carveAbsenceAction, declareAbsenceAction, removeAbsenceAction } from "@/app/actions/absences";
 import { ItemRow } from "@/components/items/item-row";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { PageHeader } from "@/components/shell/page-header";
 import { PageToolbar } from "@/components/shell/page-toolbar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";

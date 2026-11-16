@@ -10,9 +10,9 @@ import { createItem } from "../lib/services/items";
 import { writeAuditScreenshot, writeAuditText } from "./audit-artifacts";
 import { keyPattern } from "./key-helpers";
 
-const RUN = process.env.JIROO_E2E_RUN_ID;
+const RUN = process.env.STUDIO_E2E_RUN_ID;
 if (!RUN) throw new Error("Browsing users E2E requires an isolated run id.");
-const HINT = "Il vous manque la permission globale « Parcourir les utilisateurs ». Demandez-la à un administrateur Jiroo.";
+const HINT = "Il vous manque la permission globale « Parcourir les utilisateurs ». Demandez-la à un administrateur du Studio.";
 const REMOVE = "Retirer Parcourir les utilisateurs pour Tous les utilisateurs authentifiés";
 const EVERYONE = and(eq(permissionGrants.scope, "global"), eq(permissionGrants.permissionKey, "browse_users"), eq(permissionGrants.principalType, "authenticated_user"));
 type Grant = typeof permissionGrants.$inferSelect;
@@ -98,9 +98,9 @@ test.describe("browsing users by default and its removal", () => {
   test.beforeAll(async ({}, info) => {
     expect(info.config.workers, "This global-setting spec must run with one worker").toBe(1);
     const accounts = await db.select({ id: user.id, name: user.name, email: user.email }).from(user)
-      .where(inArray(user.email, ["platform-admin@jiroo.local", "member@jiroo.local"]));
-    admin = accounts.find((account) => account.email === "platform-admin@jiroo.local")!;
-    member = accounts.find((account) => account.email === "member@jiroo.local")!;
+      .where(inArray(user.email, ["platform-admin@studio.local", "member@studio.local"]));
+    admin = accounts.find((account) => account.email === "platform-admin@studio.local")!;
+    member = accounts.find((account) => account.email === "member@studio.local")!;
     const [backlog] = await db.select({ id: backlogs.id }).from(backlogs).where(eq(backlogs.key, "CASS"));
     const [role] = await db.select({ id: projectRoles.id }).from(projectRoles).where(eq(projectRoles.key, "members"));
     if (!admin || !member || !backlog || !role) throw new Error("Missing isolated assignment fixtures.");
@@ -166,12 +166,12 @@ test.describe("browsing users by default and its removal", () => {
     } finally { await restoreEveryone(); }
   });
 
-  test("distinguishes backlog administrators from Jiroo administrators", async ({ pair: { adminPage } }) => {
+  test("distinguishes backlog administrators from Studio administrators", async ({ pair: { adminPage } }) => {
     await navigate(adminPage, "/b/CASS/settings/access");
     await expect(adminPage.getByRole("region", { name: "Administrateur du backlog", exact: true })).toBeVisible();
     await adminPage.getByRole("button", { name: `Profil de ${admin.name}`, exact: true }).click();
     await adminPage.getByRole("menuitem", { name: "Profil", exact: true }).click();
-    await expect(adminPage.getByRole("dialog", { name: "Profil", exact: true }).getByText("Administrateur Jiroo", { exact: true })).toBeVisible();
+    await expect(adminPage.getByRole("dialog", { name: "Profil", exact: true }).getByText("Administrateur du Studio", { exact: true })).toBeVisible();
   });
 
   test("explains inherited global rights on user creation and links to groups", async ({ pair: { adminPage } }) => {

@@ -3,7 +3,7 @@
 The script loads `LE_POINT_DEMO` into real `DEMO` / `DEMOX` backlogs while the
 isolated `/le-point` prototype continues to use its frozen fixtures.
 
-Use an already migrated local Jiroo database and an existing administrator
+Use an already migrated local Studio database and an existing administrator
 outside `@demo.jiroo.local`. Supply its local `DATABASE_URL` and the local app's
 `BETTER_AUTH_SECRET` through the environment. The script reads no dotenv file.
 The default permission scheme must use project roles, with browse and assignable
@@ -12,13 +12,13 @@ rights for members. Existing global policies are preserved.
 From the repository root, with its dependencies installed:
 
 ```bash
-JIROO_ALLOW_DEMO_SEED=1 node --conditions=react-server --import tsx scripts/seed-demo-le-point.ts
+STUDIO_ALLOW_DEMO_SEED=1 node --conditions=react-server --import tsx scripts/seed-demo-le-point.ts
 # Replace only the reserved demo namespace:
-JIROO_ALLOW_DEMO_SEED=1 node --conditions=react-server --import tsx scripts/seed-demo-le-point.ts --reset
+STUDIO_ALLOW_DEMO_SEED=1 node --conditions=react-server --import tsx scripts/seed-demo-le-point.ts --reset
 ```
 
 Only explicit PostgreSQL URLs on `localhost` or `127.0.0.1` are accepted.
-Routing query overrides are rejected. On the current review machine, the Jiroo
+Routing query overrides are rejected. On the current review machine, the Studio
 instance is on port 5434; port 5433 belongs to another project.
 
 Four contributor accounts get random passwords, displayed once after successful
@@ -54,5 +54,5 @@ named `jir107_seed_<hex>` on port 5434; it checks the local URL before setup
 writes. Create the database separately and drop it afterwards:
 
 ```bash
-JIROO_RUN_DB_TESTS=1 JIROO_ALLOW_DEMO_SEED=1 node node_modules/vitest/vitest.mjs run scripts/seed-demo-le-point.integration.test.ts --project db
+STUDIO_RUN_DB_TESTS=1 STUDIO_ALLOW_DEMO_SEED=1 node node_modules/vitest/vitest.mjs run scripts/seed-demo-le-point.integration.test.ts --project db
 ```

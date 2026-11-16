@@ -34,7 +34,7 @@ async function context() {
   const [actor] = await db
     .select({ id: user.id })
     .from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   if (!backlog || !actor) throw new Error("Fixture CASS incomplète.");
   const [epic] = await db
     .select({ id: items.id, title: items.title })
@@ -288,18 +288,18 @@ test("Backlog lisible sans défilement horizontal à 390 × 844, captures clair 
   await expect(section(page, PLANNED_SPRINT)).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/jir75-backlog-light.png` });
 
-  await page.evaluate(() => localStorage.setItem("jiroo-theme", "dark"));
+  await page.evaluate(() => localStorage.setItem("studio-theme", "dark"));
   await page.reload();
   await expect(page.locator("html")).toHaveClass(/dark/);
   await expect(section(page, PLANNED_SPRINT)).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/jir75-backlog-dark.png` });
-  await page.evaluate(() => localStorage.setItem("jiroo-density", "compact"));
+  await page.evaluate(() => localStorage.setItem("studio-density", "compact"));
   await page.reload();
   await expect(section(page, PLANNED_SPRINT)).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/jir75-backlog-dark-compact.png` });
   await page.evaluate(() => {
-    localStorage.removeItem("jiroo-theme");
-    localStorage.removeItem("jiroo-density");
+    localStorage.removeItem("studio-theme");
+    localStorage.removeItem("studio-density");
   });
 
   await page.setViewportSize({ width: 390, height: 844 });

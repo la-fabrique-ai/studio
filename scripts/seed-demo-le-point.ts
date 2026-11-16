@@ -10,8 +10,8 @@ export class DemoSeedError extends Error {}
 
 /** Check the actual target before importing any database or auth service. */
 export function assertDemoSeedAllowed(env: Readonly<Record<string, string | undefined>>): void {
-  if (env.JIROO_ALLOW_DEMO_SEED !== "1") {
-    throw new DemoSeedError("Set JIROO_ALLOW_DEMO_SEED=1 to allow this local demo seed.");
+  if (env.STUDIO_ALLOW_DEMO_SEED !== "1") {
+    throw new DemoSeedError("Set STUDIO_ALLOW_DEMO_SEED=1 to allow this local demo seed.");
   }
   let url: URL;
   try { url = new URL(env.DATABASE_URL ?? ""); } catch {
@@ -79,7 +79,7 @@ export async function seedDemoLePoint(options: { reset?: boolean } = {}): Promis
   ]);
   const lock = await databasePool.connect();
   try {
-    await lock.query("select pg_advisory_lock(hashtext($1))", ["jiroo:demo-le-point-seed"]);
+    await lock.query("select pg_advisory_lock(hashtext($1))", ["studio:demo-le-point-seed"]);
     const existing = await db.select({ id: backlogs.id }).from(backlogs).where(inArray(backlogs.key, ["DEMO", "DEMOX"]));
     const existingPeople = await db.select({ id: user.id }).from(user).where(ilike(user.email, "%@demo.jiroo.local"));
     if (!options.reset && (existing.length > 0 || existingPeople.length > 0)) {
@@ -88,7 +88,7 @@ export async function seedDemoLePoint(options: { reset?: boolean } = {}): Promis
     const administrators = await db.transaction(authorizationService.platformAdministratorIds);
     const storedUsers = await db.select({ id: user.id, email: user.email }).from(user);
     const operator = storedUsers.find((person) => administrators.has(person.id) && !person.email.toLowerCase().endsWith("@demo.jiroo.local"));
-    if (!operator) throw new DemoSeedError("Bootstrap a Jiroo administrator outside @demo.jiroo.local first; this script never creates one.");
+    if (!operator) throw new DemoSeedError("Bootstrap a Studio administrator outside @demo.jiroo.local first; this script never creates one.");
     const [members] = await db.select().from(projectRoles).where(eq(projectRoles.key, "members"));
     const [scheme] = await db.select().from(permissionSchemes).where(eq(permissionSchemes.key, "default-permission-scheme"));
     const grants = scheme ? await db.select().from(permissionGrants).where(eq(permissionGrants.permissionSchemeId, scheme.id)) : [];
@@ -178,7 +178,7 @@ export async function seedDemoLePoint(options: { reset?: boolean } = {}): Promis
     }
     return { backlogId: backlog.id, hiddenBacklogId: hiddenBacklog.id, items: itemMap, people };
   } finally {
-    await lock.query("select pg_advisory_unlock(hashtext($1))", ["jiroo:demo-le-point-seed"]).catch(() => {});
+    await lock.query("select pg_advisory_unlock(hashtext($1))", ["studio:demo-le-point-seed"]).catch(() => {});
     lock.release();
   }
 }

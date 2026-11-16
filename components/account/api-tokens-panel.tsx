@@ -203,7 +203,7 @@ export function ApiTokensPanel({ tokens, now }: { tokens: ApiTokenView[]; now: s
           <DialogHeader>
             <DialogTitle>Créer un jeton d’accès</DialogTitle>
             <DialogDescription>
-              Le jeton donne accès à Jiroo en votre nom, selon vos droits et la portée choisie. Il ne
+              Le jeton donne accès au Studio en votre nom, selon vos droits et la portée choisie. Il ne
               sera affiché qu’une seule fois.
             </DialogDescription>
           </DialogHeader>
@@ -302,7 +302,7 @@ export function ApiTokensPanel({ tokens, now }: { tokens: ApiTokenView[]; now: s
                 <DialogTitle>Révoquer ce jeton ?</DialogTitle>
                 {/* A 60-character name without spaces must wrap, not widen the dialog. */}
                 <DialogDescription className="[overflow-wrap:anywhere]">
-                  Le jeton « {revoking.name} » ne permettra plus d’accéder à Jiroo. Cette action est
+                  Le jeton « {revoking.name} » ne permettra plus d’accéder au Studio. Cette action est
                   définitive.
                 </DialogDescription>
               </DialogHeader>

@@ -52,7 +52,7 @@ describe("SidebarStateProvider", () => {
 
   it("hydrates from the anti-flash attribute and persists toggles", async () => {
     const user = userEvent.setup();
-    localStorage.setItem("jiroo-sidebar-collapsed", "true");
+    localStorage.setItem("studio-sidebar-collapsed", "true");
     document.documentElement.dataset.sidebar = "collapsed";
     render(
       <SidebarStateProvider>
@@ -64,7 +64,7 @@ describe("SidebarStateProvider", () => {
     await user.click(screen.getByRole("button", { name: "collapsed" }));
 
     expect(screen.getByRole("button", { name: "open" })).toBeVisible();
-    expect(localStorage.getItem("jiroo-sidebar-collapsed")).toBe("false");
+    expect(localStorage.getItem("studio-sidebar-collapsed")).toBe("false");
     expect(document.documentElement.dataset.sidebar).toBe("open");
   });
 

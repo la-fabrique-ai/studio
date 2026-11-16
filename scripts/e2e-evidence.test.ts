@@ -69,7 +69,7 @@ describe("shared credential filters", () => {
     "Bearer synthetic-token",
     "Cookie: session=synthetic-session",
     "Set-Cookie: session=synthetic-session",
-    "jiroo-e2e-secret",
+    "studio-e2e-secret",
     "DATABASE_URL",
     "DIRECT_DATABASE_URL",
     PASSWORD,

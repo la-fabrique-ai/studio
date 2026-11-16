@@ -21,7 +21,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Jiroo",
+  title: "Le Studio",
   description: "Gestion des tickets — Cour de cassation",
 };
 

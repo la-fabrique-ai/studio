@@ -10,13 +10,13 @@ import { createReadVisibilityFixture, deleteReadVisibilityFixture, type ReadVisi
 import { GET, POST } from "@/app/api/v1/items/[key]/dependencies/route";
 import { DELETE } from "@/app/api/v1/items/[key]/dependencies/[id]/route";
 import { GET as detail } from "@/app/api/v1/items/[key]/route";
-import { JIROO_TOOLS, runTool } from "@/lib/mcp/tools";
+import { STUDIO_TOOLS, runTool } from "@/lib/mcp/tools";
 vi.mock("server-only", () => ({}));
 const actionSession = vi.hoisted(() => ({ actorId: "" }));
 vi.mock("@/lib/auth/session", () => ({ getSession: async () => ({ user: { id: actionSession.actorId } }) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 import { addLinkAction } from "@/app/actions/links";
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 describeDb("blocking dependencies across REST and MCP", () => {
   let f: ReadVisibilityFixture;
   let token: string; let readToken: string;
@@ -24,7 +24,7 @@ describeDb("blocking dependencies across REST and MCP", () => {
   let neighbour: typeof items.$inferSelect; let third: typeof items.$inferSelect;
   const context = (key: string, id: string = randomUUID()) => ({ params: Promise.resolve({ key, id }) });
   const request = (method = "GET", body?: unknown, bearer = token) => new Request("http://localhost/api/v1", { method, headers: { authorization: `Bearer ${bearer}` }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
-  const tool = (name: string, input: unknown, principal = writer) => runTool(JIROO_TOOLS.find((t) => t.name === name)!, input, principal);
+  const tool = (name: string, input: unknown, principal = writer) => runTool(STUDIO_TOOLS.find((t) => t.name === name)!, input, principal);
   beforeAll(async () => {
     f = await createReadVisibilityFixture("API dependencies");
     actionSession.actorId = f.actorA;

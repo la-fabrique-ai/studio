@@ -49,7 +49,7 @@ import {
 
 vi.mock("server-only", () => ({}));
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 const fixtureId = randomUUID();
 const compact = fixtureId.replaceAll("-", "");
 const actorId = `admin-service-actor-${fixtureId}`;
@@ -362,7 +362,7 @@ describeDb("transactional authorization administration", () => {
         secondMemberId,
         correlation("escalation-group-add"),
       ),
-    ).rejects.toThrow("Seul un administrateur Jiroo peut modifier les membres de ce groupe.");
+    ).rejects.toThrow("Seul un administrateur du Studio peut modifier les membres de ce groupe.");
     expect(
       await db.select({ id: groupMembers.id }).from(groupMembers).where(
         and(eq(groupMembers.groupId, group.id), eq(groupMembers.userId, secondMemberId)),

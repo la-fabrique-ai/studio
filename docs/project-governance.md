@@ -1,7 +1,7 @@
-# Pilotage de Jiroo — règles communes aux agents
+# Pilotage du Studio — règles communes aux agents
 
 Ces règles sont à lire par Claude Code, Codex et les autres agents avant une
-intervention sur Jiroo. Elles mettent en œuvre l'instruction explicite du
+intervention sur le Studio. Elles mettent en œuvre l'instruction explicite du
 propriétaire du projet du **2 octobre 2026**. Elles ne donnent aucune autorisation
 d'implémenter un chantier, de fusionner une PR ou de déployer par leur seule
 existence. Les instructions directes de la session restent prioritaires.
@@ -10,7 +10,7 @@ existence. Les instructions directes de la session restent prioritaires.
 
 | Élément | Référence et état de vérification |
 | --- | --- |
-| Produit | Jiroo, gestionnaire de tickets en français pour une équipe de la Cour de cassation |
+| Produit | Le Studio (anciennement Jiroo), gestionnaire de tickets en français pour une équipe de la Cour de cassation |
 | Dépôt vérifié | <https://github.com/la-fabrique-ai/studio> ; branche de référence `main` |
 | Workspace Linear | [DVLPR](https://linear.app/dvlpr) — ID `f920de06-af47-4dd9-9118-b53ad1fe4f8f` |
 | Équipe Linear — point d'ancrage du produit | **Jiroo**, préfixe `JIR`, ID `42c9ba62-dfea-48ef-affc-296c093cd6d5` ; créée par le propriétaire le 2 octobre 2026 |
@@ -225,7 +225,7 @@ commit on the same PR cancels the superseded run. All checks are blocking:
 | `Audit (prod, high+)` | `pnpm audit --prod --audit-level=high` | High or critical advisories in production dependencies |
 | `typecheck` | `pnpm typecheck` | `tsc --noEmit` |
 | `lint` | `pnpm lint` | ESLint (warnings do not fail the check) |
-| `test` | `pnpm test` | `vitest run` without a database: DB suites are skipped because `JIROO_RUN_DB_TESTS` is unset |
+| `test` | `pnpm test` | `vitest run` without a database: DB suites are skipped because `STUDIO_RUN_DB_TESTS` is unset |
 
 Not covered: Playwright E2E, DB-backed suites, `next build` (still exercised by
 the Vercel preview deploy) and migrations. A green CI is evidence of

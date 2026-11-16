@@ -3,7 +3,7 @@ import { HelpGuide } from "@/components/help/help-guide";
 import { GuideToc } from "@/components/help/guide-toc";
 import { ShellBreadcrumb } from "@/components/shell/shell-breadcrumb";
 
-export const metadata: Metadata = { title: "Aide — Jiroo" };
+export const metadata: Metadata = { title: "Aide — Le Studio" };
 
 /** Functional user guide (static content, inside the authenticated shell). */
 export default function HelpPage() {
@@ -13,7 +13,7 @@ export default function HelpPage() {
         <ShellBreadcrumb />
         <h1 className="t-h1">Guide d’utilisation</h1>
         <p className="t-body text-muted-foreground">
-          Les fonctions de Jiroo, section par section : à quoi elles servent et comment s’en servir.
+          Les fonctions du Studio, section par section : à quoi elles servent et comment s’en servir.
         </p>
       </header>
       <div className="grid gap-8 lg:grid-cols-[200px_minmax(0,1fr)]">

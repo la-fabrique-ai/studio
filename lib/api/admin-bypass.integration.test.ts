@@ -18,7 +18,7 @@ import {
 import { GET as detail } from "@/app/api/v1/items/[key]/route";
 import { GET as list } from "@/app/api/v1/items/route";
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 
 // Security audit (JIR-160): a platform administrator reading a backlog outside
 // their ordinary grants through the API leaves the same bypass trace as in the UI.

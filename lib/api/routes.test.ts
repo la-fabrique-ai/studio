@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ auth: vi.fn(), budget: vi.fn(), me: vi.fn(), backlogs: vi.fn(), statuses: vi.fn(), summary: vi.fn(), detail: vi.fn(), resolve: vi.fn(), backlog: vi.fn(), search: vi.fn(), create: vi.fn(), update: vi.fn(), comment: vi.fn(), commentDto: vi.fn() }));
 vi.mock("server-only", () => ({}));
-vi.mock("@/lib/api/authenticate", () => ({ authenticateBearer: m.auth, bearerChallenge: () => 'Bearer realm="jiroo"' }));
+vi.mock("@/lib/api/authenticate", () => ({ authenticateBearer: m.auth, bearerChallenge: () => 'Bearer realm="studio"' }));
 vi.mock("@/lib/api/rate-limit", () => ({ reserveApiRequest: m.budget }));
 vi.mock("@/lib/services/api-tokens", () => ({ scopeAllows: (g: string, r: string) => g === "write" || r === "read" }));
 vi.mock("@/lib/services/api-read", () => ({ getApiMe: m.me, listApiBacklogs: m.backlogs, listApiStatuses: m.statuses, getApiItemSummary: m.summary, getApiItemDetail: m.detail, resolveApiItem: m.resolve, resolveApiBacklog: m.backlog, getApiComment: m.commentDto }));

@@ -1028,7 +1028,7 @@ describe("ItemDetailPanel keyboard shortcuts", () => {
   });
 
   it("a unfolds « Détails » folded by the stored preference", async () => {
-    window.localStorage.setItem("jiroo:item-drawer-panel:details", "collapsed");
+    window.localStorage.setItem("studio:item-drawer-panel:details", "collapsed");
     renderWithShortcuts();
     const details = screen.getByRole("button", { name: "Détails" });
     await waitFor(() => expect(details).toHaveAttribute("aria-expanded", "false"));
@@ -1041,7 +1041,7 @@ describe("ItemDetailPanel keyboard shortcuts", () => {
   });
 
   it("a leaves a folded « Détails » alone without the assign right or with shortcuts off", async () => {
-    window.localStorage.setItem("jiroo:item-drawer-panel:details", "collapsed");
+    window.localStorage.setItem("studio:item-drawer-panel:details", "collapsed");
     const { unmount } = renderWithShortcuts({ canAssignItems: false });
     const details = screen.getByRole("button", { name: "Détails" });
     await waitFor(() => expect(details).toHaveAttribute("aria-expanded", "false"));
@@ -1049,7 +1049,7 @@ describe("ItemDetailPanel keyboard shortcuts", () => {
     expect(details).toHaveAttribute("aria-expanded", "false");
     unmount();
 
-    window.localStorage.setItem("jiroo-shortcuts-enabled", "false");
+    window.localStorage.setItem("studio-shortcuts-enabled", "false");
     renderWithShortcuts();
     const folded = screen.getByRole("button", { name: "Détails" });
     await waitFor(() => expect(folded).toHaveAttribute("aria-expanded", "false"));

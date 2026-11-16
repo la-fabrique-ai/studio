@@ -37,7 +37,7 @@ function uniqueSuffix(): string {
 /** Creates a user and enrolls TOTP through Better Auth's HTTP API. */
 async function provisionEnrolledUser(baseURL: string, label: string): Promise<EnrolledUser> {
   const suffix = uniqueSuffix();
-  const email = `recovery-${label}-${suffix}@jiroo.local`;
+  const email = `recovery-${label}-${suffix}@studio.local`;
   const name = `Récupération ${label} ${suffix}`;
   const created = await createUser({ email, name, password: ORIGINAL_PASSWORD });
 
@@ -195,7 +195,7 @@ test.describe("account recovery", () => {
     const downloadEvent = userPage.waitForEvent("download");
     await userPage.getByRole("button", { name: "Télécharger (.txt)" }).click();
     const download = await downloadEvent;
-    expect(download.suggestedFilename()).toMatch(/^jiroo-codes-recuperation-\d{4}-\d{2}-\d{2}\.txt$/u);
+    expect(download.suggestedFilename()).toMatch(/^le-studio-codes-recuperation-\d{4}-\d{2}-\d{2}\.txt$/u);
     const fileText = await readFile(await download.path(), "utf8");
     expect(fileText).toContain(`Compte : ${target.email}\r\n`);
     expect(fileText).toMatch(/Générés le : \d{2}\/\d{2}\/\d{4}\r\n/u);

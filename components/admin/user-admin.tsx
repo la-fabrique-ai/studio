@@ -2,7 +2,7 @@
 
 import { UserAccountRecovery } from "@/components/admin/user-account-recovery";
 import { UserCreateDialog } from "@/components/admin/user-create-dialog";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import type { LabelHue } from "@/lib/design/constants";
 export type UserAdminDto = { id: string; name: string; email: string };
 
@@ -19,7 +19,7 @@ export function UserAdmin({
 }: {
   users: UserAdminDto[];
   currentUserId: string;
-  /** Jiroo administrators (administer_jiroo) may reset other users' access. */
+  /** Studio administrators (administer_jiroo) may reset other users' access. */
   canRecoverAccounts?: boolean;
 }) {
   return (

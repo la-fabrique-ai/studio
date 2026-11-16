@@ -12,7 +12,7 @@ import { securityAuditEvents } from "@/lib/db/schema/domain";
 import { revokeAllTokensForUser } from "@/lib/services/api-tokens";
 import { resetUserPasswordInput, resetUserTwoFactorInput } from "@/lib/items/users";
 
-// Administrator-driven account recovery (JIR-61). Jiroo sends no e-mail, so an
+// Administrator-driven account recovery (JIR-61). Studio sends no e-mail, so an
 // administrator sets a temporary password or clears the second factor; the
 // target's sessions are revoked and the change is written to the security
 // audit log in the same transaction. Secrets never reach the audit payload.
@@ -34,7 +34,7 @@ export const SELF_PASSWORD_RESET_MESSAGE =
 export const SELF_TWO_FACTOR_RESET_MESSAGE =
   "Vous ne pouvez pas réinitialiser votre propre double authentification.";
 export const MISSING_USER_MESSAGE = "Utilisateur introuvable.";
-export const MISSING_CREDENTIAL_MESSAGE = "Ce compte n’a pas de mot de passe Jiroo.";
+export const MISSING_CREDENTIAL_MESSAGE = "Ce compte n’a pas de mot de passe du Studio.";
 
 export class AccountRecoveryError extends Error {
   constructor(message: string) {

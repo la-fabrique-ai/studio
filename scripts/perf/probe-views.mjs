@@ -64,7 +64,7 @@ async function main() {
   const requests = Number(env.PROBE_REQUESTS ?? 20);
   if (!Number.isSafeInteger(requests) || requests < 1) throw new Error("PROBE_REQUESTS must be a positive integer");
   const container = required("PG_CONTAINER"), database = required("PG_DATABASE"), owner = required("PG_OWNER"), role = required("PG_ROLE");
-  if (!container.startsWith("jiroo-") || !/^jir41_perf_[a-f0-9]{12}$/.test(database)) throw new Error("Use the owned disposable team-profile PostgreSQL container/database");
+  if (!container.startsWith("studio-") || !/^jir41_perf_[a-f0-9]{12}$/.test(database)) throw new Error("Use the owned disposable team-profile PostgreSQL container/database");
   const docker = (args) => {
     const r = spawnSync("docker", args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 30000 });
     if (r.error || r.status !== 0) throw new Error("Docker/psql failed; check the owned container and log setup");

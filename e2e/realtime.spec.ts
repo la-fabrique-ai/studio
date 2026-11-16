@@ -10,7 +10,7 @@ import { keyPattern } from "./key-helpers";
 
 const TIMEOUT = 10_000;
 const BANNER = "Ce backlog a été modifié par quelqu'un d'autre.";
-const RUN = process.env.JIROO_E2E_RUN_ID;
+const RUN = process.env.STUDIO_E2E_RUN_ID;
 if (!RUN) throw new Error("Realtime E2E requires the isolated Playwright run id.");
 
 type Capture = {
@@ -58,9 +58,9 @@ const test = base.extend<{ pair: { author: Page; viewer: Page } }>({
 
 async function fixtureTask(scenario: string) {
   const [admin] = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   const [reader] = await db.select({ id: user.id, name: user.name }).from(user)
-    .where(eq(user.email, "reader@jiroo.local"));
+    .where(eq(user.email, "reader@studio.local"));
   const [backlog] = await db.select({ id: backlogs.id }).from(backlogs)
     .where(eq(backlogs.key, "CASS"));
   if (!admin || !reader || !backlog) throw new Error("Missing realtime E2E accounts or backlog.");

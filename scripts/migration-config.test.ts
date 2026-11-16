@@ -14,7 +14,7 @@ function run(entry: "migrate" | "config", directUrl: string | undefined) {
     DATABASE_URL: LOCAL_URL,
     DIRECT_DATABASE_URL: directUrl,
     // Never read a developer's real dotenv file or fall back to a live PG* host.
-    DOTENV_CONFIG_PATH: path.join(tmpdir(), `jiroo-no-dotenv-${randomUUID()}`),
+    DOTENV_CONFIG_PATH: path.join(tmpdir(), `studio-no-dotenv-${randomUUID()}`),
     PGHOST: "127.0.0.1", PGPORT: "1", PGUSER: "test", PGPASSWORD: "test",
     PGDATABASE: "no_migrations_expected",
   };

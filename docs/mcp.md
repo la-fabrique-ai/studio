@@ -1,6 +1,6 @@
-# Jiroo MCP server
+# Le Studio MCP server
 
-Jiroo exposes its tickets to AI agents (Claude Code, Codex and any MCP client) through a
+Le Studio exposes its tickets to AI agents (Claude Code, Codex and any MCP client) through a
 [Model Context Protocol](https://modelcontextprotocol.io) server at `/api/mcp` (JIR-158).
 It speaks Streamable HTTP, is stateless, and authenticates every request with a
 **personal access token** (JIR-156) sent as a bearer header. The agent acts as the
@@ -14,23 +14,23 @@ Create a token on the « Jetons d'accès » page (user menu), then:
 **Claude Code**
 
 ```bash
-claude mcp add --transport http jiroo https://jiroo-dev.vercel.app/api/mcp \
+claude mcp add --transport http studio https://jiroo-dev.vercel.app/api/mcp \
   --header "Authorization: Bearer jiroo_pat_…"
 ```
 
 **Codex** (`~/.codex/config.toml`)
 
 ```toml
-[mcp_servers.jiroo]
+[mcp_servers.studio]
 url = "https://jiroo-dev.vercel.app/api/mcp"
-bearer_token_env_var = "JIROO_TOKEN"
+bearer_token_env_var = "STUDIO_TOKEN"
 ```
 
-and export `JIROO_TOKEN=jiroo_pat_…` in the environment Codex starts from.
+and export `STUDIO_TOKEN=jiroo_pat_…` in the environment Codex starts from.
 
 **Generic MCP client**: Streamable HTTP, `Authorization: Bearer <token>`. OAuth is not
 supported: a request without a valid bearer token gets `401` with a plain
-`WWW-Authenticate: Bearer realm="jiroo"` challenge (`error="invalid_token"` for a bad
+`WWW-Authenticate: Bearer realm="studio"` challenge (`error="invalid_token"` for a bad
 token), no `resource_metadata` and no authorization server to discover.
 
 ## Tools
@@ -64,7 +64,7 @@ answers HTTP `429` with `Retry-After` (see Rules).
 
 `list_labels` includes global labels (`backlogId: null`). `create_label` trims the
 name (1–50 characters), reuses a case-insensitive match, including a global label,
-and only creates local labels, with a colour chosen by Jiroo. Catalogue writes
+and only creates local labels, with a colour chosen by Le Studio. Catalogue writes
 and item label changes require `edit_items`; initial `labelIds` require
 `create_items`. Duplicate UUIDs are ignored. `update_item({key, labelIds: []})`
 clears all labels; otherwise `labelIds` replaces them. An unknown or foreign label
@@ -145,7 +145,7 @@ deleted/purged item; MCP returns `isError:true` for those same refusals.
   backlog, `list_my_items`) do not.
 - **One message per request**: JSON-RPC batch arrays are refused (`400`), and bodies are
   capped at 64 KiB (`413`).
-- **Prompt injection**: titles, descriptions and comments are written by Jiroo users and
+- **Prompt injection**: titles, descriptions and comments are written by Studio users and
   returned verbatim. Agents must treat them as data, never as instructions; the read tools
   say so in their descriptions. Prefer read tokens and short expiries for agents.
 - **Traceability**: item mutations record `source = mcp` and the token id; the
@@ -158,7 +158,7 @@ deleted/purged item; MCP returns `isError:true` for those same refusals.
 ## Local check
 
 ```bash
-curl -s https://jiroo-dev.vercel.app/api/mcp -H "Authorization: Bearer $JIROO_TOKEN" \
+curl -s https://jiroo-dev.vercel.app/api/mcp -H "Authorization: Bearer $STUDIO_TOKEN" \
   -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```

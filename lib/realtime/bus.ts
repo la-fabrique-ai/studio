@@ -195,15 +195,15 @@ export class RealtimeBus {
   }
 }
 
-const globalForRealtime = globalThis as typeof globalThis & { jirooRealtimeBus?: RealtimeBus };
+const globalForRealtime = globalThis as typeof globalThis & { studioRealtimeBus?: RealtimeBus };
 
 /**
  * The process-wide bus. LISTEN needs a direct connection: Neon's pooler runs in
  * transaction mode, so the unpooled URL used by migrations wins when set.
  */
 export function getRealtimeBus(): RealtimeBus {
-  globalForRealtime.jirooRealtimeBus ??= new RealtimeBus({
+  globalForRealtime.studioRealtimeBus ??= new RealtimeBus({
     connectionString: process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL,
   });
-  return globalForRealtime.jirooRealtimeBus;
+  return globalForRealtime.studioRealtimeBus;
 }

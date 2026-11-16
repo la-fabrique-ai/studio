@@ -10,13 +10,13 @@ vi.mock("@/lib/services/item-search", () => ({ findItemSummaryByKey: m.summary, 
 vi.mock("@/lib/use-cases/labels", () => ({ listLabelsUseCase: m.list, createLabelUseCase: m.create, addItemLabelUseCase: m.add, removeItemLabelUseCase: m.remove }));
 vi.mock("@/lib/use-cases/item-creation", () => ({ createExternalItemUseCase: m.createItem }));
 vi.mock("@/lib/use-cases/items", () => ({ createItemUseCase: m.createItem, updateItemUseCase: m.updateItem }));
-import { JIROO_TOOLS, runTool, type ToolDefinition } from "@/lib/mcp/tools";
+import { STUDIO_TOOLS, runTool, type ToolDefinition } from "@/lib/mcp/tools";
 const labelId = "11111111-1111-4111-8111-111111111111";
 const label = { id: labelId, backlogId: null, name: "Global", color: "--label-1" };
 const reader = { actorId: "u", tokenId: "t", scope: "read" as const };
 const writer = { ...reader, scope: "write" as const };
 function tool(name: string): ToolDefinition {
-  const found = JIROO_TOOLS.find((candidate) => candidate.name === name);
+  const found = STUDIO_TOOLS.find((candidate) => candidate.name === name);
   expect(found, `${name} is registered`).toBeDefined(); return found!;
 }
 beforeEach(() => {

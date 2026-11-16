@@ -10,7 +10,7 @@ import { writeAuditScreenshot, writeAuditText } from "./audit-artifacts";
 import { keyPattern } from "./key-helpers";
 import { chooseOption } from "./select-helpers";
 
-const RUN = process.env.JIROO_E2E_RUN_ID;
+const RUN = process.env.STUDIO_E2E_RUN_ID;
 if (!RUN) throw new Error("Create-everywhere requires an isolated E2E run id.");
 const KEY = "CRTALL";
 const COLOR = "#ffeeaa";
@@ -58,7 +58,7 @@ async function removeFixture() {
 test.beforeAll(async () => {
   await removeFixture();
   const [admin] = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   if (!admin) throw new Error("Missing isolated E2E administrator.");
   const backlog = await createBacklog({ key: KEY, name: "Créer partout E2E", color: COLOR }, admin.id);
   backlogId = backlog.id;

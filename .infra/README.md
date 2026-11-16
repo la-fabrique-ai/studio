@@ -52,7 +52,7 @@ the application's loopback port. No external database service is required.
    `db:5432` in both URLs, a restricted runtime role for `DATABASE_URL`, and the
    owner for `DIRECT_DATABASE_URL`. Keep passwords URL-encoded; hexadecimal
    passwords avoid escaping issues. Keep `BETTER_AUTH_SECRET` stable.
-2. Fill `JIROO_IMAGE` from the release's `release-manifest.json`, using
+2. Fill `STUDIO_IMAGE` from the release's `release-manifest.json`, using
    the digest. Authenticate to GHCR on the VM if the packages are private.
 3. Start the database, provision the runtime role using
    [database roles](../docs/database-roles.md), then start the application:

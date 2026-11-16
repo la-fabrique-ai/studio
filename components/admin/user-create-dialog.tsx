@@ -125,7 +125,7 @@ export function UserCreateDialog() {
           </DialogFooter>
         </form>
         <p className="text-sm text-muted-foreground">
-          Aucun droit global ne sera attribué directement à ce compte ; il bénéficiera des droits accordés à tous les utilisateurs authentifiés. Ajoutez-le à un groupe (par exemple les administrateurs Jiroo) pour lui en donner d’autres.{" "}
+          Aucun droit global ne sera attribué directement à ce compte ; il bénéficiera des droits accordés à tous les utilisateurs authentifiés. Ajoutez-le à un groupe (par exemple les administrateurs du Studio) pour lui en donner d’autres.{" "}
           <Link href="/admin?tab=groups" className="underline">Ouvrir les groupes</Link>.
         </p>
       </DialogContent>

@@ -11,7 +11,7 @@ afterEach(async () => {
 });
 
 async function paths() {
-  testRoot = await mkdtemp(join(tmpdir(), "jiroo-junit-reporter-"));
+  testRoot = await mkdtemp(join(tmpdir(), "studio-junit-reporter-"));
   return {
     finalPath: join(testRoot, "proof.xml"),
     lockPath: join(testRoot, "reservation.lock"),

@@ -1,7 +1,7 @@
 import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "node:crypto";
 
 /**
- * Encrypts secrets Jiroo must read back later (e.g. repository webhook
+ * Encrypts secrets Studio must read back later (e.g. repository webhook
  * secrets, JIR-95): AES-256-GCM with a random 96-bit nonce, authenticated, in
  * a versioned text envelope `v1:<nonce>:<tag>:<ciphertext>` (base64url).
  *
@@ -14,6 +14,9 @@ import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "node:cr
  */
 
 const VERSION = "v1";
+// "jiroo" (the HKDF salt below and this label) predates the product rename to
+// Le Studio. They feed the key derivation: changing either makes every stored
+// secret unreadable, so they stay as they are.
 const KEY_INFO = "jiroo:secret-box:v1";
 const MIN_MATERIAL_LENGTH = 32;
 const UNREADABLE = "Secret illisible.";

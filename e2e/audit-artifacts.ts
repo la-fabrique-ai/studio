@@ -3,7 +3,7 @@ import { link, mkdir, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join } from "node:path";
 
 type AuditEnvironment = Partial<Record<
-  "JIROO_E2E_PERSIST_AUDIT" | "JIROO_E2E_RUN_ID",
+  "STUDIO_E2E_PERSIST_AUDIT" | "STUDIO_E2E_RUN_ID",
   string
 >>;
 
@@ -30,12 +30,12 @@ export function resolveAuditArtifactPath(
   options: AuditArtifactOptions = {},
 ): string {
   const env = options.env ?? process.env;
-  const runId = env.JIROO_E2E_RUN_ID?.trim();
+  const runId = env.STUDIO_E2E_RUN_ID?.trim();
   if (!runId || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(runId)) {
-    throw new Error("JIROO_E2E_RUN_ID est obligatoire pour tout artefact d’audit E2E.");
+    throw new Error("STUDIO_E2E_RUN_ID est obligatoire pour tout artefact d’audit E2E.");
   }
   const { category, fileName } = artifactCoordinates(legacyPath);
-  const root = env.JIROO_E2E_PERSIST_AUDIT === "1"
+  const root = env.STUDIO_E2E_PERSIST_AUDIT === "1"
     ? "audit"
     : join(".playwright", "evidence", runId);
   return join(options.workingDirectory ?? process.cwd(), root, category, `${runId}-${fileName}`);

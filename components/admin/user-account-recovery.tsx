@@ -27,7 +27,7 @@ type RecoveryTarget = { id: string; name: string };
 type OpenDialog = "password" | "two-factor" | null;
 
 /**
- * Row-level account recovery for Jiroo administrators (JIR-61). Rendered only
+ * Row-level account recovery for Studio administrators (JIR-61). Rendered only
  * for other users: administrators change their own password from the user menu
  * and can never reset their own second factor here. The server enforces both.
  */

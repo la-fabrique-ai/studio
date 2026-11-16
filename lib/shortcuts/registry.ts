@@ -1,5 +1,5 @@
 /**
- * Single source of truth for Jiroo's keyboard shortcuts: the global key
+ * Single source of truth for Studio's keyboard shortcuts: the global key
  * handler, the « Raccourcis clavier » dialog and the /aide guide all read this
  * list. Keys follow Jira Cloud where Jira has an equivalent (see `jira`).
  *

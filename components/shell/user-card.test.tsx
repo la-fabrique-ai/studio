@@ -58,7 +58,7 @@ describe("UserCard", () => {
     const dialog = await screen.findByRole("dialog", { name: "Profil" });
     expect(within(dialog).getByText("Ada Lovelace")).toBeVisible();
     expect(within(dialog).getByText("ada@example.com")).toBeVisible();
-    expect(within(dialog).getByText("Administrateur Jiroo")).toBeVisible();
+    expect(within(dialog).getByText("Administrateur du Studio")).toBeVisible();
   });
 
   it("opens the change-password dialog from its menu", async () => {
@@ -104,7 +104,7 @@ describe("UserCard", () => {
 
     await interaction.click(compact);
     expect(compact).toBeChecked();
-    expect(localStorage.getItem("jiroo-density")).toBe("compact");
+    expect(localStorage.getItem("studio-density")).toBe("compact");
   });
 
   it("keeps sign-out and login redirection intact", async () => {

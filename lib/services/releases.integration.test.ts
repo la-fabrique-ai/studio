@@ -37,7 +37,7 @@ import {
 
 vi.mock("server-only", () => ({}));
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 const fixtureBacklogIds = new Set<string>();
 const fixtureUserIds = new Set<string>();
 

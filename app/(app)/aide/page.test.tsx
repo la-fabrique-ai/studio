@@ -359,16 +359,16 @@ describe("HelpPage", () => {
     expect(api).toHaveTextContent("Si vous changez vous-même votre mot de passe, vos jetons sont conservés.");
     expect(api).toHaveTextContent("300 requêtes par minute et par jeton");
     expect(api).toHaveTextContent(
-      "Un administrateur Jiroo peut aussi révoquer l’un de vos jetons depuis « Administration » → « Jetons d’accès ». L’outil qui utilise ce jeton perd alors son accès à Jiroo : si cet accès reste nécessaire, créez un nouveau jeton et remplacez l’ancien dans sa configuration.",
+      "Un administrateur du Studio peut aussi révoquer l’un de vos jetons depuis « Administration » → « Jetons d’accès ». L’outil qui utilise ce jeton perd alors son accès au Studio : si cet accès reste nécessaire, créez un nouveau jeton et remplacez l’ancien dans sa configuration.",
     );
     expect(api).toHaveTextContent("compte « Agents »");
     expect(api).toHaveTextContent("Contributeur");
     expect(api).toHaveTextContent("gestionnaire de secrets");
     expect(api).toHaveTextContent("affiché qu’une seule fois");
-    expect(api).toHaveTextContent("Authorization: Bearer $JIROO_TOKEN");
+    expect(api).toHaveTextContent("Authorization: Bearer $STUDIO_TOKEN");
     expect(api).toHaveTextContent("/api/v1/me");
     expect(api).toHaveTextContent("claude mcp add --transport http");
-    expect(api).toHaveTextContent('bearer_token_env_var = "JIROO_TOKEN"');
+    expect(api).toHaveTextContent('bearer_token_env_var = "STUDIO_TOKEN"');
     expect(api).toHaveTextContent("/api/mcp");
     expect(api).toHaveTextContent("search_items");
     expect(section.getByRole("link", { name: /docs\/api-v1.md/ })).toHaveAttribute("href", "https://github.com/la-fabrique-ai/studio/blob/main/docs/api-v1.md");

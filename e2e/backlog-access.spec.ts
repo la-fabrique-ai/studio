@@ -31,7 +31,7 @@ async function deleteFixture() {
 
 test.beforeAll(async () => {
   await deleteFixture();
-  const [admin] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@jiroo.local"));
+  const [admin] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@studio.local"));
   if (!admin) throw new Error("Administrateur E2E introuvable.");
   const backlog = await createBacklog({ key: KEY, name: NAME, color: "#0f766e" }, admin.id);
   backlogId = backlog.id;
@@ -87,7 +87,7 @@ test("retire un occupant en mode Simple, sauf le dernier administrateur", async 
   // Scoped to main: Next.js keeps its route announcer (role alert) outside.
   await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
 
-  const [member] = await db.select({ id: user.id }).from(user).where(eq(user.email, "member@jiroo.local"));
+  const [member] = await db.select({ id: user.id }).from(user).where(eq(user.email, "member@studio.local"));
   if (!member) throw new Error("Membre E2E introuvable.");
   await expect.poll(async () => (await db.select({ id: backlogRoleActors.id }).from(backlogRoleActors).where(and(
     eq(backlogRoleActors.backlogId, backlogId),

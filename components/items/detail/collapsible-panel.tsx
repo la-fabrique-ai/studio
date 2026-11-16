@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
  */
 export const PanelExpandContext = createContext<(() => void) | null>(null);
 
-const STORAGE_PREFIX = "jiroo:item-drawer-panel:";
+const STORAGE_PREFIX = "studio:item-drawer-panel:";
 
 function readCollapsed(id: string): boolean | null {
   try {

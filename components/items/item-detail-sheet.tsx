@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { X } from "lucide-react";
-import { ItemKey } from "@/components/jiroo/item-key";
+import { ItemKey } from "@/components/studio/item-key";
 import {
   useRequestedItemKey,
   useViewUrlState,

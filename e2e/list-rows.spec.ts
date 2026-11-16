@@ -17,13 +17,13 @@ import { chooseOption } from "./select-helpers";
  * pills. JIR-97: the Liste is the Backlog's table — one card « Tous les
  * items » (or one per group) whose header holds « Trier la liste ».
  */
-const RUN = process.env.JIROO_E2E_RUN_ID ?? String(Date.now());
+const RUN = process.env.STUDIO_E2E_RUN_ID ?? String(Date.now());
 
 async function context() {
   const [admin] = await db
     .select({ id: user.id })
     .from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   const [backlog] = await db
     .select({ id: backlogs.id })
     .from(backlogs)

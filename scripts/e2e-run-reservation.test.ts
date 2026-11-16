@@ -17,13 +17,13 @@ async function reserveFromAnotherProcess() {
   maximumConcurrentProcesses = Math.max(maximumConcurrentProcesses, activeProcesses);
   const env: NodeJS.ProcessEnv = {
     ...process.env,
-    JIROO_E2E_RUN_ID: runId,
-    JIROO_E2E_RUN_LOCK_ROOT: lockRoot,
-    JIROO_E2E_RUN_OWNER_TOKEN: "shared-token-must-not-grant-reentrance",
+    STUDIO_E2E_RUN_ID: runId,
+    STUDIO_E2E_RUN_LOCK_ROOT: lockRoot,
+    STUDIO_E2E_RUN_OWNER_TOKEN: "shared-token-must-not-grant-reentrance",
   };
   const source = [
     'import { reserveE2eRunId } from "./scripts/e2e-run-reservation.ts";',
-    "reserveE2eRunId(process.env.JIROO_E2E_RUN_ID!, process.env.JIROO_E2E_RUN_LOCK_ROOT!);",
+    "reserveE2eRunId(process.env.STUDIO_E2E_RUN_ID!, process.env.STUDIO_E2E_RUN_LOCK_ROOT!);",
   ].join("");
 
   try {

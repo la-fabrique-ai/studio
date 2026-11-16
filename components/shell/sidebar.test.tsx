@@ -191,10 +191,10 @@ describe("Sidebar", () => {
   it("renders the complete wordmark without an internal collapse control", () => {
     renderSidebar();
 
-    const brand = screen.getByRole("img", { name: "Jiroo" });
+    const brand = screen.getByRole("img", { name: "Le Studio" });
 
-    expect(brand).toHaveTextContent(/^Jiroo$/);
-    expect(screen.getByRole("link", { name: "Jiroo — accueil" })).toHaveAttribute(
+    expect(brand).toHaveTextContent(/^Le Studio$/);
+    expect(screen.getByRole("link", { name: "Le Studio — accueil" })).toHaveAttribute(
       "href",
       "/b/CASS",
     );
@@ -345,11 +345,11 @@ describe("Sidebar", () => {
     document.documentElement.dataset.sidebar = "collapsed";
     renderSidebar();
 
-    const brand = screen.getByRole("img", { name: "Jiroo" });
+    const brand = screen.getByRole("img", { name: "Le Studio" });
 
-    expect(brand).toHaveTextContent(/^J$/);
-    expect(brand).toHaveAttribute("title", "Jiroo");
-    expect(screen.getByRole("link", { name: "Jiroo — accueil" })).toHaveAttribute(
+    expect(brand).toHaveTextContent(/^S$/);
+    expect(brand).toHaveAttribute("title", "Le Studio");
+    expect(screen.getByRole("link", { name: "Le Studio — accueil" })).toHaveAttribute(
       "href",
       "/b/CASS",
     );

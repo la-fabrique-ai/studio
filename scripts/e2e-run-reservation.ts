@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 export function reserveE2eRunId(
   runId: string,
-  lockRoot = process.env.JIROO_E2E_RUN_LOCK_ROOT?.trim() || ".playwright/run-locks",
+  lockRoot = process.env.STUDIO_E2E_RUN_LOCK_ROOT?.trim() || ".playwright/run-locks",
 ): string {
   mkdirSync(lockRoot, { recursive: true });
   const lockPath = join(lockRoot, `${runId}.lock`);

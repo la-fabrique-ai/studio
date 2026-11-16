@@ -8,7 +8,7 @@ import { backlogs, items, itemLinks, statuses } from "@/lib/db/schema/domain";
 import { addLink } from "@/lib/services/links";
 
 vi.mock("server-only", () => ({}));
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 
 describeDb("concurrent link invariants", () => {
   it.each([

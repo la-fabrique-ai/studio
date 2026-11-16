@@ -28,7 +28,7 @@ const TAB_PERMISSION = {
   groups: "manage_users_groups",
   roles: "manage_users_groups",
   schemes: "administer_jiroo",
-  // Every account's access tokens (JIR-161): Jiroo administrators only.
+  // Every account's access tokens (JIR-161): Studio administrators only.
   tokens: "administer_jiroo",
 } as const;
 

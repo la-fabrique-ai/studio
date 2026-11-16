@@ -55,7 +55,7 @@ type ReportFixtures = Awaited<ReturnType<typeof seedReportFixtures>>;
 let fixtures: ReportFixtures;
 
 // Same resolution as e2e/global.setup.ts; the value never reaches an artifact.
-const FIXTURE_PASSWORD = process.env.JIROO_PLAYWRIGHT_PASSWORD ?? "Audit-Local-2026!";
+const FIXTURE_PASSWORD = process.env.STUDIO_PLAYWRIGHT_PASSWORD ?? "Audit-Local-2026!";
 const {
   forbiddenAuditEvidence: FORBIDDEN_AUDIT_EVIDENCE,
   credentialEvidence: CREDENTIAL_EVIDENCE,
@@ -165,7 +165,7 @@ function audited(
 
 async function fixtureContext(backlogKey: "CASS" | "LABS" = "CASS") {
   const [actor] = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   const [backlog] = await db.select({ id: backlogs.id, key: backlogs.key })
     .from(backlogs).where(eq(backlogs.key, backlogKey));
   if (!actor || !backlog) throw new Error(`Fixture ${backlogKey} incomplète.`);
@@ -922,7 +922,7 @@ audited(5, "masque une panne de lecture et récupère après retry", async ({
       .toBeVisible();
     const body = await page.locator("body").innerText();
     expect(body).not.toMatch(
-      /postgres(?:ql)?:|authorization|bearer|select\s|sprint_report_snapshots|jiroo-e2e-secret/i,
+      /postgres(?:ql)?:|authorization|bearer|select\s|sprint_report_snapshots|studio-e2e-secret/i,
     );
   } finally {
     if (reportTableRenamed) {
@@ -1579,7 +1579,7 @@ audited(12, "masque une panne de lecture du burndown et récupère après retry"
     await expect(page.getByRole("heading", { name: "Impossible de charger les rapports" })).toBeVisible();
     const body = await page.locator("body").innerText();
     expect(body).not.toMatch(
-      /postgres(?:ql)?:|authorization|bearer|select\s|sprint_events|jiroo-e2e-secret/i,
+      /postgres(?:ql)?:|authorization|bearer|select\s|sprint_events|studio-e2e-secret/i,
     );
   } finally {
     if (ledgerRenamed) {

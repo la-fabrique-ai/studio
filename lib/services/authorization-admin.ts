@@ -60,7 +60,7 @@ const SIMPLE_SHARED_MESSAGE =
 const SIMPLE_MATRIX_MESSAGE =
   "Le mode Simple est indisponible : ce schéma contient des autorisations avancées.";
 const PRIVILEGED_GROUP_MEMBERSHIP_MESSAGE =
-  "Seul un administrateur Jiroo peut modifier les membres de ce groupe.";
+  "Seul un administrateur du Studio peut modifier les membres de ce groupe.";
 // Group-reference writes take membership topology first. Scheme/configuration writes
 // then take scheme topology, scheme rows by ID, and backlog configurations by ID.
 const MEMBERSHIP_TOPOLOGY_LOCK = "authorization-membership-topology";
@@ -227,7 +227,7 @@ async function groupRequiresPlatformAdministration(
   return Boolean(grant);
 }
 
-/** Every Jiroo administrator: bootstrap role, or administer_jiroo through a user or group grant. */
+/** Every Studio administrator: bootstrap role, or administer_jiroo through a user or group grant. */
 export async function platformAdministratorIds(tx: Transaction): Promise<Set<string>> {
   const users = await tx.select({ id: user.id, role: user.role }).from(user);
   const grants = await tx

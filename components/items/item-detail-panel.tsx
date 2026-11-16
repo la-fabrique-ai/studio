@@ -16,7 +16,7 @@ import {
 import { TypeIcon } from "@/components/icons/type-icon";
 import { ItemRow } from "@/components/items/item-row";
 import { PrioIcon } from "@/components/icons/prio-icon";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { LabelPill } from "@/components/items/label-pill";
 import {
   FixVersionPicker,

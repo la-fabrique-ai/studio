@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 
 describe("InitialsAvatar", () => {
   it("dérive les initiales d'un nom complet", () => {

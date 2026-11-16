@@ -16,7 +16,7 @@ import { GET as list, POST as create } from "@/app/api/v1/items/route";
 import { GET as detail, PATCH as patch } from "@/app/api/v1/items/[key]/route";
 import { POST as comment } from "@/app/api/v1/items/[key]/comments/route";
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 describeDb("REST v1 with real tokens and permissions", () => {
  const actorId = `rest-${randomUUID()}`;
  const outsiderId = `rest-outsider-${randomUUID()}`;

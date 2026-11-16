@@ -1,11 +1,11 @@
 # First administrator
 
-A new installation has no account. Create its first Jiroo administrator once, after the migrations (JIR-115):
+A new installation has no account. Create its first Studio administrator once, after the migrations (JIR-115):
 
 ```sh
-JIROO_ADMIN_EMAIL=prenom.nom@example.org \
-JIROO_ADMIN_NAME="Prénom Nom" \
-JIROO_ADMIN_PASSWORD='…' \
+STUDIO_ADMIN_EMAIL=prenom.nom@example.org \
+STUDIO_ADMIN_NAME="Prénom Nom" \
+STUDIO_ADMIN_PASSWORD='…' \
 pnpm db:bootstrap-admin
 ```
 

@@ -24,7 +24,7 @@ export function UserPreferencesDialog({
         <DialogHeader>
           <DialogTitle>Préférences</DialogTitle>
           <DialogDescription>
-            Personnalisez l’apparence de Jiroo sur cet appareil.
+            Personnalisez l’apparence du Studio sur cet appareil.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">

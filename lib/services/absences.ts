@@ -99,7 +99,7 @@ export async function declareAbsence(input: unknown, actorId: string, requestCor
   const data = declareAbsenceInput.parse(input);
   return db.transaction(async (tx) => {
     // One declaration at a time per person, so an overlap is caught under concurrency.
-    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`jiroo:absences:${data.userId}`}))`);
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`studio:absences:${data.userId}`}))`);
     // Half-days compare as (day, half) pairs: « am » precedes « pm ».
     const [overlap] = await tx
       .select({ id: absences.id })

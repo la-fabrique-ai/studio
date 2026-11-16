@@ -11,10 +11,10 @@ import { rankLast } from "@/lib/tree/rank";
 import { seedAuthorizationDefaults } from "@/lib/services/authorization-seed";
 
 const STATUS_SEED = [
-  { id: "todo", name: "À faire", color: "#9aa0a6" },
-  { id: "doing", name: "En cours", color: "#d99a2b" },
-  { id: "review", name: "En revue", color: "#8b5cf6" },
-  { id: "done", name: "Terminé", color: "#3aa675" },
+  { id: "todo", name: "À faire", color: "#858ba0" },
+  { id: "doing", name: "En cours", color: "#c47a12" },
+  { id: "review", name: "En revue", color: "#7a57c9" },
+  { id: "done", name: "Terminé", color: "#2e7d46" },
 ] as const;
 
 async function main() {
@@ -58,7 +58,7 @@ async function main() {
     backlogId = await db.transaction(async (tx) => {
       const [backlog] = await tx
         .insert(backlogs)
-        .values({ key: "CASS", name: "Cour de cassation", color: "#7c3030" })
+        .values({ key: "CASS", name: "Cour de cassation", color: "#3d4fd1" })
         .returning();
 
       const insertedStatuses = await tx

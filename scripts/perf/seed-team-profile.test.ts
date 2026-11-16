@@ -1,9 +1,9 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { assertTeamProfileSeedAllowed } from "./seed-team-profile";
-const valid = { JIROO_ALLOW_TEAM_PROFILE_SEED: "1", DATABASE_URL: "postgresql://user:secret@127.0.0.1:5434/jir41_perf_012345abcdef" };
+const valid = { STUDIO_ALLOW_TEAM_PROFILE_SEED: "1", DATABASE_URL: "postgresql://user:secret@127.0.0.1:5434/jir41_perf_012345abcdef" };
 describe("team profile seed safety", () => {
-  it("requires explicit opt-in", () => expect(() => assertTeamProfileSeedAllowed({ ...valid, JIROO_ALLOW_TEAM_PROFILE_SEED: undefined })).toThrow());
+  it("requires explicit opt-in", () => expect(() => assertTeamProfileSeedAllowed({ ...valid, STUDIO_ALLOW_TEAM_PROFILE_SEED: undefined })).toThrow());
   it("accepts the isolated local namespace", () => expect(() => assertTeamProfileSeedAllowed(valid)).not.toThrow());
   it.each([
     "postgresql://user:secret@remote.example:5434/jir41_perf_012345abcdef",

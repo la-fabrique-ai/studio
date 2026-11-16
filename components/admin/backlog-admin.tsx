@@ -36,14 +36,14 @@ export type BacklogLeadOption = { id: string; name: string };
 const SELECT =
   "h-9 w-full rounded-lg border border-input bg-card px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
-const DEFAULT_COLOR = "#7c3030";
+const DEFAULT_COLOR = "#3d4fd1";
 const PRESET_COLORS = [
   DEFAULT_COLOR,
-  "#2b6cb0",
-  "#2f855a",
-  "#b7791f",
-  "#6b46c1",
-  "#475569",
+  "#2a6fa0",
+  "#2f7a45",
+  "#c47a12",
+  "#6e48b8",
+  "#5a6080",
 ];
 
 function ColorPicker({

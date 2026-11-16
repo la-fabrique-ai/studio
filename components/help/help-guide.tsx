@@ -12,7 +12,7 @@ export function HelpGuide() {
       <GuideSection id="demarrer">
         <GuideTopic
           title="Se connecter"
-          purpose="Accéder à Jiroo avec le compte créé par un administrateur Jiroo."
+          purpose="Accéder au Studio avec le compte créé par un administrateur du Studio."
           steps={[
             <>Saisissez votre <Ui>E-mail</Ui> et votre <Ui>Mot de passe</Ui>, puis cliquez sur <Ui>Se connecter</Ui>.</>,
             <>Saisissez le code à 6 chiffres de votre application d’authentification, puis <Ui>Vérifier</Ui>.</>,
@@ -27,7 +27,7 @@ export function HelpGuide() {
 
         <GuideTopic
           title="Configurer la double authentification (premier login)"
-          purpose="Protéger le compte : la double authentification est obligatoire pour utiliser Jiroo."
+          purpose="Protéger le compte : la double authentification est obligatoire pour utiliser le Studio."
           steps={[
             <>Connectez-vous avec le mot de passe transmis : l’écran <Ui>Configurer la double authentification</Ui> s’ouvre.</>,
             <>Confirmez votre mot de passe, puis <Ui>Continuer</Ui>.</>,
@@ -41,7 +41,7 @@ export function HelpGuide() {
             Les codes de récupération ne sont affichés qu’une seule fois. Chacun remplace le code à 6 chiffres :
             sur l’écran de vérification, choisissez <Ui>Utiliser un code de récupération</Ui>. Ne partagez ni ces
             codes ni la clé manuelle (pas de capture d’écran envoyée) : ils donnent accès à votre compte. La copie et
-            le fichier sont produits dans votre navigateur ; Jiroo ne les conserve pas.
+            le fichier sont produits dans votre navigateur ; le Studio ne les conserve pas.
           </GuideNote>
         </GuideTopic>
 
@@ -62,7 +62,7 @@ export function HelpGuide() {
           purpose="Retrouver l’accès si vous ne pouvez plus produire de code."
           steps={[
             <>Utilisez un code de récupération si vous en avez encore un.</>,
-            <>Sinon, demandez à un administrateur Jiroo de <Ui>Réinitialiser la double authentification</Ui> de votre compte.</>,
+            <>Sinon, demandez à un administrateur du Studio de <Ui>Réinitialiser la double authentification</Ui> de votre compte.</>,
             <>À la connexion suivante, configurez à nouveau la double authentification.</>,
           ]}
         />
@@ -85,7 +85,7 @@ export function HelpGuide() {
           steps={[
             <>Changez de backlog avec le sélecteur en haut de la barre latérale.</>,
             <>Dans la section <Ui>Filtres</Ui> de la barre latérale, <Ui>Tous les items</Ui> affiche la liste de tous les tickets du backlog courant, sans filtre (vue <Ui>Liste</Ui> ; le compteur en donne le nombre) ; <Ui>Mes items</Ui> liste les tickets qui vous sont assignés, tous backlogs confondus. Au-dessus des filtres, <Ui>Calendrier d’équipe</Ui> ouvre le tableau des absences et du travail de l’équipe dans le temps, sur le backlog de la page courante, ou sur tous vos backlogs depuis les autres pages (voir la section Le point).</>,
-            <>Depuis n’importe quelle page (Aide, Administration, Releases…), cliquez sur le logo <Ui>Jiroo</Ui> ou sur le nom du backlog dans le fil d’Ariane, au-dessus du titre de la page, pour revenir à l’accueil du backlog.</>,
+            <>Depuis n’importe quelle page (Aide, Administration, Releases…), cliquez sur le logo <Ui>Le Studio</Ui> ou sur le nom du backlog dans le fil d’Ariane, au-dessus du titre de la page, pour revenir à l’accueil du backlog.</>,
           ]}
         >
           <GuideNote>
@@ -384,7 +384,7 @@ export function HelpGuide() {
             <>Sous la description, la section des enfants (<Ui>Epics</Ui>, <Ui>Tâches</Ui> ou <Ui>Sous-tâches</Ui>) liste les tickets rattachés avec leur statut ; <Ui>+ Créer…</Ui> en ajoute un.</>,
             <>À droite, le bouton de statut change le statut ; le bouton voisin (par exemple <Ui>En cours →</Ui>) passe directement au statut suivant du flux.</>,
             <>Panneau <Ui>Détails</Ui> : cliquez sur une valeur (<Ui>Assigné</Ui>, <Ui>Priorité</Ui>, <Ui>Début</Ui>, <Ui>Échéance</Ui>…) pour la modifier ; <Ui>M’assigner</Ui> vous attribue le ticket. Les panneaux <Ui>Détails</Ui> et <Ui>Développement</Ui> se replient ; ce choix est mémorisé sur l’appareil.</>,
-            <>Sans la permission globale <Ui>Parcourir les utilisateurs</Ui>, le champ <Ui>Assigné</Ui> explique pourquoi la liste est restreinte et invite à contacter un administrateur Jiroo, y compris à la création et dans les menus en ligne.</>,
+            <>Sans la permission globale <Ui>Parcourir les utilisateurs</Ui>, le champ <Ui>Assigné</Ui> explique pourquoi la liste est restreinte et invite à contacter un administrateur du Studio, y compris à la création et dans les menus en ligne.</>,
             <>La date <Ui>Début</Ui> est facultative et sert à planifier le ticket dans la vue Roadmap ; elle doit précéder l’<Ui>Échéance</Ui> ou lui être égale si celle-ci est renseignée.</>,
           ]}
         />
@@ -466,7 +466,7 @@ export function HelpGuide() {
           ]}
         >
           <GuideNote>
-            Jiroo ne fait que recevoir les webhooks : aucun jeton d’accès, aucune requête vers GitHub ou GitLab. Seuls la clé du backlog connecté et les tickets non supprimés sont reconnus ; seule la première ligne des messages de commit est conservée, sans adresse e-mail ni contenu de code. L’historique antérieur à la connexion n’est pas importé, et les références restent sur les tickets après suppression de la connexion ; elles peuvent alors être retirées une à une.
+            Le Studio ne fait que recevoir les webhooks : aucun jeton d’accès, aucune requête vers GitHub ou GitLab. Seuls la clé du backlog connecté et les tickets non supprimés sont reconnus ; seule la première ligne des messages de commit est conservée, sans adresse e-mail ni contenu de code. L’historique antérieur à la connexion n’est pas importé, et les références restent sur les tickets après suppression de la connexion ; elles peuvent alors être retirées une à une.
           </GuideNote>
         </GuideTopic>
 
@@ -636,7 +636,7 @@ export function HelpGuide() {
             <>Ajustez le texte dans l’éditeur mis en forme (aperçu à côté), puis <Ui>Copier le Markdown</Ui>, <Ui>Copier le HTML</Ui>, <Ui>Télécharger .md</Ui> ou <Ui>Télécharger .html</Ui>.</>,
           ]}
         >
-          <GuideNote>Les modifications des notes ne sont pas enregistrées dans Jiroo : copiez ou téléchargez le résultat.</GuideNote>
+          <GuideNote>Les modifications des notes ne sont pas enregistrées dans le Studio : copiez ou téléchargez le résultat.</GuideNote>
         </GuideTopic>
       </GuideSection>
 
@@ -719,7 +719,7 @@ export function HelpGuide() {
             <li><Ui>Administrateur du backlog</Ui> : tout ce que fait un membre, plus supprimer et restaurer, gérer sprints, releases, statuts, membres et vues partagées.</li>
           </ul>
           <GuideNote>
-            Le rôle Administrateur du backlog ne donne pas la permission globale Administrer Jiroo. Un administrateur Jiroo dispose de cette permission globale et peut gérer les accès de la plateforme.
+            Le rôle Administrateur du backlog ne donne pas la permission globale Administrer le Studio. Un administrateur du Studio dispose de cette permission globale et peut gérer les accès de la plateforme.
             Les droits s’additionnent (utilisateur, groupes, rôles) et peuvent être ajustés par backlog. Les actions
             disponibles dépendent de vos droits et de l&apos;état de l&apos;élément.
           </GuideNote>
@@ -730,8 +730,8 @@ export function HelpGuide() {
           purpose="Comprendre pourquoi le menu Assigné peut ne proposer aucun utilisateur."
           steps={[
             <>La permission globale <Ui>Parcourir les utilisateurs</Ui> est accordée par défaut à tous les utilisateurs authentifiés. Elle permet d’afficher les candidats ; le droit d’assigner dans le backlog reste nécessaire pour modifier l’assigné.</>,
-            <>Un administrateur Jiroo peut retirer cet accès depuis <Ui>Administration</Ui> → <Ui>Groupes</Ui> → <Ui>Permissions globales</Ui>.</>,
-            <>Sans cette permission, le menu <Ui>Assigné</Ui> de la création, du détail, de la Liste et du Backlog explique le droit manquant et invite à le demander à un administrateur Jiroo. <Ui>Non assigné</Ui> reste proposé ; <Ui>M’assigner</Ui> reste disponible quand votre compte fait déjà partie des candidats.</>,
+            <>Un administrateur du Studio peut retirer cet accès depuis <Ui>Administration</Ui> → <Ui>Groupes</Ui> → <Ui>Permissions globales</Ui>.</>,
+            <>Sans cette permission, le menu <Ui>Assigné</Ui> de la création, du détail, de la Liste et du Backlog explique le droit manquant et invite à le demander à un administrateur du Studio. <Ui>Non assigné</Ui> reste proposé ; <Ui>M’assigner</Ui> reste disponible quand votre compte fait déjà partie des candidats.</>,
           ]}
         />
 
@@ -749,7 +749,7 @@ export function HelpGuide() {
         </GuideTopic>
 
         <GuideTopic
-          title="Administration et administrateurs Jiroo"
+          title="Administration et administrateurs du Studio"
           purpose="Gérer comptes, groupes, backlogs et accès."
           steps={[
             <>Barre latérale → <Ui>Administration</Ui> (visible seulement si vous avez un droit d’administration ; chaque onglet dépend de vos permissions).</>,
@@ -763,7 +763,7 @@ export function HelpGuide() {
         >
           <GuideNote>
             La récupération des accès (mot de passe, double authentification) et l’attribution de permissions
-            globales sont réservées aux administrateurs Jiroo ; la récupération concerne un autre compte que le
+            globales sont réservées aux administrateurs du Studio ; la récupération concerne un autre compte que le
             vôtre. Les accès dépendent des permissions du backlog : elles peuvent être attribuées à une personne, à
             un groupe, à un rôle ou à tous les utilisateurs connectés. Vérifiez les accès avant de créer un compte de
             test. Pas de désactivation de compte dans l’interface.
@@ -774,7 +774,7 @@ export function HelpGuide() {
       <GuideSection id="api-mcp">
         <GuideTopic
           title="Comprendre les jetons d’accès"
-          purpose="Permettre à un outil de travailler dans Jiroo avec les droits de votre compte, sans lui donner votre mot de passe."
+          purpose="Permettre à un outil de travailler dans le Studio avec les droits de votre compte, sans lui donner votre mot de passe."
         >
           <p className="t-body">
             Un jeton d’accès est un secret qui identifie votre compte auprès de l’API REST ou du serveur MCP.
@@ -796,7 +796,7 @@ export function HelpGuide() {
             <>Ouvrez le menu utilisateur, puis <Link href="/jetons" className="underline underline-offset-4"><Ui>Jetons d’accès</Ui></Link>. Votre compte doit avoir sa double authentification configurée.</>,
             <>Cliquez sur <Ui>Créer un jeton</Ui>. Donnez-lui un <Ui>Nom</Ui> qui indique son usage, puis choisissez sa <Ui>Portée</Ui>.</>,
             <>Choisissez l’<Ui>Expiration</Ui>. Un jeton <Ui>Lecture et écriture</Ui> expire toujours (30 jours, 90 jours ou 1 an) ; seul un jeton <Ui>Lecture</Ui> peut être <Ui>Sans expiration</Ui>. Un jeton expiré ne permet plus aucun accès.</>,
-            <>Cliquez sur <Ui>Créer le jeton</Ui>, puis <Ui>Copier</Ui>. Enregistrez le secret dans votre gestionnaire de secrets avant de cliquer sur <Ui>J’ai conservé le jeton</Ui> : vous ne pourrez plus le relire dans Jiroo.</>,
+            <>Cliquez sur <Ui>Créer le jeton</Ui>, puis <Ui>Copier</Ui>. Enregistrez le secret dans votre gestionnaire de secrets avant de cliquer sur <Ui>J’ai conservé le jeton</Ui> : vous ne pourrez plus le relire dans le Studio.</>,
           ]}
         />
 
@@ -804,12 +804,12 @@ export function HelpGuide() {
           title="Utiliser l’API REST"
           purpose="Consulter ou modifier les tickets depuis un script ou un outil connecté."
           steps={[
-            <>Définissez <code>JIROO_ORIGIN</code> avec l’origine de votre instance Jiroo (protocole et nom d’hôte, sans barre finale) et <code>JIROO_TOKEN</code> avec le secret de votre jeton, qui commence par <code>jiroo_pat_</code>.</>,
+            <>Définissez <code>STUDIO_ORIGIN</code> avec l’origine de votre instance du Studio (protocole et nom d’hôte, sans barre finale) et <code>STUDIO_TOKEN</code> avec le secret de votre jeton, qui commence par <code>jiroo_pat_</code>.</>,
             <>Envoyez le jeton dans l’en-tête <code>Authorization: Bearer …</code> pour chaque requête vers <code>/api/v1</code>. Cet exemple de lecture affiche le compte et le jeton utilisés.</>,
           ]}
         >
-          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`curl "$JIROO_ORIGIN/api/v1/me" \\
-  -H "Authorization: Bearer $JIROO_TOKEN"`}</code></pre>
+          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`curl "$STUDIO_ORIGIN/api/v1/me" \\
+  -H "Authorization: Bearer $STUDIO_TOKEN"`}</code></pre>
           <p className="t-body">
             Les routes, filtres, écritures et erreurs sont décrits dans la référence du dépôt :{" "}
             <a href="https://github.com/la-fabrique-ai/studio/blob/main/docs/api-v1.md" className="underline underline-offset-4">docs/api-v1.md</a>.
@@ -820,19 +820,19 @@ export function HelpGuide() {
           title="Connecter Claude Code ou Codex en MCP"
           purpose="Laisser un agent consulter les tickets et effectuer les actions que vous lui autorisez."
           steps={[
-            <>Préparez la variable d’environnement <code>JIROO_TOKEN</code> comme pour l’API. Le serveur MCP est à l’adresse <code>/api/mcp</code> de votre instance ; il utilise le même jeton.</>,
-            <>Pour Claude Code, ajoutez le serveur HTTP avec la commande ci-dessous. Pour Codex, ajoutez le bloc dans <code>~/.codex/config.toml</code>, puis démarrez Codex depuis l’environnement qui contient <code>JIROO_TOKEN</code>.</>,
+            <>Préparez la variable d’environnement <code>STUDIO_TOKEN</code> comme pour l’API. Le serveur MCP est à l’adresse <code>/api/mcp</code> de votre instance ; il utilise le même jeton.</>,
+            <>Pour Claude Code, ajoutez le serveur HTTP avec la commande ci-dessous. Pour Codex, ajoutez le bloc dans <code>~/.codex/config.toml</code>, puis démarrez Codex depuis l’environnement qui contient <code>STUDIO_TOKEN</code>.</>,
           ]}
         >
           <p className="t-body">
             Les adresses ci-dessous sont celles de l’instance de développement.
             Remplacez-les par l’adresse de votre instance si vous en utilisez une autre.
           </p>
-          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`claude mcp add --transport http jiroo https://jiroo-dev.vercel.app/api/mcp \\
-  --header "Authorization: Bearer $JIROO_TOKEN"`}</code></pre>
-          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`[mcp_servers.jiroo]
+          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`claude mcp add --transport http studio https://jiroo-dev.vercel.app/api/mcp \\
+  --header "Authorization: Bearer $STUDIO_TOKEN"`}</code></pre>
+          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`[mcp_servers.studio]
 url = "https://jiroo-dev.vercel.app/api/mcp"
-bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
+bearer_token_env_var = "STUDIO_TOKEN"`}</code></pre>
           <p className="t-body">
             Les outils de lecture sont <code>list_backlogs</code>, <code>list_statuses</code>,{" "}
             <code>search_items</code>, <code>get_item</code>, <code>list_my_items</code>, <code>list_labels</code> et <code>list_dependencies</code>.
@@ -859,7 +859,7 @@ bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
           ]}
         >
           <GuideNote>
-            Les dépendances relient deux items du même backlog. Jiroo refuse les doublons,
+            Les dépendances relient deux items du même backlog. Le Studio refuse les doublons,
             les liens d’un item vers lui-même et tous les cycles de blocage, même indirects.
             Les statuts ne changent pas automatiquement. Gérer les labels demande le droit de modifier les items ;
             gérer les dépendances demande le droit de lier les deux items.
@@ -876,7 +876,7 @@ bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
           purpose="Retrouver le même item si un outil n’a pas reçu la réponse de création."
           steps={[
             <>Avant l’envoi, conservez une clé de création et les champs de la demande. En REST, envoyez la clé dans l’en-tête <code>Idempotency-Key</code> de <code>POST /api/v1/items</code>. En MCP, passez-la dans l’argument <code>idempotencyKey</code> de <code>create_item</code>.</>,
-            <>Si la réponse est perdue, renvoyez les mêmes champs avec la même clé. Jiroo crée l’item si le premier appel n’a rien enregistré, ou renvoie son état actuel avec <code>replayed: true</code> s’il existe déjà. Aucune activité de création supplémentaire n’est ajoutée.</>,
+            <>Si la réponse est perdue, renvoyez les mêmes champs avec la même clé. Le Studio crée l’item si le premier appel n’a rien enregistré, ou renvoie son état actuel avec <code>replayed: true</code> s’il existe déjà. Aucune activité de création supplémentaire n’est ajoutée.</>,
           ]}
         >
           <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`create_item({
@@ -907,7 +907,7 @@ bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
           title="Préparer un compte « Agents »"
           purpose="Attribuer les actions des agents à un compte dédié, distinct des personnes de l’équipe."
           steps={[
-            <>Demandez à un administrateur Jiroo de créer un compte « Agents », avec le rôle <Ui>Contributeur</Ui>, puis de lui donner les droits nécessaires dans les backlogs concernés.</>,
+            <>Demandez à un administrateur du Studio de créer un compte « Agents », avec le rôle <Ui>Contributeur</Ui>, puis de lui donner les droits nécessaires dans les backlogs concernés.</>,
             <>Connectez-vous à ce compte et configurez une fois sa double authentification. Conservez aussi ses codes de récupération en lieu sûr.</>,
             <>Créez un jeton avec la portée la plus réduite possible : <Ui>Lecture</Ui> si l’agent n’a qu’à consulter, <Ui>Lecture et écriture</Ui> (<code>write</code>) avec une expiration courte sinon. Conservez-le dans le gestionnaire de secrets utilisé par vos outils.</>,
             <>Configurez les clients API ou MCP avec ce jeton : leurs actions seront attribuées au compte « Agents », avec l’origine « API » ou « MCP ». L’utilisation du jeton ne demande pas de code de double authentification à chaque appel.</>,
@@ -923,8 +923,8 @@ bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
           ]}
         >
           <GuideNote>
-            Un administrateur Jiroo peut aussi révoquer l’un de vos jetons depuis <Ui>Administration</Ui> → <Ui>Jetons d’accès</Ui>.
-            L’outil qui utilise ce jeton perd alors son accès à Jiroo : si cet accès reste nécessaire, créez un nouveau jeton et remplacez l’ancien dans sa configuration.
+            Un administrateur du Studio peut aussi révoquer l’un de vos jetons depuis <Ui>Administration</Ui> → <Ui>Jetons d’accès</Ui>.
+            L’outil qui utilise ce jeton perd alors son accès au Studio : si cet accès reste nécessaire, créez un nouveau jeton et remplacez l’ancien dans sa configuration.
           </GuideNote>
           <GuideNote>
             La limite est de 300 requêtes par minute et par jeton, partagée entre l’API REST et le MCP.
@@ -945,7 +945,7 @@ bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
       <GuideSection id="recette">
         <GuideTopic
           title="Données fictives uniquement"
-          purpose="Cet environnement sert à tester Jiroo, pas à travailler sur de vrais dossiers."
+          purpose="Cet environnement sert à tester le Studio, pas à travailler sur de vrais dossiers."
         >
           <GuideNote>
             N’y saisissez aucune donnée réelle ou confidentielle : noms, dossiers et contenus doivent être inventés.
@@ -956,10 +956,10 @@ bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
           title="Remonter un retour"
           purpose="Signaler un bug ou proposer une amélioration pendant les tests."
           steps={[
-            <>Si un administrateur Jiroo a créé un backlog « Recette », ouvrez-le avec le sélecteur de backlog.</>,
+            <>Si un administrateur du Studio a créé un backlog « Recette », ouvrez-le avec le sélecteur de backlog.</>,
             <>Créez un ticket avec le modèle <Ui>Rapport de bug</Ui> (ou <Ui>User story</Ui> pour une idée).</>,
             <>Décrivez les étapes, le résultat attendu et le résultat observé.</>,
-            <>À défaut de backlog « Recette », transmettez votre retour directement à un administrateur Jiroo.</>,
+            <>À défaut de backlog « Recette », transmettez votre retour directement à un administrateur du Studio.</>,
           ]}
         />
       </GuideSection>

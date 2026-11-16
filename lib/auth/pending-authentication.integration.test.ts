@@ -13,7 +13,7 @@ import { generateTotp } from "@/test-utils/totp";
 
 vi.mock("server-only", () => ({}));
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 const fixtureId = randomUUID();
 const PASSWORD = "mot-de-passe-initial";
 const createdUserIds: string[] = [];

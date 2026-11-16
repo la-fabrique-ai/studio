@@ -10,7 +10,7 @@ import { backlogRoleActors, groupMembers, permissionGrants, projectRoles, userGr
 import { createReadVisibilityFixture, deleteReadVisibilityFixture, type ReadVisibilityFixture } from "@/lib/services/read-visibility.integration-fixture";
 
 vi.mock("server-only", () => ({}));
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 
 describeDb("backlog teams by attachment (JIR-124 B4)", () => {
   let f: ReadVisibilityFixture;

@@ -10,8 +10,8 @@ file is needed at build time. Corepack reads the pinned pnpm from `package.json`
 dependencies use the frozen lockfile. One image contains the app and maintenance:
 
 ```sh
-JIROO_IMAGE_TAG=0.1.0-$(git rev-parse --short HEAD)
-docker build --target runner -t "jiroo:$JIROO_IMAGE_TAG" .
+STUDIO_IMAGE_TAG=0.1.0-$(git rev-parse --short HEAD)
+docker build --target runner -t "studio:$STUDIO_IMAGE_TAG" .
 ```
 
 The `runner` target runs standalone Next.js as `node` on port 3000 by default.
@@ -30,14 +30,14 @@ the container**: `localhost` refers to that container, not the host.
 For a local host database, add
 `--add-host=host.docker.internal:host-gateway` to each `docker run`, and use
 `host.docker.internal` in the database URLs. On the current development machine,
-Jiroo uses port 5434; 5433 belongs to another project. No database port needs to
+Le Studio uses port 5434; 5433 belongs to another project. No database port needs to
 be published by these images. For a database on a Docker network, attach each
 container with `--network <existing-network>` and use its database service name.
 
 Create the database and its owner/runtime roles separately. See
 [Database roles](database-roles.md) for the required PostgreSQL privileges.
 `DIRECT_DATABASE_URL` uses the schema owner; `DATABASE_URL` uses the restricted
-runtime role. Set `JIROO_RUNTIME_ROLE` to that existing role's name.
+runtime role. Set `STUDIO_RUNTIME_ROLE` to that existing role's name.
 
 ## Migrate, grant and bootstrap
 
@@ -45,22 +45,22 @@ For standalone Docker runs, migrate before starting or updating the application.
 The VM Compose file performs this step through its `migrate` service:
 
 ```sh
-docker run --rm --no-healthcheck -e DIRECT_DATABASE_URL "jiroo:$JIROO_IMAGE_TAG" corepack pnpm db:migrate
-docker run --rm --no-healthcheck -e DIRECT_DATABASE_URL -e JIROO_RUNTIME_ROLE \
-  "jiroo:$JIROO_IMAGE_TAG" corepack pnpm db:grant-runtime
+docker run --rm --no-healthcheck -e DIRECT_DATABASE_URL "studio:$STUDIO_IMAGE_TAG" corepack pnpm db:migrate
+docker run --rm --no-healthcheck -e DIRECT_DATABASE_URL -e STUDIO_RUNTIME_ROLE \
+  "studio:$STUDIO_IMAGE_TAG" corepack pnpm db:grant-runtime
 ```
 
 `db:migrate` refuses a missing direct URL. Granting runtime rights is idempotent; repeat it after migrations.
 
 For the first administrator only, supply the application's `DATABASE_URL`,
-`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` and the three `JIROO_ADMIN_*` variables
+`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` and the three `STUDIO_ADMIN_*` variables
 from [First administrator](first-administrator.md), then run:
 
 ```sh
 docker run --rm --no-healthcheck -e DATABASE_URL -e BETTER_AUTH_SECRET -e BETTER_AUTH_URL \
-  -e JIROO_ADMIN_EMAIL -e JIROO_ADMIN_NAME -e JIROO_ADMIN_PASSWORD \
-  "jiroo:$JIROO_IMAGE_TAG" corepack pnpm db:bootstrap-admin
-unset JIROO_ADMIN_EMAIL JIROO_ADMIN_NAME JIROO_ADMIN_PASSWORD
+  -e STUDIO_ADMIN_EMAIL -e STUDIO_ADMIN_NAME -e STUDIO_ADMIN_PASSWORD \
+  "studio:$STUDIO_IMAGE_TAG" corepack pnpm db:bootstrap-admin
+unset STUDIO_ADMIN_EMAIL STUDIO_ADMIN_NAME STUDIO_ADMIN_PASSWORD
 ```
 
 This creates no demo data. Keep the auth secret stable; two-factor enrollment
@@ -72,11 +72,11 @@ Set `BETTER_AUTH_URL` to the exact public origin served by your reverse proxy.
 Keep the owner's direct URL and administrator credentials out of this container:
 
 ```sh
-docker run --detach --name jiroo-app --init --restart unless-stopped \
+docker run --detach --name studio-app --init --restart unless-stopped \
   --publish 127.0.0.1:3000:3000 \
   -e DATABASE_URL -e BETTER_AUTH_SECRET -e BETTER_AUTH_URL \
-  "jiroo:$JIROO_IMAGE_TAG"
-docker inspect --format '{{.State.Health.Status}}' jiroo-app
+  "studio:$STUDIO_IMAGE_TAG"
+docker inspect --format '{{.State.Health.Status}}' studio-app
 ```
 
 Forward requests through the TLS reverse proxy. Check `/login` and `/api/health`.

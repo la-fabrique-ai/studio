@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, UserRound, X } from "lucide-react";
 import { FilterMenu, FilterOptions, type Option } from "@/components/shell/filter-menu";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   chipValue,

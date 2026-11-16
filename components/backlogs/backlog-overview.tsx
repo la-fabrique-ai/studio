@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FolderKanban } from "lucide-react";
 import { BacklogStarButton } from "@/components/backlogs/backlog-star-button";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LABEL_HUES, type LabelHue } from "@/lib/design/constants";
 import { formatPoints, frenchPlural, pointsLabel } from "@/lib/format/plural";
@@ -118,7 +118,7 @@ export function BacklogOverview({ rows }: { rows: BacklogOverviewRow[] }) {
         <EmptyState
           icon={<FolderKanban className="size-5" />}
           title="Aucun backlog"
-          description="Un administrateur Jiroo peut en créer un dans l’administration."
+          description="Un administrateur du Studio peut en créer un dans l’administration."
         />
       </div>
     );

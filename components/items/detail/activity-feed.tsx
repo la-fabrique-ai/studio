@@ -2,7 +2,7 @@
 
 import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { CommentComposer } from "@/components/items/detail/comment-composer";
 import { CommentItem } from "@/components/items/detail/comment-thread";
 import { useShortcutsEnabled } from "@/components/shortcuts/use-shortcuts-enabled";

@@ -10,7 +10,7 @@ import { deleteStatus, updateStatus } from "@/lib/services/statuses";
 import { loadTicketTimeline } from "@/lib/services/presence-page";
 
 vi.mock("server-only", () => ({}));
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 
 describeDb("presence ticket timeline", () => {
   let f: ReadVisibilityFixture;
