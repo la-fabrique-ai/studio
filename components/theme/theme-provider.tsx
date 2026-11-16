@@ -22,7 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const next: Theme = prev === "dark" ? "light" : "dark";
       document.documentElement.classList.toggle("dark", next === "dark");
       try {
-        localStorage.setItem("jiroo-theme", next);
+        localStorage.setItem("studio-theme", next);
       } catch {}
       return next;
     });

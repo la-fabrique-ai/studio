@@ -3,7 +3,7 @@ import { addDays, dayNumber, type Day } from "@/lib/roadmap/days";
 /**
  * The team's working calendar (JIR-124): Monday to Friday, less the French
  * public holidays, fixed in the code as the hierarchy and the statuses are.
- * Every count of working days in Jiroo (Le point, the sprint review, the
+ * Every count of working days in Studio (Le point, the sprint review, the
  * absences page) reads it, so a day away, an idle day and a person-day
  * always mean the same thing.
  */

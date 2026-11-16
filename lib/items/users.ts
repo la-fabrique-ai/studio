@@ -69,7 +69,7 @@ export type SetRoleInput = z.infer<typeof setRoleInput>;
 // ---------------------------------------------------------------------------
 
 export const ROLE_LABELS: Record<Role, string> = {
-  admin: "Administrateur Jiroo",
+  admin: "Administrateur du Studio",
   contributor: "Contributeur",
   viewer: "Lecteur",
 };

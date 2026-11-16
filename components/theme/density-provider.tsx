@@ -22,7 +22,7 @@ export function DensityProvider({ children }: { children: React.ReactNode }) {
     setDensityState(d);
     document.documentElement.setAttribute("data-density", d);
     try {
-      localStorage.setItem("jiroo-density", d);
+      localStorage.setItem("studio-density", d);
     } catch {}
   };
 

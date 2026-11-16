@@ -35,7 +35,7 @@ export const WEBHOOK_RATE_LIMIT = 120;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DELIVERY_ID = /^[A-Za-z0-9._:-]{1,200}$/;
 // Verified against when the connection is unknown, so both paths do the same work.
-const PLACEHOLDER_SECRET = "jiroo-placeholder-webhook-secret-never-valid";
+const PLACEHOLDER_SECRET = "studio-placeholder-webhook-secret-never-valid";
 
 const HEADERS = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" };
 

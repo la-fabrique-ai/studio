@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { TypeIcon } from "@/components/icons/type-icon";
 import { StatusDot } from "@/components/icons/status-dot";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { useBacklogItemNavigation } from "@/components/shell/use-backlog-item-navigation";
 import type { ItemType, StatusId } from "@/lib/design/constants";
 import {

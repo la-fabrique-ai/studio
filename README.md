@@ -1,6 +1,12 @@
-# Jiroo
+# Le Studio
 
 Lightweight ticket manager (Jira-like) for a Cour de cassation team. French UI.
+
+Formerly named Jiroo. Some persisted identifiers keep that name on purpose:
+database, role and volume names (`jiroo`, `jiroo_e2e`, `jiroo_owner`,
+`jiroo_runtime`, `jiroo-pgdata`), the `jiroo_pat_` API token prefix, the
+`administer_jiroo` permission key, the `jiroo_base` / `jiroo_numeric` collations,
+the secret-box key-derivation label and the API problem-type URIs.
 
 > Lot 1a — database and auth core. Postgres schema, Drizzle migrations, better-auth and RBAC. UI features land in later lots.
 

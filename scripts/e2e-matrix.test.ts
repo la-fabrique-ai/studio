@@ -90,9 +90,9 @@ describe("pure matrix planning", () => {
       runId: "matrix-firefox-20261028-223000",
       command: ["corepack", "pnpm", "exec", "playwright", "test", "--project=matrix-firefox"],
       env: {
-        JIROO_E2E_RUN_ID: "matrix-firefox-20261028-223000",
-        JIROO_E2E_COMMAND_LABEL: "corepack pnpm exec playwright test --project=matrix-firefox",
-        JIROO_E2E_SCENARIOS: "matrice matrix-firefox",
+        STUDIO_E2E_RUN_ID: "matrix-firefox-20261028-223000",
+        STUDIO_E2E_COMMAND_LABEL: "corepack pnpm exec playwright test --project=matrix-firefox",
+        STUDIO_E2E_SCENARIOS: "matrice matrix-firefox",
       },
     });
   });
@@ -128,7 +128,7 @@ describe("pure matrix planning", () => {
   });
 
   it("allows the real inventory guard to finalize all project manifests together", async () => {
-    temporaryDirectory = await mkdtemp(join(tmpdir(), "jiroo-matrix-"));
+    temporaryDirectory = await mkdtemp(join(tmpdir(), "studio-matrix-"));
     const root = temporaryDirectory;
     await mkdir(join(root, ".playwright/reports"), { recursive: true });
     const plan = planMatrixRuns([], START);

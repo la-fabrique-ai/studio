@@ -7,7 +7,7 @@ import { Fragment, useEffect, useId, useState, useTransition, type ReactNode } f
 import { declareAbsenceAction, removeAbsenceAction } from "@/app/actions/absences";
 import { TypeIcon } from "@/components/icons/type-icon";
 import { ItemRow } from "@/components/items/item-row";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { PageHeader } from "@/components/shell/page-header";
 import { PageToolbar } from "@/components/shell/page-toolbar";
 import { Badge } from "@/components/ui/badge";
@@ -37,8 +37,8 @@ import { cn } from "@/lib/utils";
 export type Perspective = "developer" | "product";
 export type Scope = LePointScope["kind"];
 
-export const PERSPECTIVE_STORAGE_KEY = "jiroo:le-point:perspective";
-export const SCOPE_STORAGE_KEY = "jiroo:le-point:scope";
+export const PERSPECTIVE_STORAGE_KEY = "studio:le-point:perspective";
+export const SCOPE_STORAGE_KEY = "studio:le-point:scope";
 
 const PERSPECTIVES: { value: Perspective; label: string }[] = [
   { value: "developer", label: "Développement" },

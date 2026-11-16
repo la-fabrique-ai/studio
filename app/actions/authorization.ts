@@ -87,7 +87,7 @@ const SAFE_INVARIANT_MESSAGES = new Set([
   "Ce membre est introuvable dans le groupe.",
   "Cette affectation de rôle existe déjà.",
   "Cette affectation de rôle est introuvable.",
-  "Seul un administrateur Jiroo peut modifier les membres de ce groupe.",
+  "Seul un administrateur du Studio peut modifier les membres de ce groupe.",
   "Le déplacement simplifié est réservé au mode Simple.",
   "Le déplacement simplifié exige deux rôles protégés.",
 ]);

@@ -145,7 +145,7 @@ describe("parcours 2FA", () => {
     mocks.enableTwoFactor.mockResolvedValue({
       data: {
         method: "totp",
-        totpURI: "otpauth://totp/Jiroo:marie%40example.test?secret=ABCDEF&issuer=Jiroo",
+        totpURI: "otpauth://totp/Le%20Studio:marie%40example.test?secret=ABCDEF&issuer=Le%20Studio",
         backupCodes: Array.from({ length: 10 }, (_, index) => `CODE-${index}`),
       },
       error: null,

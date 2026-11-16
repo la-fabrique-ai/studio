@@ -21,13 +21,13 @@ export function runConfig(input) {
   // SSE connections expire after four minutes: leave room to drain the last requests.
   if (!Number.isSafeInteger(seconds) || seconds < 1 || seconds > 210) throw new Error("PERF_SECONDS must be 1–210 seconds");
   if (!Number.isSafeInteger(port) || port < 1024 || port > 65535 || port === 5434) throw new Error("Invalid PERF_PORT");
-  const database = `jir41_perf_${hex(6)}`, container = `jiroo-team-load-${hex(6)}`, ownerPassword = hex(), runtimePassword = hex();
+  const database = `jir41_perf_${hex(6)}`, container = `studio-team-load-${hex(6)}`, ownerPassword = hex(), runtimePassword = hex();
   const base = `http://127.0.0.1:${port}`, ownerUrl = `postgresql://jiroo_owner:${ownerPassword}@127.0.0.1:5434/${database}`;
   // Do not inherit database URLs, proxies, Node preload options or deployment settings.
   const env = Object.fromEntries(["PATH", "HOME", "TMPDIR", "LANG", "COREPACK_HOME", "PNPM_HOME"].filter((k) => process.env[k]).map((k) => [k, process.env[k]]));
   Object.assign(env, { PATH: `${dirname(process.execPath)}:${env.PATH}`, DATABASE_URL: ownerUrl, DIRECT_DATABASE_URL: ownerUrl,
-    BETTER_AUTH_URL: base, BETTER_AUTH_SECRET: hex(32), JIROO_PERF_PASSWORD: hex(), JIROO_ALLOW_TEAM_PROFILE_SEED: "1",
-    NEXT_TELEMETRY_DISABLED: "1", JIROO_E2E_ISOLATED: "0", POSTGRES_USER: "jiroo_owner", POSTGRES_PASSWORD: ownerPassword, POSTGRES_DB: database });
+    BETTER_AUTH_URL: base, BETTER_AUTH_SECRET: hex(32), STUDIO_PERF_PASSWORD: hex(), STUDIO_ALLOW_TEAM_PROFILE_SEED: "1",
+    NEXT_TELEMETRY_DISABLED: "1", STUDIO_E2E_ISOLATED: "0", POSTGRES_USER: "jiroo_owner", POSTGRES_PASSWORD: ownerPassword, POSTGRES_DB: database });
   return { database, container, base, port, durationMs: seconds * 1000, env, runtimePassword };
 }
 
@@ -41,7 +41,7 @@ async function main() {
   const config = runConfig(process.env), { env, base, database, container } = config;
   for (const name of [".env", ".env.local", ".env.production", ".env.production.local"]) if (existsSync(join(repo, name))) throw new Error(`Remove ${name} from this isolated worktree before measuring; no environment files are loaded`);
   await freePort(5434); await freePort(config.port);
-  const output = process.argv[2] ? resolve(process.argv[2]) : mkdtempSync(join(tmpdir(), "jiroo-team-load-"));
+  const output = process.argv[2] ? resolve(process.argv[2]) : mkdtempSync(join(tmpdir(), "studio-team-load-"));
   if (process.argv[2]) mkdirSync(output, { mode: 0o700 }); // Exclusive: never overwrite another run.
   const step = (s) => process.stderr.write(`[team-profile] ${s}\n`);
   step(`Artifacts: ${output}`);
@@ -81,9 +81,9 @@ async function main() {
     await command(process.execPath, ["--conditions=react-server", "--import", "tsx", "scripts/perf/seed-team-profile.ts"], "seed");
     const seedLines = readFileSync(join(output, "seed.log"), "utf8").split("\n");
     const profile = JSON.parse(seedLines.findLast((line) => line.startsWith('{"people":')));
-    sql(`create role jiroo_perf_runtime login password '${config.runtimePassword}'; alter role jiroo_perf_runtime set log_min_duration_statement=0; alter role jiroo_perf_runtime set log_parameter_max_length=0;`);
-    await command("corepack", ["pnpm", "db:grant-runtime"], "grant", { ...env, JIROO_RUNTIME_ROLE: "jiroo_perf_runtime" });
-    const runtimeEnv = { ...env, DATABASE_URL: `postgresql://jiroo_perf_runtime:${config.runtimePassword}@127.0.0.1:5434/${database}` };
+    sql(`create role studio_perf_runtime login password '${config.runtimePassword}'; alter role studio_perf_runtime set log_min_duration_statement=0; alter role studio_perf_runtime set log_parameter_max_length=0;`);
+    await command("corepack", ["pnpm", "db:grant-runtime"], "grant", { ...env, STUDIO_RUNTIME_ROLE: "studio_perf_runtime" });
+    const runtimeEnv = { ...env, DATABASE_URL: `postgresql://studio_perf_runtime:${config.runtimePassword}@127.0.0.1:5434/${database}` };
     delete runtimeEnv.DIRECT_DATABASE_URL;
     step("Building the production standalone server");
     await command("corepack", ["pnpm", "build"], "build", runtimeEnv);
@@ -118,8 +118,8 @@ async function main() {
         const response = await authRequest(`${base}/api/auth/${path}`, { method: input ? "POST" : "GET", headers: { ...headers(), "Content-Type": "application/json" }, body: input ? JSON.stringify(input) : undefined, redirect: "manual", signal: AbortSignal.timeout(120000) });
         cookies(response); if (!response.ok) throw new Error(`Auth ${path}: HTTP ${response.status}`); return response.json();
       };
-      await api("sign-in/email", { email: profile.people[i + 1].email, password: env.JIROO_PERF_PASSWORD });
-      const secret = new URL((await api("two-factor/enable", { password: env.JIROO_PERF_PASSWORD })).totpURI).searchParams.get("secret");
+      await api("sign-in/email", { email: profile.people[i + 1].email, password: env.STUDIO_PERF_PASSWORD });
+      const secret = new URL((await api("two-factor/enable", { password: env.STUDIO_PERF_PASSWORD })).totpURI).searchParams.get("secret");
       await api("two-factor/verify-totp", { code: totp(secret) });
       const session = await api("get-session");
       if (session?.user?.role !== "contributor" || session.user.twoFactorEnabled !== true) throw new Error("TOTP contributor session required");
@@ -167,7 +167,7 @@ async function main() {
         sql(`select '${after}'`, true);
         let log = "";
         for (let attempt = 0; attempt < 40; attempt++) { log = readFileSync(pgLog, "utf8"); if (log.includes(after)) break; await sleep(50); }
-        const queries = countSql(log, before, after, "jiroo_perf_runtime", database);
+        const queries = countSql(log, before, after, "studio_perf_runtime", database);
         if (!queries) throw new Error("Serial probe observed no runtime SQL");
         serial.push({ ...sample, sql: queries });
       }

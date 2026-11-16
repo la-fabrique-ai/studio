@@ -59,7 +59,7 @@ async function main() {
   const base = new URL(required("BASE_URL"));
   if (base.protocol !== "http:" || !["localhost", "127.0.0.1", "[::1]"].includes(base.hostname) || base.username || base.password) throw new Error("Use an explicit local HTTP server");
   const container = required("PG_CONTAINER"), database = required("PG_DATABASE"), owner = required("PG_OWNER"), role = required("PG_ROLE");
-  if (!container.startsWith("jiroo-") || !/^jir41_perf_[a-f0-9]{12}$/.test(database)) throw new Error("Use the owned disposable team-profile database");
+  if (!container.startsWith("studio-") || !/^jir41_perf_[a-f0-9]{12}$/.test(database)) throw new Error("Use the owned disposable team-profile database");
   const requests = Number(env.PROBE_REQUESTS ?? 20);
   if (!Number.isSafeInteger(requests) || requests < 1) throw new Error("PROBE_REQUESTS must be positive");
   const backlog = required("BACKLOG"); if (!/^[A-Z]{2,6}$/.test(backlog)) throw new Error("Invalid backlog key");

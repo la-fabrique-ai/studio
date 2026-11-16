@@ -7,7 +7,7 @@ export type MatrixRun = {
   project: string;
   runId: string;
   command: readonly ["corepack", "pnpm", "exec", "playwright", "test", string];
-  env: Record<"JIROO_E2E_RUN_ID" | "JIROO_E2E_COMMAND_LABEL" | "JIROO_E2E_SCENARIOS", string>;
+  env: Record<"STUDIO_E2E_RUN_ID" | "STUDIO_E2E_COMMAND_LABEL" | "STUDIO_E2E_SCENARIOS", string>;
 };
 export type MatrixResult = {
   project: string;
@@ -33,9 +33,9 @@ export function planMatrixRuns(selection: readonly string[], startedAt: Date): M
     return {
       project, runId, command,
       env: {
-        JIROO_E2E_RUN_ID: runId,
-        JIROO_E2E_COMMAND_LABEL: command.join(" "),
-        JIROO_E2E_SCENARIOS: `matrice ${project}`,
+        STUDIO_E2E_RUN_ID: runId,
+        STUDIO_E2E_COMMAND_LABEL: command.join(" "),
+        STUDIO_E2E_SCENARIOS: `matrice ${project}`,
       },
     };
   });

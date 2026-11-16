@@ -30,7 +30,7 @@ const emailsRef = vi.hoisted(() => ({ current: [] as string[] }));
 
 const { bootstrapAdministrator, BootstrapAdminError } = await import("@/lib/services/bootstrap-admin");
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 const run = randomUUID().slice(0, 8);
 const emails = [
   `bootstrap-${run}@example.test`,

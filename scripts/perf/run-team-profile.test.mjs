@@ -7,7 +7,7 @@ describe("owned team-profile environment", () => {
     const a = runConfig({ DATABASE_URL: "postgres://shared.neon.tech/shared", DIRECT_DATABASE_URL: "postgres://localhost:5433/shared", BETTER_AUTH_URL: "https://prod.invalid" });
     const b = runConfig({});
     expect(a.database).toMatch(/^jir41_perf_[a-f0-9]{12}$/);
-    expect(a.container).toMatch(/^jiroo-team-load-[a-f0-9]{12}$/);
+    expect(a.container).toMatch(/^studio-team-load-[a-f0-9]{12}$/);
     expect(a.base).toBe("http://127.0.0.1:3441");
     expect(new URL(a.env.DATABASE_URL).hostname).toBe("127.0.0.1");
     expect(new URL(a.env.DATABASE_URL).port).toBe("5434");

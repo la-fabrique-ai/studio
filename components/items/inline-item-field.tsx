@@ -6,7 +6,7 @@ import { useId, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { updateItemAction } from "@/app/actions/items";
 import { RowPrioIcon as PrioIcon, RowStatusDot as StatusDot } from "./item-row-icons";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -161,7 +161,7 @@ describe("SearchModal item navigation", () => {
 
   it("loads at most eight valid recent keys and renders their assignee", async () => {
     localStorage.setItem(
-      "jiroo-recent-items",
+      "studio-recent-items",
       JSON.stringify([
         "DEMO-10",
         "DEMO-9",
@@ -250,7 +250,7 @@ describe("SearchModal item navigation", () => {
     renderSubject();
 
     act(() => {
-      window.dispatchEvent(new Event("jiroo:open-search"));
+      window.dispatchEvent(new Event("studio:open-search"));
     });
 
     expect(screen.getByRole("dialog")).toBeVisible();
@@ -269,7 +269,7 @@ describe("SearchModal item navigation", () => {
   });
 
   it("restores recent rows after the query is cleared", async () => {
-    localStorage.setItem("jiroo-recent-items", JSON.stringify(["DEMO-2"]));
+    localStorage.setItem("studio-recent-items", JSON.stringify(["DEMO-2"]));
     mocks.recentItemsAction.mockResolvedValue({
       ok: true,
       results: [recentResult],
@@ -296,7 +296,7 @@ describe("SearchModal item navigation", () => {
   it("hides old recent rows while a new blank-query request is pending", async () => {
     const pendingSearch = deferred<{ ok: true; results: SearchResult[] }>();
     const pendingRecent = deferred<{ ok: true; results: SearchResult[] }>();
-    localStorage.setItem("jiroo-recent-items", JSON.stringify(["DEMO-2"]));
+    localStorage.setItem("studio-recent-items", JSON.stringify(["DEMO-2"]));
     mocks.recentItemsAction
       .mockResolvedValueOnce({ ok: true, results: [recentResult] })
       .mockReturnValueOnce(pendingRecent.promise);
@@ -359,7 +359,7 @@ describe("SearchModal item navigation", () => {
   });
 
   it("records a recent keyboard selection before preserving URL navigation", async () => {
-    localStorage.setItem("jiroo-recent-items", JSON.stringify(["DEMO-2", "DEMO-1"]));
+    localStorage.setItem("studio-recent-items", JSON.stringify(["DEMO-2", "DEMO-1"]));
     mocks.recentItemsAction.mockResolvedValueOnce({
       ok: true,
       results: [recentResult],
@@ -375,11 +375,11 @@ describe("SearchModal item navigation", () => {
       key: "Enter",
     });
 
-    expect(localStorage.getItem("jiroo-recent-items")).toBe(
+    expect(localStorage.getItem("studio-recent-items")).toBe(
       JSON.stringify(["DEMO-2", "DEMO-1"]),
     );
     expect(setItem).toHaveBeenCalledWith(
-      "jiroo-recent-items",
+      "studio-recent-items",
       JSON.stringify(["DEMO-2", "DEMO-1"]),
     );
     // Same backlog: the drawer opens through the History API.

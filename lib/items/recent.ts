@@ -1,7 +1,7 @@
 const ITEM_KEY = /^[A-Z]{2,6}-\d+$/;
 const DEFAULT_LIMIT = 8;
 
-export const RECENT_ITEMS_STORAGE_KEY = "jiroo-recent-items";
+export const RECENT_ITEMS_STORAGE_KEY = "studio-recent-items";
 
 function boundedKeys(values: readonly unknown[], limit = DEFAULT_LIMIT): string[] {
   const safeLimit = Number.isFinite(limit)

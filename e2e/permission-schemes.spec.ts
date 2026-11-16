@@ -114,8 +114,8 @@ async function fixtureIds() {
       eq(permissionSchemes.key, "e2e-shared-permission-scheme"),
       eq(backlogs.key, "CASS"),
     ));
-  const [noAccess] = await db.select({ id: user.id }).from(user).where(eq(user.email, "no-access@jiroo.local"));
-  const [member] = await db.select({ id: user.id }).from(user).where(eq(user.email, "member@jiroo.local"));
+  const [noAccess] = await db.select({ id: user.id }).from(user).where(eq(user.email, "no-access@studio.local"));
+  const [member] = await db.select({ id: user.id }).from(user).where(eq(user.email, "member@studio.local"));
   if (!cass || !noAccess || !member) throw new Error("Fixtures de permissions Playwright introuvables.");
   return { cassBacklogId: cass.id, schemeId: cass.schemeId, noAccessId: noAccess.id, memberId: member.id };
 }
@@ -386,7 +386,7 @@ audited(
     const capture = observe(page, "visibilité utilisateur avant/après browse");
     captures.push(capture);
     await page.goto("/b/CASS");
-    await page.evaluate((key) => localStorage.setItem("jiroo-recent-items", JSON.stringify([key])), cassItem.key);
+    await page.evaluate((key) => localStorage.setItem("studio-recent-items", JSON.stringify([key])), cassItem.key);
     await page.reload();
     await expect(page.getByText("Cour de cassation", { exact: true }).first()).toBeVisible();
     const unreadNotifications = page.getByRole("button", { name: "Notifications (1 non lues)" });

@@ -52,7 +52,7 @@ function displayName(value: string | null | undefined): string | null {
   return trimmed ? clip(trimmed, MAX_AUTHOR) : null;
 }
 
-/** First line of a commit message, the only part Jiroo reads. */
+/** First line of a commit message, the only part Studio reads. */
 function commitFirstLine(message: string): string {
   return (message.split(/\r?\n/, 1)[0] ?? "").trim();
 }

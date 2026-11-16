@@ -77,7 +77,7 @@ describe("backlog access settings route", () => {
     expect(mocks.accessProps).toHaveBeenCalledWith(expect.objectContaining({
       canManageMembers: false,
       canAdministerBacklog: true,
-      canAdministerJiroo: false,
+      canAdministerStudio: false,
     }));
   });
 

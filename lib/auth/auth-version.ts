@@ -118,7 +118,7 @@ const TWO_FACTOR_VERIFICATION_PATHS = new Set([
   "/two-factor/verify-otp",
 ]);
 
-// Every Better Auth path that creates a session in Jiroo's configuration, and
+// Every Better Auth path that creates a session in Studio's configuration, and
 // the first factor it continues. Any other path is refused.
 const SESSION_GRANTS: Record<string, GrantSelector> = {
   "/sign-in/email": (grants) => grants.password,
@@ -258,7 +258,7 @@ function credentialsChanged(): APIError {
 /**
  * `databaseHooks.account.update.before`. Better Auth writes a changed
  * password with a plain update, unrelated to the version captured when the
- * current password was verified. Jiroo writes it here instead, in one
+ * current password was verified. Studio writes it here instead, in one
  * transaction under the user row lock that admin resets also take: the write
  * only happens if the presented session carries the version proven with the
  * current password and neither the stored hash nor the auth version moved
@@ -266,7 +266,7 @@ function credentialsChanged(): APIError {
  * and pending 2FA challenges in the same transaction. Returning false then
  * skips Better Auth's own write, which would otherwise be able to overwrite
  * a concurrent reset. Better Auth's /change-password is the only route
- * allowed to change a password through Better Auth in Jiroo.
+ * allowed to change a password through Better Auth in Studio.
  */
 export async function applyOwnPasswordChange(
   data: Record<string, unknown>,

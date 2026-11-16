@@ -910,7 +910,7 @@ export const activities = pgTable("activities", {
   newValue: text("new_value"),
   requestCorrelationId: text("request_correlation_id"),
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
-  // How the actor reached Jiroo and, for the API and MCP, with which token
+  // How the actor reached Studio and, for the API and MCP, with which token
   // (JIR-156). A revoked or deleted token leaves the activity in place.
   source: activitySourceEnum("source").notNull().default("ui"),
   tokenId: uuid("token_id").references(() => apiTokens.id, { onDelete: "set null" }),
@@ -1005,7 +1005,7 @@ export const itemLinks = pgTable(
 );
 
 // A GitHub or GitLab repository connected to a backlog by webhook (JIR-95).
-// Jiroo never calls the forge: it only receives signed webhooks. The secret
+// Studio never calls the forge: it only receives signed webhooks. The secret
 // is stored encrypted (lib/crypto/secret-box) and never shown again.
 export const repoConnections = pgTable(
   "repo_connections",

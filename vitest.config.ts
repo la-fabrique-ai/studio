@@ -17,7 +17,7 @@ export default defineConfig({
         test: { name: "unit", exclude: [...configDefaults.exclude, "e2e/**", DB_SUITES] },
       },
       {
-        // The DB suites share one database (JIROO_RUN_DB_TESTS=1): in
+        // The DB suites share one database (STUDIO_RUN_DB_TESTS=1): in
         // parallel they collide on global counts and short random keys
         // (JIR-48). One file at a time keeps them deterministic.
         extends: true,

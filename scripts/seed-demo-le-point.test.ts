@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { assertDemoSeedAllowed } from "./seed-demo-le-point";
 
-const allowed = { JIROO_ALLOW_DEMO_SEED: "1", DATABASE_URL: "postgresql://local:local@127.0.0.1:5434/demo" };
+const allowed = { STUDIO_ALLOW_DEMO_SEED: "1", DATABASE_URL: "postgresql://local:local@127.0.0.1:5434/demo" };
 
 describe("demo seed safety", () => {
   it("requires explicit opt-in even for a local database", () => {
-    expect(() => assertDemoSeedAllowed({ ...allowed, JIROO_ALLOW_DEMO_SEED: undefined })).toThrow(/JIROO_ALLOW_DEMO_SEED/);
+    expect(() => assertDemoSeedAllowed({ ...allowed, STUDIO_ALLOW_DEMO_SEED: undefined })).toThrow(/STUDIO_ALLOW_DEMO_SEED/);
   });
   it.each([undefined, "", "not a URL", "postgresql://secret:private@remote.example/demo", "https://localhost/demo", "postgresql://localhost"])("refuses a missing, remote or ambiguous connection without leaking credentials (%s)", (DATABASE_URL) => {
     expect(() => assertDemoSeedAllowed({ ...allowed, DATABASE_URL })).toThrow(/local PostgreSQL/);

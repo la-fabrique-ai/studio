@@ -385,7 +385,7 @@ describe("KeyboardShortcutsProvider", () => {
     expect(toggle).toBeChecked();
     await user.click(toggle);
     expect(toggle).not.toBeChecked();
-    expect(window.localStorage.getItem("jiroo-shortcuts-enabled")).toBe("false");
+    expect(window.localStorage.getItem("studio-shortcuts-enabled")).toBe("false");
     await user.keyboard("{Escape}");
 
     press("j");
@@ -394,8 +394,8 @@ describe("KeyboardShortcutsProvider", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
     act(() => {
-      window.localStorage.setItem("jiroo-shortcuts-enabled", "true");
-      window.dispatchEvent(new StorageEvent("storage", { key: "jiroo-shortcuts-enabled" }));
+      window.localStorage.setItem("studio-shortcuts-enabled", "true");
+      window.dispatchEvent(new StorageEvent("storage", { key: "studio-shortcuts-enabled" }));
     });
     press("j");
     expect(handler).toHaveBeenCalledTimes(1);

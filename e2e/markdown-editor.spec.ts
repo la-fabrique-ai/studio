@@ -10,10 +10,10 @@ import { createItem } from "../lib/services/items";
 // JIR-71: the description is a Notion-like page edited in place and saved
 // automatically, with a « / » block menu and a bar over the selection.
 
-const ADMIN_EMAIL = "platform-admin@jiroo.local";
-/** Review screenshots (JIR-71): JIROO_E2E_SHOTS_DIR or the test output. */
+const ADMIN_EMAIL = "platform-admin@studio.local";
+/** Review screenshots (JIR-71): STUDIO_E2E_SHOTS_DIR or the test output. */
 function shotPath(testInfo: TestInfo, name: string) {
-  const dir = process.env.JIROO_E2E_SHOTS_DIR;
+  const dir = process.env.STUDIO_E2E_SHOTS_DIR;
   return dir ? `${dir}/${name}` : testInfo.outputPath(name);
 }
 
@@ -26,7 +26,7 @@ async function fixtureItem(title: string, description: string | null = null) {
   const [epic] = await db.select({ id: items.id }).from(items)
     .where(and(eq(items.backlogId, backlog.id), eq(items.type, "epic")));
   if (!epic) throw new Error("Epic fixture introuvable.");
-  const runId = process.env.JIROO_E2E_RUN_ID ?? String(Date.now());
+  const runId = process.env.STUDIO_E2E_RUN_ID ?? String(Date.now());
   const created = await createItem({
     backlogId: backlog.id,
     type: "tache",

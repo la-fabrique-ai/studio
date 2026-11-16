@@ -8,12 +8,12 @@ import { REALTIME_CHANNEL, buildChangeEvent, serializeChangeEvent } from "@/lib/
 
 vi.mock("server-only", () => ({}));
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 
 describeDb("RealtimeBus against Postgres", () => {
   const backlogId = randomUUID();
   // Tags this suite's listeners so it never touches another process's.
-  const applicationName = `jiroo-realtime-test-${backlogId.slice(0, 8)}`;
+  const applicationName = `studio-realtime-test-${backlogId.slice(0, 8)}`;
   let pool: Pool;
   let unsubscribe: (() => void) | null = null;
 

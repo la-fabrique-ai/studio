@@ -5,12 +5,12 @@ vi.mock("@/lib/auth/action-authorization", () => ({ requireBacklogPermissionByKe
 vi.mock("@/lib/services/backlogs", () => ({ getBacklogByKeyForUser: m.getBacklog }));
 vi.mock("@/lib/services/items", () => ({ getItemByKeyForBacklog: m.item }));
 vi.mock("@/lib/use-cases/links", () => ({ listDependenciesUseCase: m.list, addDependencyUseCase: m.add, removeDependencyUseCase: m.remove }));
-import { JIROO_TOOLS, runTool, type ToolDefinition } from "@/lib/mcp/tools";
+import { STUDIO_TOOLS, runTool, type ToolDefinition } from "@/lib/mcp/tools";
 const id = "abcdef12-abcd-4abc-8abc-abcdef123456";
 const dependency = { id, direction: "blocked_by", sourceKey: "TEST-2", targetKey: "TEST-1", other: { id: "j", key: "TEST-2", title: "Other", status: { id: "s", name: "Done", category: "done" } } };
 const reader = { actorId: "u", tokenId: "t", scope: "read" as const }; const writer = { ...reader, scope: "write" as const };
 const actor = { actorId: "u", tokenId: "t", source: "mcp" };
-function tool(name: string): ToolDefinition { const found = JIROO_TOOLS.find((t) => t.name === name); expect(found, `${name} registered`).toBeDefined(); return found!; }
+function tool(name: string): ToolDefinition { const found = STUDIO_TOOLS.find((t) => t.name === name); expect(found, `${name} registered`).toBeDefined(); return found!; }
 beforeEach(() => {
   vi.resetAllMocks(); m.backlog.mockResolvedValue({ backlogId: "b" }); m.getBacklog.mockResolvedValue({ id: "b", key: "TEST" });
   m.item.mockImplementation(async (key) => ({ id: key === "TEST-1" ? "i" : "j", key, backlogId: "b" }));

@@ -85,7 +85,7 @@ describe("RecoveryCodesPanel", () => {
 
     await user.click(screen.getByRole("button", { name: "Télécharger (.txt)" }));
 
-    expect(clicked.at(-1)?.download).toBe("jiroo-codes-recuperation-2026-10-13.txt");
+    expect(clicked.at(-1)?.download).toBe("le-studio-codes-recuperation-2026-10-13.txt");
     expect(clicked.at(-1)?.isConnected).toBe(false);
     const blob = (createObjectURL.mock.calls as unknown as Blob[][]).at(-1)?.[0] as Blob;
     expect(blob.type).toBe("text/plain;charset=utf-8");
@@ -94,7 +94,7 @@ describe("RecoveryCodesPanel", () => {
     expect(text).toContain("Générés le : 13/10/2026\r\n");
     expect(text).toContain("AAAA-1111\r\nBBBB-2222\r\nCCCC-3333\r\n");
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Fichier jiroo-codes-recuperation-2026-10-13.txt téléchargé.",
+      "Fichier le-studio-codes-recuperation-2026-10-13.txt téléchargé.",
     );
     await waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith("blob:codes"), { timeout: 2_000 });
     expect(fetchSpy).not.toHaveBeenCalled();

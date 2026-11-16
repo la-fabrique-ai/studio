@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { Filters } from "@/lib/items/filter";
 
 /**
- * The « Sprint » filter (JIR-81), Jiroo's `Sprint = "<name>"` search.
+ * The « Sprint » filter (JIR-81), Studio's `Sprint = "<name>"` search.
  *
  * Membership rule, aligned with Jira's Sprint field: an item belongs to every
  * sprint it is in now, and keeps every sprint that ended with it inside —

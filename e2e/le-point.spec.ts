@@ -16,7 +16,7 @@ import { readActionArguments } from "./support/actions";
 import { observePage } from "./support/capture";
 import { keyPattern } from "./key-helpers";
 
-const RUN = process.env.JIROO_E2E_RUN_ID;
+const RUN = process.env.STUDIO_E2E_RUN_ID;
 if (!RUN) throw new Error("Le point E2E requires an isolated run id.");
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
@@ -29,7 +29,7 @@ type Capture = { console: string[]; network: string[]; errors: string[] };
 type ObservedWrite = { actionId?: string; permissionArguments: boolean; method: string; path: string };
 
 async function seedProject() {
-  const [actor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@jiroo.local"));
+  const [actor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@studio.local"));
   if (!actor) throw new Error("Missing isolated platform administrator.");
   const suffix = [...randomBytes(3)].map((value) => String.fromCharCode(65 + value % 26)).join("");
   const key = `LPT${suffix}`;
@@ -145,7 +145,7 @@ async function shot(page: Page, name: string) {
 }
 async function open(page: Page) {
   await page.goto(`/b/${fixture.backlog.key}/le-point`);
-  await expect(page).toHaveTitle("Le point (pilote) — Jiroo");
+  await expect(page).toHaveTitle("Le point (pilote) — Le Studio");
   await expect(page.getByRole("heading", { level: 1, name: "Le point pilote", exact: true })).toBeVisible();
   await expect(page.getByRole("radiogroup", { name: "Portée", exact: true }).getByRole("radio", { name: "Toute l’équipe", exact: true })).toBeChecked();
   await expect(page.getByRole("radio", { name: "Développement", exact: true })).toBeChecked();

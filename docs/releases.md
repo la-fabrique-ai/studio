@@ -1,7 +1,7 @@
 # Application releases
 
 `package.json` is the source of the stable **X.Y.Z** version (for example 0.1.0,
-0.2.0). These are releases of Jiroo itself, separate from the business releases
+0.2.0). These are releases of Le Studio itself, separate from the business releases
 managed inside the application. No version is bumped automatically.
 
 ## Prepare a release

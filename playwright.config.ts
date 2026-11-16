@@ -8,13 +8,13 @@ process.env.NODE_OPTIONS = [process.env.NODE_OPTIONS, "--conditions=react-server
   .join(" ");
 
 const generatedRunId = `${new Date().toISOString().replace(/[-:.]/gu, "")}-${randomUUID().slice(0, 8)}`;
-const runId = process.env.JIROO_E2E_RUN_ID?.trim() || generatedRunId;
+const runId = process.env.STUDIO_E2E_RUN_ID?.trim() || generatedRunId;
 if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(runId)) {
-  throw new Error("JIROO_E2E_RUN_ID contient des caractères non autorisés.");
+  throw new Error("STUDIO_E2E_RUN_ID contient des caractères non autorisés.");
 }
-process.env.JIROO_E2E_RUN_ID = runId;
+process.env.STUDIO_E2E_RUN_ID = runId;
 
-const persistAudit = process.env.JIROO_E2E_PERSIST_AUDIT === "1";
+const persistAudit = process.env.STUDIO_E2E_PERSIST_AUDIT === "1";
 const reportPath = persistAudit
   ? `audit/runs/${runId}-junit.xml`
   : `.playwright/reports/${runId}-junit.xml`;
@@ -55,7 +55,7 @@ export default defineConfig<MatrixOptions>({
     })),
   ],
   webServer: {
-    command: "JIROO_E2E_ISOLATED=1 pnpm --ignore-workspace dev --port 3100",
+    command: "STUDIO_E2E_ISOLATED=1 pnpm --ignore-workspace dev --port 3100",
     url: "http://localhost:3100/login",
     reuseExistingServer: false,
     timeout: 120_000,

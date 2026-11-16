@@ -306,7 +306,7 @@ test("planifie, exécute et clôture un sprint sans exposer le backlog sur le Bo
   await page.getByRole("textbox", { name: "Nom" }).fill(ACTIVE_SPRINT);
   await page
     .getByRole("textbox", { name: "Objectif" })
-    .fill("Valider le cycle produit complet dans Jiroo");
+    .fill("Valider le cycle produit complet dans le Studio");
   await page.getByLabel("Début", { exact: true }).fill("2026-08-05");
   await page.getByLabel("Heure de début").fill("09:00");
   await page.getByLabel("Fin", { exact: true }).fill("2026-08-19");
@@ -320,7 +320,7 @@ test("planifie, exécute et clôture un sprint sans exposer le backlog sur le Bo
   await expect(page).toHaveURL(/view=board/);
   await expect(page.getByRole("heading", { name: ACTIVE_SPRINT })).toBeVisible();
   await expect(
-    page.getByText("Objectif : Valider le cycle produit complet dans Jiroo"),
+    page.getByText("Objectif : Valider le cycle produit complet dans le Studio"),
   ).toBeVisible();
   await expect(page.getByText("2 non estimé")).toBeVisible();
   await expect(page.getByText(TASK_DONE, { exact: true })).toBeVisible();

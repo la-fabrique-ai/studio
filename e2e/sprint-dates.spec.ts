@@ -23,7 +23,7 @@ const CAPACITY_SPRINT = "JIR-90 Capacité";
 
 async function seedSprint(name: string) {
   const [actor] = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   const [backlog] = await db.select({ id: backlogs.id }).from(backlogs)
     .where(eq(backlogs.key, "CASS"));
   if (!actor || !backlog) throw new Error("Fixture CASS incomplète.");

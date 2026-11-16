@@ -93,7 +93,7 @@ test("sélectionne une plage et applique les quatre actions groupées", async ({
   const [auditActor] = await db
     .select({ id: user.id })
     .from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   if (!auditActor) throw new Error("Compte d’audit Playwright introuvable.");
 
   try {
@@ -239,7 +239,7 @@ test("distingue 5, zéro et non estimé puis restaure la valeur", async ({ page 
   const [auditActor] = await db
     .select({ id: user.id })
     .from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   if (!original || !auditActor) throw new Error("Fixture d’estimation introuvable.");
 
   try {

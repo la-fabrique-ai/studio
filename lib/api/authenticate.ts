@@ -29,5 +29,5 @@ export async function authenticateBearer(request: Request, now = new Date()): Pr
 
 /** The `WWW-Authenticate` value of a 401 (RFC 6750 §3). */
 export function bearerChallenge(reason: BearerFailureReason): string {
-  return reason === "missing" ? 'Bearer realm="jiroo"' : 'Bearer realm="jiroo", error="invalid_token"';
+  return reason === "missing" ? 'Bearer realm="studio"' : 'Bearer realm="studio", error="invalid_token"';
 }

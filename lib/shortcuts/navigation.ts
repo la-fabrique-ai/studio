@@ -1,10 +1,10 @@
 import type { SequenceShortcutId } from "@/lib/shortcuts/registry";
 
 /** Window event the search palette listens to (« / » shortcut). */
-export const OPEN_SEARCH_EVENT = "jiroo:open-search";
+export const OPEN_SEARCH_EVENT = "studio:open-search";
 
 /** Last backlog visited on this device, the target of « g » outside a backlog. */
-export const LAST_BACKLOG_STORAGE_KEY = "jiroo-last-backlog";
+export const LAST_BACKLOG_STORAGE_KEY = "studio-last-backlog";
 
 export type GoShortcutId = Extract<SequenceShortcutId, `go.${string}`>;
 

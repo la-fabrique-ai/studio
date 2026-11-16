@@ -11,7 +11,7 @@ import {
 let testRoot: string | undefined;
 
 async function paths(ownerPid: number) {
-  testRoot = await mkdtemp(join(tmpdir(), "jiroo-junit-report-"));
+  testRoot = await mkdtemp(join(tmpdir(), "studio-junit-report-"));
   const runId = `report-${randomUUID()}`;
   const result = exclusiveJunitPaths({
     reportPath: join(testRoot, "proof.xml"),

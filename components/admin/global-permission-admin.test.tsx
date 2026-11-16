@@ -14,7 +14,7 @@ import { expectNoBoundary, renderWithBoundary, transportError } from "@/test/act
 const grants = [{
   id: "11111111-1111-4111-8111-111111111111",
   permission: "administer_jiroo" as const,
-  permissionLabel: "Administrer Jiroo",
+  permissionLabel: "Administrer le Studio",
   principal: { type: "group" as const, id: "22222222-2222-4222-8222-222222222222", label: "Administrateurs" },
 }];
 
@@ -23,7 +23,7 @@ describe("GlobalPermissionAdmin", () => {
 
   it("rend les grants en lecture seule sans contrôle d’écriture pour manage_users_groups seul", () => {
     render(<GlobalPermissionAdmin grants={grants} users={[]} groups={[]} canManage={false} />);
-    expect(screen.getByText("Administrer Jiroo")).toBeVisible();
+    expect(screen.getByText("Administrer le Studio")).toBeVisible();
     expect(screen.getByText("Administrateurs")).toBeVisible();
     expect(screen.queryByRole("button", { name: /ajouter|retirer/i })).not.toBeInTheDocument();
   });
@@ -82,7 +82,7 @@ describe("GlobalPermissionAdmin", () => {
     const user = userEvent.setup();
     mocks.remove.mockResolvedValue({ ok: true });
     render(<GlobalPermissionAdmin grants={grants} users={[]} groups={[]} canManage />);
-    await user.click(screen.getByRole("button", { name: "Retirer Administrer Jiroo pour Administrateurs" }));
+    await user.click(screen.getByRole("button", { name: "Retirer Administrer le Studio pour Administrateurs" }));
     const dialog = screen.getByRole("dialog", { name: "Retirer la permission globale" });
     expect(mocks.remove).not.toHaveBeenCalled();
     await user.click(within(dialog).getByRole("button", { name: "Confirmer le retrait" }));
@@ -96,7 +96,7 @@ describe("GlobalPermissionAdmin", () => {
     await user.click(screen.getByRole("button", { name: "Ajouter la permission" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Ajout refusé.");
 
-    await user.click(screen.getByRole("button", { name: "Retirer Administrer Jiroo pour Administrateurs" }));
+    await user.click(screen.getByRole("button", { name: "Retirer Administrer le Studio pour Administrateurs" }));
     const dialog = screen.getByRole("dialog", { name: "Retirer la permission globale" });
     expect(within(dialog).queryByRole("alert")).not.toBeInTheDocument();
   });
@@ -105,7 +105,7 @@ describe("GlobalPermissionAdmin", () => {
     const user = userEvent.setup();
     mocks.remove.mockResolvedValue({ ok: false, error: "Retrait refusé." });
     render(<GlobalPermissionAdmin grants={grants} users={[{ id: "u1", name: "Ada" }]} groups={[]} canManage />);
-    const trigger = screen.getByRole("button", { name: "Retirer Administrer Jiroo pour Administrateurs" });
+    const trigger = screen.getByRole("button", { name: "Retirer Administrer le Studio pour Administrateurs" });
     await user.click(trigger);
     let dialog = screen.getByRole("dialog", { name: "Retirer la permission globale" });
     await user.click(within(dialog).getByRole("button", { name: "Confirmer le retrait" }));
@@ -125,7 +125,7 @@ describe("GlobalPermissionAdmin", () => {
     let resolve!: (value: { ok: true }) => void;
     mocks.remove.mockReturnValue(new Promise((r) => { resolve = r; }));
     render(<GlobalPermissionAdmin grants={grants} users={[]} groups={[]} canManage />);
-    await user.click(screen.getByRole("button", { name: "Retirer Administrer Jiroo pour Administrateurs" }));
+    await user.click(screen.getByRole("button", { name: "Retirer Administrer le Studio pour Administrateurs" }));
     const dialog = screen.getByRole("dialog", { name: "Retirer la permission globale" });
     await user.click(within(dialog).getByRole("button", { name: "Confirmer le retrait" }));
     await user.keyboard("{Escape}");
@@ -152,7 +152,7 @@ describe("GlobalPermissionAdmin", () => {
     const user = userEvent.setup();
     mocks.remove.mockRejectedValue(transportError());
     renderWithBoundary(<GlobalPermissionAdmin grants={grants} users={[]} groups={[]} canManage />);
-    await user.click(screen.getByRole("button", { name: "Retirer Administrer Jiroo pour Administrateurs" }));
+    await user.click(screen.getByRole("button", { name: "Retirer Administrer le Studio pour Administrateurs" }));
     const dialog = screen.getByRole("dialog", { name: "Retirer la permission globale" });
     await user.click(within(dialog).getByRole("button", { name: "Confirmer le retrait" }));
 

@@ -8,7 +8,7 @@ export function createAuditEvidenceFilters(fixturePassword: string) {
     "cookie:", // Also matches Set-Cookie headers.
     "database_url",
     "direct_database_url",
-    "jiroo-e2e-secret",
+    "studio-e2e-secret",
     escapeRegExp(fixturePassword),
   ];
   return {

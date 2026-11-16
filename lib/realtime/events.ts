@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-/** Postgres NOTIFY channel shared by every Jiroo process. */
-export const REALTIME_CHANNEL = "jiroo_changes";
+/** Postgres NOTIFY channel shared by every Studio process. */
+export const REALTIME_CHANNEL = "studio_changes";
 
 /**
  * Above this many items an event stops listing them and means "any item of the

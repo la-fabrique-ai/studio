@@ -14,7 +14,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Jiroo: design handoff prototype is not production code.
+    // Studio: design handoff prototype is not production code.
     ".claude/**",
     // Generated Playwright state and reports are third-party artifacts.
     ".playwright/**",

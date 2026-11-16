@@ -18,7 +18,7 @@ services:
       retries: 10
 
   app:
-    image: ${JIROO_IMAGE:?Set an application image with a version or digest}
+    image: ${STUDIO_IMAGE:?Set an application image with a version or digest}
     init: true
     restart: unless-stopped
     ports:
@@ -34,13 +34,13 @@ services:
         condition: service_completed_successfully
 
   migrate:
-    image: ${JIROO_IMAGE:?Set an application image with a version or digest}
+    image: ${STUDIO_IMAGE:?Set an application image with a version or digest}
     command: ["sh", "-c", "corepack pnpm db:migrate && corepack pnpm db:grant-runtime"]
     healthcheck:
       disable: true
     environment:
       DIRECT_DATABASE_URL: ${DIRECT_DATABASE_URL:?Set the owner URL using host db}
-      JIROO_RUNTIME_ROLE: ${JIROO_RUNTIME_ROLE:-jiroo_runtime}
+      STUDIO_RUNTIME_ROLE: ${STUDIO_RUNTIME_ROLE:-jiroo_runtime}
     depends_on:
       db:
         condition: service_healthy

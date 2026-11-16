@@ -38,7 +38,7 @@ export function assertE2eDatabaseIdentity(input: {
 }): VerifiedE2eDatabaseIdentity {
   if (!input.expectedSystemIdentifier) {
     throw new Error(
-      "Reset E2E refusé : définissez explicitement JIROO_E2E_DATABASE_SYSTEM_IDENTIFIER.",
+      "Reset E2E refusé : définissez explicitement STUDIO_E2E_DATABASE_SYSTEM_IDENTIFIER.",
     );
   }
   if (input.databaseName !== "jiroo_e2e") {
@@ -87,7 +87,7 @@ export function assertE2eResetAllowed(_input: {
   databaseUrl: string | undefined;
 }): { databaseName: string; hostname: string } {
   if (_input.allowReset !== "1") {
-    throw new Error("Reset E2E refusé : définissez explicitement JIROO_ALLOW_E2E_RESET=1.");
+    throw new Error("Reset E2E refusé : définissez explicitement STUDIO_ALLOW_E2E_RESET=1.");
   }
   if (!_input.databaseUrl) {
     throw new Error("Reset E2E refusé : DATABASE_URL est absente.");

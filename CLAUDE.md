@@ -1,4 +1,4 @@
-# Jiroo
+# Le Studio
 
 Lightweight Jira-like ticket manager for a Cour de cassation team. French UI and content; **English** for code, comments, commit messages, PRs and docs.
 
@@ -17,7 +17,7 @@ En cas d'indisponibilité, utiliser le [dossier non synchronisé](docs/linear-pe
 When a question is about **how a feature should behave** — ranking, board layout,
 hierarchy rules, drag-and-drop semantics, filtering, statuses, anything where the
 product behaviour is genuinely undecided — **first research how Jira does it** and
-align with Jira's proven model. Jiroo is deliberately "Jira's important features,
+align with Jira's proven model. Le Studio is deliberately "Jira's important features,
 minus the bloat", so Jira is the reference implementation for behaviour. Cite the
 finding (Atlassian docs / reputable write-ups) when proposing the design, then
 apply the simplest version consistent with "pas d'usine à gaz". This applies to

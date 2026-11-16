@@ -62,14 +62,14 @@ async function openFirstBacklogRow(page: Page) {
 /** A fresh task of the CASS backlog, so description edits stay isolated. */
 async function fixtureTask(title: string, description: string) {
   const [admin] = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   const [backlog] = await db.select({ id: backlogs.id }).from(backlogs)
     .where(eq(backlogs.key, "CASS"));
   if (!admin || !backlog) throw new Error("Fixtures E2E introuvables.");
   const [epic] = await db.select({ id: items.id }).from(items)
     .where(and(eq(items.backlogId, backlog.id), eq(items.type, "epic")));
   if (!epic) throw new Error("Epic fixture introuvable.");
-  const runId = process.env.JIROO_E2E_RUN_ID ?? String(Date.now());
+  const runId = process.env.STUDIO_E2E_RUN_ID ?? String(Date.now());
   return createItem({
     backlogId: backlog.id,
     type: "tache",
@@ -442,7 +442,7 @@ test.describe("panneau de détail sans re-rendu de la vue (JIR-78)", () => {
   test("enregistre la description en cours de frappe en passant à l’item suivant", async ({
     page,
   }) => {
-    const prefix = `JIR-78 brouillon ${process.env.JIROO_E2E_RUN_ID ?? Date.now()}`;
+    const prefix = `JIR-78 brouillon ${process.env.STUDIO_E2E_RUN_ID ?? Date.now()}`;
     const created = [
       await fixtureTask(`${prefix} A`, "Brouillon"),
       await fixtureTask(`${prefix} B`, "Brouillon"),

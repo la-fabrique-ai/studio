@@ -66,7 +66,7 @@ export async function revokeApiTokenAction(input: { id: string }): Promise<{ ok:
 }
 
 // WORDING (Codex, JIR-161).
-const NOT_ADMINISTRATOR = "Cette action est réservée aux administrateurs Jiroo.";
+const NOT_ADMINISTRATOR = "Cette action est réservée aux administrateurs du Studio.";
 
 /** Administration → Jetons d’accès: revoke any account's token (JIR-161). */
 export async function revokeApiTokenAsAdministratorAction(input: { id: string }): Promise<{ ok: true } | ActionFailure> {

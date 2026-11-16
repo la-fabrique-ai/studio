@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 
 const ROLE_LABELS: Record<string, string> = {
-  admin: "Administrateur Jiroo",
+  admin: "Administrateur du Studio",
   contributor: "Contributeur",
   viewer: "Lecteur",
 };
@@ -28,7 +28,7 @@ export function UserProfileDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Profil</DialogTitle>
-          <DialogDescription>Informations associées à votre compte Jiroo.</DialogDescription>
+          <DialogDescription>Informations associées à votre compte du Studio.</DialogDescription>
         </DialogHeader>
         <dl className="grid gap-3 rounded-lg border border-border bg-[var(--surface-2)] p-3">
           <ProfileField label="Nom" value={user.name} />

@@ -3,9 +3,9 @@ import { DensityToggle } from "@/components/theme/density-toggle";
 import { StatusDot } from "@/components/icons/status-dot";
 import { PrioIcon } from "@/components/icons/prio-icon";
 import { TypeIcon } from "@/components/icons/type-icon";
-import { ItemKey } from "@/components/jiroo/item-key";
-import { LabelPill } from "@/components/jiroo/label-pill";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { ItemKey } from "@/components/studio/item-key";
+import { LabelPill } from "@/components/studio/label-pill";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { Button } from "@/components/ui/button";
 import { STATUS_IDS, STATUS_LABELS, PRIORITIES, PRIORITY_LABELS, ITEM_TYPES, ITEM_TYPE_LABELS } from "@/lib/design/constants";
 

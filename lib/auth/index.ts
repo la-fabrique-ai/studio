@@ -14,7 +14,7 @@ import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 
 export const auth = betterAuth({
-  appName: "Jiroo",
+  appName: "Le Studio",
   // Accounts are provisioned by administrators through the server-side API.
   // Password changes go through the rate-limited Server Action
   // (app/actions/account.ts); auth.api calls are unaffected by disabledPaths.

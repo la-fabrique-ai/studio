@@ -5,13 +5,13 @@ import { Client } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { grantRuntimeRole, RuntimeRoleError } from "@/lib/db/runtime-role";
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 
 // The schema owner: the migrated test database's own connection.
 const OWNER_URL = process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL ?? "";
 const suffix = randomBytes(4).toString("hex");
-const RUNTIME = `jiroo_rt_test_${suffix}`;
-const ADMIN_LIKE = `jiroo_rt_admin_${suffix}`;
+const RUNTIME = `studio_rt_test_${suffix}`;
+const ADMIN_LIKE = `studio_rt_admin_${suffix}`;
 const PASSWORD = randomBytes(18).toString("base64url");
 const LATER_TABLE = `runtime_role_later_${suffix}`;
 const BACKLOG_KEY = `RT${[...randomBytes(4)].map((byte) => String.fromCharCode(65 + (byte % 26))).join("")}`;
@@ -130,7 +130,7 @@ describeDb("grantRuntimeRole (JIR-114)", () => {
   });
 
   it("refuses a missing role, an administrative one, and a malformed name", async () => {
-    await expect(grantRuntimeRole(owner, `jiroo_missing_${suffix}`)).rejects.toThrow(RuntimeRoleError);
+    await expect(grantRuntimeRole(owner, `studio_missing_${suffix}`)).rejects.toThrow(RuntimeRoleError);
     await expect(grantRuntimeRole(owner, ADMIN_LIKE)).rejects.toThrow(/administrative attributes/);
     await expect(grantRuntimeRole(owner, 'x"; DROP TABLE items; --')).rejects.toThrow(/Invalid role name/);
   });

@@ -112,11 +112,11 @@ describe("RoadmapView", () => {
     expect(within(scale).getByRole("button", { name: "Mois" })).toHaveAttribute("aria-pressed", "true");
     await userEvent.click(within(scale).getByRole("button", { name: "Semaines" }));
     expect(within(scale).getByRole("button", { name: "Semaines" })).toHaveAttribute("aria-pressed", "true");
-    expect(window.localStorage.getItem("jiroo.roadmap.zoom")).toBe("weeks");
+    expect(window.localStorage.getItem("studio.roadmap.zoom")).toBe("weeks");
   });
 
   it("restores the remembered zoom", () => {
-    window.localStorage.setItem("jiroo.roadmap.zoom", "quarters");
+    window.localStorage.setItem("studio.roadmap.zoom", "quarters");
     renderView();
     expect(screen.getByRole("button", { name: "Trimestres" })).toHaveAttribute("aria-pressed", "true");
   });

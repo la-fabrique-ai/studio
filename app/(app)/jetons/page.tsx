@@ -28,7 +28,7 @@ export default async function ApiTokensPage() {
         {/* Wording: Codex proposal for JIR-156 (column A). */}
         <h1 className="t-h1">Jetons d’accès</h1>
         <p className="t-sm text-muted-foreground">
-          Reliez un outil ou un agent à Jiroo. Son accès dépend de vos droits et de la portée du
+          Reliez un outil ou un agent au Studio. Son accès dépend de vos droits et de la portée du
           jeton.
         </p>
       </div>

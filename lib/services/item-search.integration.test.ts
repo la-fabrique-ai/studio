@@ -15,7 +15,7 @@ import {
 
 vi.mock("server-only", () => ({}));
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 
 describeDb("item search for the API (JIR-157, JIR-158)", () => {
   let fixture: ReadVisibilityFixture;

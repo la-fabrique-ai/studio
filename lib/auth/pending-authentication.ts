@@ -7,7 +7,7 @@ import { verification } from "@/lib/db/schema/auth";
 type Executor = Pick<typeof db, "delete">;
 
 // Better Auth 1.6.22 two-factor plugin state kept in `verification` (plain
-// identifiers: Jiroo does not set `verification.storeIdentifier`):
+// identifiers: Studio does not set `verification.storeIdentifier`):
 // - trusted devices: identifier `trust-device-<random>`, value = user id.
 //   The plugin accepts any unexpired row whose value matches the user, so a
 //   trust cookie is not tied to a factor generation.

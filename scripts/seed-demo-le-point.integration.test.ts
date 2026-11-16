@@ -13,7 +13,7 @@ import { assertDemoSeedAllowed, seedDemoLePoint, type DemoSeedResult } from "./s
 vi.mock("server-only", () => ({}));
 
 // This suite owns a whole disposable database, not a developer's DEMO namespace.
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" && process.env.JIROO_ALLOW_DEMO_SEED === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" && process.env.STUDIO_ALLOW_DEMO_SEED === "1" ? describe : describe.skip;
 let seeded: DemoSeedResult;
 let foreign: { id: string };
 let foreignItem: { id: string };
@@ -22,7 +22,7 @@ let globalBefore: typeof permissionGrants.$inferSelect[];
 describeDb("Le point demo seed on a disposable database", () => {
   beforeAll(async () => {
     assertDemoSeedAllowed(process.env);
-    if (new URL(process.env.DATABASE_URL!).port !== "5434") throw new Error("Use the disposable local Jiroo instance on port 5434 for this suite.");
+    if (new URL(process.env.DATABASE_URL!).port !== "5434") throw new Error("Use the disposable local Studio instance on port 5434 for this suite.");
     const name = await db.execute<{ name: string }>(sql`select current_database() as name`);
     if (!/^jir107_seed_[a-f0-9]+$/.test(name.rows[0]!.name)) throw new Error("Use a fresh disposable jir107_seed_<hex> database for this suite.");
     expect(await db.select().from(backlogs).where(inArray(backlogs.key, ["DEMO", "DEMOX"]))).toHaveLength(0);
@@ -90,8 +90,8 @@ describeDb("Le point demo seed on a disposable database", () => {
   });
 
   it("checks opt-in before reset can delete any data", async () => {
-    vi.stubEnv("JIROO_ALLOW_DEMO_SEED", "0");
-    try { await expect(seedDemoLePoint({ reset: true })).rejects.toThrow(/JIROO_ALLOW_DEMO_SEED/); }
+    vi.stubEnv("STUDIO_ALLOW_DEMO_SEED", "0");
+    try { await expect(seedDemoLePoint({ reset: true })).rejects.toThrow(/STUDIO_ALLOW_DEMO_SEED/); }
     finally { vi.unstubAllEnvs(); }
     expect(await db.select().from(backlogs).where(eq(backlogs.id, seeded.backlogId))).toHaveLength(1);
   });

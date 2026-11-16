@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
 import { Pool, type PoolClient } from "pg";
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 const pool = new Pool({ connectionString: process.env.DIRECT_DATABASE_URL });
 let savepointSequence = 0;
 

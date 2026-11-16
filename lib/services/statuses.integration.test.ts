@@ -17,11 +17,11 @@ import { moveItem } from "@/lib/services/items";
 
 vi.mock("server-only", () => ({}));
 
-const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
+const describeDb = process.env.STUDIO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 const actorId = `status-workflow-actor-${randomUUID()}`;
 
 beforeAll(async () => {
-  if (process.env.JIROO_RUN_DB_TESTS !== "1") return;
+  if (process.env.STUDIO_RUN_DB_TESTS !== "1") return;
   await db.insert(user).values({
     id: actorId,
     name: "Acteur workflow",
@@ -32,7 +32,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (process.env.JIROO_RUN_DB_TESTS !== "1") return;
+  if (process.env.STUDIO_RUN_DB_TESTS !== "1") return;
   await db.delete(user).where(eq(user.id, actorId));
 });
 

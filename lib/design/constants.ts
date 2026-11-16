@@ -1,4 +1,4 @@
-// Énumérations et libellés FR du domaine Jiroo. Source de vérité pour l'UI.
+// Énumérations et libellés FR du domaine du Studio. Source de vérité pour l'UI.
 // Les couleurs réfèrent aux variables CSS définies dans app/globals.css.
 
 export const ITEM_TYPES = ["composant", "epic", "tache", "soustache"] as const;

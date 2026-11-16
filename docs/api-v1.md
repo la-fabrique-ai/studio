@@ -106,7 +106,7 @@ objet `Comment` que la liste du détail.
 ## Écritures
 
 Les corps JSON n’acceptent que les champs indiqués ; un champ inconnu est refusé.
-Les valeurs et règles de hiérarchie restent celles de Jiroo.
+Les valeurs et règles de hiérarchie restent celles du Studio.
 
 - Création : `{ backlogKey, type, title, description?, parentKey?, statusId?,
   priority?, assigneeId?, estimatePoints?, startDate?, dueDate?, labelIds?, kind?,
@@ -132,7 +132,7 @@ Le catalogue de labels comprend les labels du backlog et les labels globaux
 (`backlogId: null`). La création reçoit `{ name }` (1 à 50 caractères après
 retrait des espaces de début/fin). Un nom déjà présent, sans distinction de casse,
 renvoie le label existant, y compris global ; seuls de nouveaux labels locaux
-peuvent être créés. La couleur est choisie par Jiroo. Créer, affecter ou retirer
+peuvent être créés. La couleur est choisie par le Studio. Créer, affecter ou retirer
 un label exige `edit_items`. À la création d’un item, `labelIds` utilise
 `create_items` ; les UUID répétés sont ignorés. Un label inconnu ou appartenant
 à un autre backlog est refusé avec la même réponse 404.
@@ -156,13 +156,13 @@ La suppression exige l’identifiant d’une dépendance `blocks` de cet item ; 
 extrémités ; un refus ne les modifie pas.
 
 ```sh
-curl "$JIROO_ORIGIN/api/v1/backlogs/CASS/labels" -H "Authorization: Bearer $JIROO_TOKEN"
-curl "$JIROO_ORIGIN/api/v1/backlogs/CASS/labels" -X POST \
-  -H "Authorization: Bearer $JIROO_TOKEN" -H 'Content-Type: application/json' \
+curl "$STUDIO_ORIGIN/api/v1/backlogs/CASS/labels" -H "Authorization: Bearer $STUDIO_TOKEN"
+curl "$STUDIO_ORIGIN/api/v1/backlogs/CASS/labels" -X POST \
+  -H "Authorization: Bearer $STUDIO_TOKEN" -H 'Content-Type: application/json' \
   --data '{"name":"À vérifier"}'
 # Use the returned label id in labelIds or /items/CASS-12/labels/{labelId} (PUT/DELETE).
-curl "$JIROO_ORIGIN/api/v1/items/CASS-12/dependencies" -X POST \
-  -H "Authorization: Bearer $JIROO_TOKEN" -H 'Content-Type: application/json' \
+curl "$STUDIO_ORIGIN/api/v1/items/CASS-12/dependencies" -X POST \
+  -H "Authorization: Bearer $STUDIO_TOKEN" -H 'Content-Type: application/json' \
   --data '{"otherKey":"CASS-13","direction":"blocks"}'
 # List with GET; remove with DELETE /items/CASS-12/dependencies/{id}.
 ```
@@ -192,8 +192,8 @@ la même commande peut alors être retentée. Sans clé, chaque appel crée un i
 
 ```sh
 # Save this key and body before sending; reuse both after a timeout or lost response.
-curl "$JIROO_ORIGIN/api/v1/items" -X POST \
-  -H "Authorization: Bearer $JIROO_TOKEN" -H 'Content-Type: application/json' \
+curl "$STUDIO_ORIGIN/api/v1/items" -X POST \
+  -H "Authorization: Bearer $STUDIO_TOKEN" -H 'Content-Type: application/json' \
   -H 'Idempotency-Key: import-2026-11-16-composant-42' \
   --data '{"backlogKey":"CASS","type":"composant","title":"Suivi des imports"}'
 # If the response is lost, repeat exactly the same request.
@@ -240,24 +240,24 @@ ne bénéficient pas de cette protection de création.
 
 ## Exemples
 
-Définissez `JIROO_ORIGIN` et `JIROO_TOKEN` dans votre environnement sécurisé :
+Définissez `STUDIO_ORIGIN` et `STUDIO_TOKEN` dans votre environnement sécurisé :
 
 ```sh
-curl "$JIROO_ORIGIN/api/v1/me" -H "Authorization: Bearer $JIROO_TOKEN"
-curl --get "$JIROO_ORIGIN/api/v1/items" \
-  -H "Authorization: Bearer $JIROO_TOKEN" \
+curl "$STUDIO_ORIGIN/api/v1/me" -H "Authorization: Bearer $STUDIO_TOKEN"
+curl --get "$STUDIO_ORIGIN/api/v1/items" \
+  -H "Authorization: Bearer $STUDIO_TOKEN" \
   --data-urlencode 'backlog=CASS' --data-urlencode 'assignee=me' --data-urlencode 'limit=50'
-curl --get "$JIROO_ORIGIN/api/v1/items" \
-  -H "Authorization: Bearer $JIROO_TOKEN" \
+curl --get "$STUDIO_ORIGIN/api/v1/items" \
+  -H "Authorization: Bearer $STUDIO_TOKEN" \
   --data-urlencode 'backlog=CASS' --data-urlencode 'assignee=me' --data-urlencode 'cursor=CURSEUR_REÇU'
-curl "$JIROO_ORIGIN/api/v1/items" -X POST \
-  -H "Authorization: Bearer $JIROO_TOKEN" -H 'Content-Type: application/json' \
+curl "$STUDIO_ORIGIN/api/v1/items" -X POST \
+  -H "Authorization: Bearer $STUDIO_TOKEN" -H 'Content-Type: application/json' \
   --data '{"backlogKey":"CASS","type":"composant","title":"Nouveau composant"}'
-curl "$JIROO_ORIGIN/api/v1/items/CASS-12" -X PATCH \
-  -H "Authorization: Bearer $JIROO_TOKEN" -H 'Content-Type: application/json' \
+curl "$STUDIO_ORIGIN/api/v1/items/CASS-12" -X PATCH \
+  -H "Authorization: Bearer $STUDIO_TOKEN" -H 'Content-Type: application/json' \
   --data '{"statusId":"00000000-0000-4000-8000-000000000001"}'
-curl "$JIROO_ORIGIN/api/v1/items/CASS-12/comments" -X POST \
-  -H "Authorization: Bearer $JIROO_TOKEN" -H 'Content-Type: application/json' \
+curl "$STUDIO_ORIGIN/api/v1/items/CASS-12/comments" -X POST \
+  -H "Authorization: Bearer $STUDIO_TOKEN" -H 'Content-Type: application/json' \
   --data '{"body":"Vérification terminée."}'
 ```
 
