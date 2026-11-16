@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Pilotage du projet — obligatoire pour tous les agents
 
-**Codex : rôle limité à la revue.** Sur Jiroo, Codex relit les branches en
+**Codex : rôle limité à la revue.** Sur le Studio, Codex relit les branches en
 lecture seule à la demande de Claude (aucune modification, aucun commit, aucun
 push, aucune écriture dans Linear). Le pilotage Linear et les instructions de
 suivi sont tenus par Claude Code (voir « Rôles des agents » dans

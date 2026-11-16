@@ -4,7 +4,7 @@ Run from the ticket's repository root with **Node 24**, Corepack pnpm and Docker
 
 ```sh
 corepack pnpm install --frozen-lockfile
-node scripts/perf/run-team-profile.mjs /tmp/jiroo-team-measurement
+node scripts/perf/run-team-profile.mjs /tmp/studio-team-measurement
 ```
 
 The output directory must not exist. Omit the argument to allocate a fresh private
@@ -19,7 +19,7 @@ for every run, including after a failed attempt.
 
 The command refuses occupied ports (PostgreSQL **5434**, HTTP **3441** by default)
 and local `.env`/production environment files. It never connects to an existing
-database: it creates a randomly named `jiroo-team-load-<12 hex>` PostgreSQL 17
+database: it creates a randomly named `studio-team-load-<12 hex>` PostgreSQL 17
 container with a tmpfs data directory, bound only to `127.0.0.1:5434`, and a fresh
 `jir41_perf_<12 hex>` database. It ignores inherited database/auth URLs, proxies
 and Node preload options. It cannot target Neon or port 5433. It does not restart
@@ -36,7 +36,7 @@ only the credential-free result file is suitable for publication.
 On success, error, SIGINT or SIGTERM, the driver stops its processes and removes
 **only the container ID returned by its own Docker create**. It verifies that
 container is absent. A host crash or SIGKILL cannot run this cleanup: remove the
-specific `jiroo-team-load-*` container shown by `docker ps -a` after verifying
+specific `studio-team-load-*` container shown by `docker ps -a` after verifying
 ownership; never prune or remove other projects' containers.
 
 ## Protocol
