@@ -41,6 +41,7 @@ import {
   sprintOutcomeEnum,
   sprintRemovalReasonEnum,
   sprintStateEnum,
+  specNodeKindEnum,
   statusCategoryEnum,
 } from "./enums";
 import { ltree, tsvector } from "./types";
@@ -1292,3 +1293,66 @@ export const securityAuditEvents = pgTable("security_audit_events", {
   requestCorrelationId: text("request_correlation_id").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Spécifications: a per-backlog tree of folders and Markdown documents (the
+// BMAD brief, PRD and UX specs). Not items: they have no status, key or
+// hierarchy rule, so they live in their own table. `updated_at` doubles as
+// the optimistic-concurrency revision of the document editor.
+export const specNodes = pgTable(
+  "spec_nodes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    backlogId: uuid("backlog_id")
+      .notNull()
+      .references(() => backlogs.id, { onDelete: "cascade" }),
+    parentId: uuid("parent_id"),
+    kind: specNodeKindEnum("kind").notNull(),
+    title: text("title").notNull(),
+    content: text("content"),
+    rank: text("rank").notNull(),
+    createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+    updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("spec_nodes_backlog_id_idx").on(t.backlogId, t.id),
+    index("spec_nodes_backlog_parent_rank_idx").on(t.backlogId, t.parentId, t.rank),
+    // A parent is a node of the same backlog; deleting it removes its subtree.
+    foreignKey({
+      columns: [t.backlogId, t.parentId],
+      foreignColumns: [t.backlogId, t.id],
+      name: "spec_nodes_parent_same_backlog_fk",
+    }).onDelete("cascade"),
+    check("spec_nodes_not_own_parent", sql`${t.parentId} is null or ${t.parentId} <> ${t.id}`),
+    check("spec_nodes_folder_has_no_content", sql`${t.kind} = 'document' or ${t.content} is null`),
+    check("spec_nodes_title_length", sql`char_length(${t.title}) between 1 and 200`),
+  ],
+);
+
+// Journal of specification changes, like `activities` for items.
+export const specActivities = pgTable(
+  "spec_activities",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    nodeId: uuid("node_id")
+      .notNull()
+      .references(() => specNodes.id, { onDelete: "cascade" }),
+    backlogId: uuid("backlog_id")
+      .notNull()
+      .references(() => backlogs.id, { onDelete: "cascade" }),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => user.id),
+    action: activityActionEnum("action").notNull(),
+    field: text("field"),
+    oldValue: text("old_value"),
+    newValue: text("new_value"),
+    requestCorrelationId: text("request_correlation_id"),
+    at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+    source: activitySourceEnum("source").notNull().default("ui"),
+    tokenId: uuid("token_id").references(() => apiTokens.id, { onDelete: "set null" }),
+  },
+  (t) => [index("spec_activities_node_at_idx").on(t.nodeId, t.at)],
+);
