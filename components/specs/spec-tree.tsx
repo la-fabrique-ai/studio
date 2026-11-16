@@ -216,7 +216,7 @@ export function SpecTree({ backlogKey, backlogId, nodes, canEdit }: SpecTreeProp
           {canEdit ? "Aucun document. Créez un dossier ou un document." : "Aucun document."}
         </p>
       ) : canEdit ? (
-        <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+        <DndContext id={`spec-tree-${backlogId}`} sensors={sensors} onDragEnd={onDragEnd}>
           {rows}
           <RootDropZone />
         </DndContext>
