@@ -4,9 +4,9 @@ import type { StatusIdsByCategory } from "@/lib/services/statuses";
 import { countLabel, formatPoints } from "@/lib/format/plural";
 
 const SEGMENTS = [
-  { key: "todo", label: "À faire", color: "bg-slate-400" },
-  { key: "inProgress", label: "En cours", color: "bg-amber-500" },
-  { key: "done", label: "Terminés", color: "bg-emerald-600" },
+  { key: "todo", label: "À faire", color: "bg-[var(--status-todo)]" },
+  { key: "inProgress", label: "En cours", color: "bg-[var(--status-doing)]" },
+  { key: "done", label: "Terminés", color: "bg-[var(--status-done)]" },
 ] as const;
 
 export function ReleaseProgress({

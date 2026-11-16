@@ -227,7 +227,7 @@ export function ReleaseDetail({
           detailHref={path}
         />
         {incompleteCount > 0 ? (
-          <p role="alert" className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+          <p role="alert" className="rounded-lg border border-[var(--warning)]/40 bg-[var(--status-doing-bg)] p-3 text-sm">
             {release.released
               ? `Le périmètre actuel contient ${countLabel(incompleteCount, "élément non terminé", "éléments non terminés")}. L’instantané publié reste inchangé.`
               : `${countLabel(incompleteCount, "élément non terminé sera concerné", "éléments non terminés seront concernés")} au moment de la publication.`}

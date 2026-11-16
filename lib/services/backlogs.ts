@@ -24,10 +24,10 @@ import {
 
 // The 4 fixed statuses every backlog gets at creation.
 export const DEFAULT_STATUSES: { id: StatusId; name: string; color: string }[] = [
-  { id: "todo", name: "À faire", color: "#9aa0a6" },
-  { id: "doing", name: "En cours", color: "#d99a2b" },
-  { id: "review", name: "En revue", color: "#8b5cf6" },
-  { id: "done", name: "Terminé", color: "#3aa675" },
+  { id: "todo", name: "À faire", color: "#858ba0" },
+  { id: "doing", name: "En cours", color: "#c47a12" },
+  { id: "review", name: "En revue", color: "#7a57c9" },
+  { id: "done", name: "Terminé", color: "#2e7d46" },
 ];
 
 export function listBacklogsForUser(

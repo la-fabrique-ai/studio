@@ -39,7 +39,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:data-open:animate-none motion-reduce:data-closed:animate-none",
+        "fixed inset-0 isolate z-50 bg-[rgb(22_27_61/0.1)] dark:bg-black/30 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:data-open:animate-none motion-reduce:data-closed:animate-none",
         className
       )}
       {...props}
@@ -77,7 +77,7 @@ function DialogContent({
   const overlayClassName = {
     center: undefined,
     "sheet-right":
-      "bg-[oklch(0.2_0.01_50/0.32)] duration-[180ms] supports-backdrop-filter:backdrop-blur-none dark:bg-black/50",
+      "bg-[var(--overlay)] duration-[180ms] supports-backdrop-filter:backdrop-blur-none",
     "sheet-left": "duration-[180ms]",
   }[variant]
 
