@@ -257,3 +257,9 @@ describe("calendar days (JIR-101)", () => {
     expect(r.success).toBe(false);
   });
 });
+
+it("bounds label input to 100 entries before deduplication", async () => {
+  const { labelIdsSchema } = await import("./item");
+  expect(labelIdsSchema.parse(Array(100).fill(BID))).toEqual([BID]);
+  expect(labelIdsSchema.safeParse(Array(101).fill(BID)).success).toBe(false);
+});

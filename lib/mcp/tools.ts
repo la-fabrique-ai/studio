@@ -14,9 +14,13 @@ import { addCommentUseCase } from "@/lib/use-cases/comments";
 import { describeDomainError } from "@/lib/use-cases/errors";
 import { createItemUseCase, updateItemUseCase } from "@/lib/use-cases/items";
 import { addItemLabelUseCase, createLabelUseCase, listLabelsUseCase, removeItemLabelUseCase } from "@/lib/use-cases/labels";
+import { listDependenciesUseCase, addDependencyUseCase, removeDependencyUseCase } from "@/lib/use-cases/links";
 import type { ApiTokenScope } from "@/lib/validation/api-token";
 import {
   addCommentInput,
+  listDependenciesInput,
+  addDependencyInput,
+  removeDependencyInput,
   createItemInput,
   createLabelInput,
   getItemInput,
@@ -155,7 +159,7 @@ export const JIROO_TOOLS = [
   define({
     name: "get_item",
     title: "Get item",
-    description: "One item by key, with its description, children, labels, comments and activity history." + UNTRUSTED_CONTENT_NOTE,
+    description: "One item by key, with its description, children, labels, dependencies, comments and activity history." + UNTRUSTED_CONTENT_NOTE,
     inputSchema: getItemInput,
     scope: "read",
     async handler({ key }, actor) {
@@ -288,6 +292,40 @@ export const JIROO_TOOLS = [
     async handler({ key, labelId }, actor) {
       const { item } = await resolveItem(actor.actorId, key);
       return removeItemLabelUseCase(actor, { itemId: item.id, labelId });
+    },
+  }),
+  define({
+    name: "list_dependencies",
+    title: "List dependencies",
+    description: "Blocking dependencies of an item, with direction relative to that item and the other item's current status." + UNTRUSTED_CONTENT_NOTE,
+    inputSchema: listDependenciesInput,
+    scope: "read",
+    async handler({ key }, actor) {
+      const { item } = await resolveItem(actor.actorId, key);
+      return { dependencies: await listDependenciesUseCase(actor, item.id) };
+    },
+  }),
+  define({
+    name: "add_dependency",
+    title: "Add dependency",
+    description: "Add a blocking dependency. Direction is relative to key: blocks or blocked_by otherKey. Both items must be in one backlog. Cycles and duplicates are refused. Needs write scope and link_items on both items.",
+    inputSchema: addDependencyInput,
+    scope: "write",
+    async handler({ key, otherKey, direction }, actor) {
+      const { item } = await resolveItem(actor.actorId, key);
+      const { item: other } = await resolveItem(actor.actorId, otherKey);
+      return addDependencyUseCase(actor, { itemId: item.id, otherId: other.id, direction });
+    },
+  }),
+  define({
+    name: "remove_dependency",
+    title: "Remove dependency",
+    description: "Remove a blocking dependency by id, attached to key. Other link types and missing dependencies are refused. Needs write scope and link_items on both items.",
+    inputSchema: removeDependencyInput,
+    scope: "write",
+    async handler({ key, id }, actor) {
+      const { item } = await resolveItem(actor.actorId, key);
+      return removeDependencyUseCase(actor, { itemId: item.id, id });
     },
   }),
 ] as const satisfies readonly ToolDefinition[];

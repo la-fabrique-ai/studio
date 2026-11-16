@@ -29,11 +29,15 @@ describe("MCP auth info", () => {
   it("registers every tool with its schema and read-only annotation", () => {
     const registerTool = vi.fn();
     registerJirooTools({ registerTool } as never);
-    expect(registerTool).toHaveBeenCalledTimes(13);
+    expect(registerTool).toHaveBeenCalledTimes(16);
     const [name, config] = registerTool.mock.calls[0]!;
     expect(name).toBe("list_backlogs");
     expect(config).toMatchObject({ title: "List backlogs", annotations: { readOnlyHint: true, destructiveHint: false } });
     expect(registerTool.mock.calls.find(([n]) => n === "add_comment")![1]).toMatchObject({ annotations: { readOnlyHint: false } });
+    expect(registerTool.mock.calls.find(([n]) => n === "list_dependencies")![1]).toMatchObject({ annotations: { readOnlyHint: true } });
+    for (const name of ["add_dependency", "remove_dependency"]) {
+      expect(registerTool.mock.calls.find(([n]) => n === name)![1]).toMatchObject({ annotations: { readOnlyHint: false } });
+    }
   });
 
   it("answers an unauthenticated call with a refusal result", async () => {

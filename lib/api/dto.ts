@@ -112,12 +112,20 @@ export type ApiActivity = {
   id: string; actor: UserRef; action: string; field: string | null; oldValue: string | null; newValue: string | null;
   source: "ui" | "api" | "mcp" | "webhook"; at: string;
 };
+export type Dependency = {
+  id: string;
+  sourceKey: string;
+  targetKey: string;
+  direction: "blocks" | "blocked_by";
+  other: { id: string; key: string; title: string; status: { id: string; name: string; category: "todo" | "in_progress" | "done" } };
+};
 export type ItemDetail = ItemSummary & {
   description: string | null;
   reporter: UserRef | null;
   parent: { id: string; key: string; title: string } | null;
   children: { id: string; key: string; title: string; statusId: string }[];
   labels: { id: string; name: string; color: string }[];
+  dependencies: Dependency[];
   comments: ApiComment[];
   activities: ApiActivity[];
   url: string;

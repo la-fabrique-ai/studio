@@ -10,10 +10,13 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
   invalidateBacklog: vi.fn(),
   notifyUsers: vi.fn(),
+  publishBacklogChange: vi.fn(),
+  revalidateBacklogPages: vi.fn(),
 }));
 
+vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
-vi.mock("@/lib/realtime/publish", () => ({ invalidateBacklog: mocks.invalidateBacklog, notifyUsers: mocks.notifyUsers }));
+vi.mock("@/lib/realtime/publish", () => ({ invalidateBacklog: mocks.invalidateBacklog, notifyUsers: mocks.notifyUsers, publishBacklogChange: mocks.publishBacklogChange, revalidateBacklogPages: mocks.revalidateBacklogPages }));
 vi.mock("@/lib/auth/action-authorization", () => ({
   requireItemPermission: mocks.requireItemPermission,
   requireLinkPermission: mocks.requireLinkPermission,
@@ -45,17 +48,20 @@ describe("link action permissions", () => {
   it("requires link_items for both stored items before adding a link", async () => {
     await addLinkAction({
       backlogKey: "FORGED",
-      sourceId: "item-1",
-      targetId: "item-2",
+      sourceId: "11111111-1111-4111-8111-111111111111",
+      targetId: "22222222-2222-4222-8222-222222222222",
       type: "relates",
     });
 
     expect(mocks.requireItemPermission.mock.calls.map(([input]) => input)).toEqual([
-      { actorId: "writer-1", itemId: "item-1", permission: "link_items" },
-      { actorId: "writer-1", itemId: "item-2", permission: "link_items" },
+      { actorId: "writer-1", itemId: "11111111-1111-4111-8111-111111111111", permission: "link_items" },
+      { actorId: "writer-1", itemId: "22222222-2222-4222-8222-222222222222", permission: "browse_backlog" },
+      { actorId: "writer-1", itemId: "22222222-2222-4222-8222-222222222222", permission: "link_items" },
     ]);
-    expect(mocks.invalidateBacklog).toHaveBeenCalledWith("FORGED", { kind: "item", backlogId: "backlog-1", itemIds: ["item-1", "item-2"], actorId: "writer-1" });
+    expect(mocks.revalidateBacklogPages).toHaveBeenCalledWith("FORGED");
+    expect(mocks.publishBacklogChange).toHaveBeenCalledWith({ kind: "item", backlogId: "backlog-1", itemIds: ["11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222"], actorId: "writer-1" });
     expect(mocks.addLink).toHaveBeenCalled();
+    expect(mocks.publishBacklogChange.mock.invocationCallOrder[0]).toBeGreaterThan(mocks.addLink.mock.invocationCallOrder[0]!);
   });
 
   it("returns a structured link permission denial", async () => {
@@ -66,8 +72,8 @@ describe("link action permissions", () => {
     await expect(
       addLinkAction({
         backlogKey: "FORGED",
-        sourceId: "item-1",
-        targetId: "item-2",
+        sourceId: "11111111-1111-4111-8111-111111111111",
+        targetId: "22222222-2222-4222-8222-222222222222",
         type: "relates",
       }),
     ).resolves.toEqual({
@@ -89,4 +95,14 @@ describe("link action permissions", () => {
       mocks.removeLink.mock.invocationCallOrder[0]!,
     );
   });
+});
+
+it("surfaces a long-cycle refusal from the common service without invalidation", async () => {
+  mocks.getSession.mockResolvedValue({ user: { id: "writer-1" } });
+  mocks.requireItemPermission.mockResolvedValue({ backlogId: "backlog-1" });
+  mocks.addLink.mockRejectedValueOnce(new Error("Cycle : cette dépendance créerait un blocage circulaire."));
+  mocks.invalidateBacklog.mockClear();
+  const response = await addLinkAction({ backlogKey: "TEST", sourceId: "11111111-1111-4111-8111-111111111111", targetId: "22222222-2222-4222-8222-222222222222", type: "blocks" });
+  expect(response).toEqual({ ok: false, error: "Cycle : cette dépendance créerait un blocage circulaire." });
+  expect(mocks.invalidateBacklog).not.toHaveBeenCalled();
 });

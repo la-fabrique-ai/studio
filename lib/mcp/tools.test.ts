@@ -79,7 +79,7 @@ beforeEach(() => {
 });
 
 describe("the tool catalogue", () => {
-  it("exposes the item and label tools with their scopes", () => {
+  it("exposes the item, label and dependency tools with their scopes", () => {
     expect(JIROO_TOOLS.map((t) => [t.name, t.scope])).toEqual([
       ["list_backlogs", "read"],
       ["list_statuses", "read"],
@@ -94,6 +94,9 @@ describe("the tool catalogue", () => {
       ["create_label", "write"],
       ["add_item_label", "write"],
       ["remove_item_label", "write"],
+      ["list_dependencies", "read"],
+      ["add_dependency", "write"],
+      ["remove_dependency", "write"],
     ]);
   });
 });

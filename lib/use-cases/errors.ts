@@ -39,6 +39,9 @@ export const DOMAIN_ERROR_MESSAGES = [
   "Un ou plusieurs items sont introuvables.",
   "Une ou plusieurs releases sont invalides pour ce backlog.",
   "Une release archivée ne peut pas être ajoutée.",
+  // Links
+  "Ce lien existe déjà.",
+  "Cycle : cette dépendance créerait un blocage circulaire.",
   // Comments
   "Action réservée à l'auteur du commentaire.",
   "Commentaire introuvable.",

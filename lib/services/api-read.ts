@@ -9,6 +9,7 @@ import { apiTokens, itemLabels, items, labels, statuses } from "@/lib/db/schema/
 import { getBacklogSummary, listBacklogsForUser } from "@/lib/services/backlogs";
 import { listComments } from "@/lib/services/comments";
 import { getItemByIdForBacklog, getItemByKeyForBacklog, listActivities, listUsersByIds } from "@/lib/services/items";
+import { listDependenciesForItem } from "@/lib/services/links";
 import { listStatusesForBacklog } from "@/lib/services/statuses";
 
 export async function getApiMe(actorId: string, tokenId: string) {
@@ -55,19 +56,19 @@ export async function getApiItemSummary(actorId: string, key: string) {
 }
 export async function getApiItemDetail(actorId: string, key: string) {
   const item = await resolveApiItem(actorId, key);
-  const [summary, parent, children, itemLabelRows, commentRows, activityRows] = await Promise.all([
+  const [summary, parent, children, itemLabelRows, commentRows, activityRows, dependencies] = await Promise.all([
     summarizeItem(item), item.parentId ? getItemByIdForBacklog(item.parentId, item.backlogId) : null,
     db.select({ id: items.id, key: items.key, title: items.title, statusId: items.statusId }).from(items)
       .where(and(eq(items.parentId, item.id), eq(items.backlogId, item.backlogId), isNull(items.deletedAt))).orderBy(asc(items.createdAt), asc(items.id)),
     db.select({ id: labels.id, name: labels.name, color: labels.color }).from(itemLabels)
       .innerJoin(labels, eq(itemLabels.labelId, labels.id)).where(eq(itemLabels.itemId, item.id)).orderBy(asc(labels.name), asc(labels.id)),
-    listComments(item.id), listActivities(item.id),
+    listComments(item.id), listActivities(item.id), listDependenciesForItem(item.id),
   ]);
   const people = await listUsersByIds([item.reporterId, ...activityRows.map((row) => row.actorId)]);
   const names = new Map(people.map((person) => [person.id, person]));
   return toItemDetail(summary, {
     description: item.description, reporter: names.get(item.reporterId) ?? null,
-    parent: parent ? { id: parent.id, key: parent.key, title: parent.title } : null, children, labels: itemLabelRows,
+    parent: parent ? { id: parent.id, key: parent.key, title: parent.title } : null, children, labels: itemLabelRows, dependencies,
     comments: commentRows.map((row) => ({ id: row.id, author: { id: row.authorId, name: row.authorName }, body: row.body, createdAt: row.createdAt, editedAt: row.editedAt, deletedAt: row.deletedAt })),
     activities: activityRows.map((row) => ({ id: row.id, actor: names.get(row.actorId) ?? { id: row.actorId, name: row.actorId }, action: row.action, field: row.field, oldValue: row.oldValue, newValue: row.newValue, source: row.source, at: row.at })),
   });

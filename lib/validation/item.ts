@@ -46,7 +46,7 @@ function startsBeforeDue(d: { startDate?: string | null; dueDate?: string | null
   return d.startDate == null || d.dueDate == null || d.startDate <= d.dueDate;
 }
 const START_BEFORE_DUE = { message: "Le début doit précéder l’échéance.", path: ["startDate"] };
-export const labelIdsSchema = z.array(z.uuid().transform((id) => id.toLowerCase()))
+export const labelIdsSchema = z.array(z.uuid().transform((id) => id.toLowerCase())).max(100)
   .transform((ids) => [...new Set(ids)]);
 const labelIds = labelIdsSchema.default([]);
 const fixVersionIds = z

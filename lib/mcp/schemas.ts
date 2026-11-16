@@ -63,6 +63,15 @@ export const getItemInput = z.object({
   key: ITEM_KEY,
 });
 
+export const listDependenciesInput = getItemInput.strict();
+export const dependencyBodyInput = z.object({
+  otherKey: ITEM_KEY,
+  direction: z.enum(["blocks", "blocked_by"]),
+}).strict();
+export const addDependencyInput = z.object({ key: ITEM_KEY, ...dependencyBodyInput.shape }).strict()
+  .refine((input) => input.key !== input.otherKey, { message: "Un item ne peut pas être lié à lui-même.", path: ["otherKey"] });
+export const removeDependencyInput = z.object({ key: ITEM_KEY, id: uuid.transform((id) => id.toLowerCase()) }).strict();
+
 export const listMyItemsInput = z.object({
   limit: z.number().int().min(1).max(100).default(50),
   cursor: z.string().optional().describe("The nextCursor of a previous page."),

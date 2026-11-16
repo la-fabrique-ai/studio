@@ -72,7 +72,7 @@ describe("item detail DTO", () => {
   it("serializes the detail and blanks deleted comment bodies", async () => {
     const { toItemDetail } = await import("./dto");
     const result = toItemDetail({ key: "AB-1", backlog: { key: "AB" } } as import("./dto").ItemSummary, {
-      description: null, reporter: null, parent: null, children: [], labels: [],
+      description: null, reporter: null, parent: null, children: [], labels: [], dependencies: [],
       comments: [{ id: "c", author: { id: "u", name: "User" }, body: "deleted secret", createdAt: new Date("2026-01-01Z"), editedAt: null, deletedAt: new Date("2026-01-02Z") }],
       activities: [{ id: "a", actor: { id: "u", name: "User" }, action: "created", field: null, oldValue: null, newValue: null, source: "api", at: new Date("2026-01-01Z") }],
     });
