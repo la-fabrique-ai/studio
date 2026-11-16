@@ -48,15 +48,12 @@ test.afterEach(resetHomeFixtures);
 test("liste les backlogs, garde un favori en tête après rechargement et ouvre le backlog", async ({ page }, testInfo) => {
   await page.setViewportSize(DESKTOP);
   await page.goto("/b/CASS");
-  await page.getByRole("link", { name: "Tous les backlogs" }).click();
+  await page.getByRole("button", { name: /^Backlog CASS/ }).click();
+  await page.getByRole("menuitem", { name: "Tous les backlogs" }).click();
 
   // No more redirect: / is the backlogs list.
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { level: 1, name: "Backlogs" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Tous les backlogs" })).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
   await expect(rowNames(page)).toHaveText(["Cour de cassation", "Laboratoire isolé"]);
   const cass = page.locator('[data-backlog-row="CASS"]').filter({ visible: true });
   await expect(cass.getByText("CASS", { exact: true })).toBeVisible();

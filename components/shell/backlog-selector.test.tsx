@@ -105,7 +105,7 @@ describe("BacklogSelector URL authority", () => {
 
     await user.click(screen.getByRole("button", { name: /Backlog CASS/ }));
     const items = screen.getAllByRole("menuitem");
-    expect(items.map((item) => item.textContent)).toEqual(["DEMODémo", "CASSPôle civil"]);
+    expect(items.map((item) => item.textContent)).toEqual(["DEMODémo", "CASSPôle civil", "Tous les backlogs"]);
     expect(within(items[0]!).getByRole("img", { name: "Favori" })).toBeInTheDocument();
     expect(within(items[1]!).queryByRole("img", { name: "Favori" })).not.toBeInTheDocument();
   });

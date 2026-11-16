@@ -207,12 +207,13 @@ describe("Sidebar", () => {
   });
 
 
-  it("links every backlog's home, inactive off the home page (JIR-82)", () => {
+  it("reaches every backlog's home from the backlog selector, not a sidebar link (JIR-82)", async () => {
     renderSidebar();
 
-    const home = screen.getByRole("link", { name: "Tous les backlogs" });
-    expect(home).toHaveAttribute("href", "/");
-    expect(home).not.toHaveAttribute("aria-current");
+    expect(screen.queryByRole("link", { name: "Tous les backlogs" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /^Backlog CASS/ }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Tous les backlogs" }));
+    expect(mocks.push).toHaveBeenCalledWith("/");
   });
 
   it("shows filtered trash to every member without exposing administration", () => {

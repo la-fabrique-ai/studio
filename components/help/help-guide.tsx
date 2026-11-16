@@ -98,7 +98,7 @@ export function HelpGuide() {
           title="Retrouver ses backlogs"
           purpose="Voir d’un coup d’œil tous les backlogs auxquels vous avez accès et garder vos favoris à portée de main."
           steps={[
-            <>Ouvrez l’accueil avec <Ui>Tous les backlogs</Ui>, sous le sélecteur de backlog de la barre latérale.</>,
+            <>Ouvrez le sélecteur de backlog en haut de la barre latérale, puis choisissez <Ui>Tous les backlogs</Ui>.</>,
             <>Chaque ligne affiche le nom et la clé du backlog, le nombre d’items ouverts (statut hors catégorie Terminé), le sprint actif avec ses points terminés sur les points engagés au démarrage (ou <Ui>Aucun sprint actif</Ui>) et le responsable.</>,
             <>Cliquez sur une ligne pour ouvrir le backlog.</>,
             <>Cliquez sur l’étoile (infobulle <Ui>Ajouter aux favoris</Ui>) pour placer un backlog en tête de liste ; cliquez à nouveau (<Ui>Retirer des favoris</Ui>) pour l’enlever. Pour les lecteurs d’écran, le bouton s’appelle « Favori » suivi du nom du backlog et indique s’il est activé.</>,

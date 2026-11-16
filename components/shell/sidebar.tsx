@@ -10,7 +10,6 @@ import {
   ChartGantt,
   Compass,
   Folder,
-  FolderKanban,
   Layers,
   List,
   ListTree,
@@ -198,19 +197,6 @@ export function Sidebar({
         collapsed={collapsed}
         activeKey={context.activeBacklogKey}
       />
-      {/* Jira's « Projects » page: every backlog, favourites first (JIR-82). */}
-      <NavLink
-        href="/"
-        active={context.activeNav === "backlogs"}
-        ariaLabel={collapsed ? "Tous les backlogs" : undefined}
-        collapsed={collapsed}
-        title={collapsed ? "Tous les backlogs" : undefined}
-      >
-        <FolderKanban className="size-4" aria-hidden="true" />
-        <span className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}>
-          Tous les backlogs
-        </span>
-      </NavLink>
 
       {/* The BMAD specifications (brief, PRD, UX), above the tickets as in the design. */}
       {specsHref && (
