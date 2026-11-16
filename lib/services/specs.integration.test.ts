@@ -65,6 +65,17 @@ describeDb("specification tree service", () => {
     expect((await getSpecNode(backlogId, doc.id))?.content).toBe("");
   });
 
+  it("creates a document with its text in one call, but never a folder with text", async () => {
+    const created = await create(null, "document", "Note");
+    expect((await getSpecNode(backlogId, created.id))?.content).toBe("");
+    const filled = await createSpecNode({ backlogId, parentId: null, kind: "document", title: "Brief agent", content: "# Problème" }, actorId);
+    expect((await getSpecNode(backlogId, filled.id))?.content).toBe("# Problème");
+    await expect(createSpecNode({ backlogId, parentId: null, kind: "folder", title: "X", content: "y" }, actorId))
+      .rejects.toMatchObject({ code: "folder_content", message: "Un dossier n’a pas de contenu : créez un document." });
+    await trashSpecNode({ backlogId, id: created.id }, actorId);
+    await trashSpecNode({ backlogId, id: filled.id }, actorId);
+  });
+
   it("refuses a document as parent and a parent from another backlog", async () => {
     const doc = (await listSpecNodes(backlogId)).find((n) => n.title === "Contexte")!;
     await expect(create(doc.id, "document", "Enfant")).rejects.toMatchObject({ code: "parent_not_folder" });

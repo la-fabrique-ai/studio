@@ -17,12 +17,6 @@ import {
 type Target = { backlogKey: string; backlogId: string };
 type Failure = { ok: false; error: string };
 
-const RULE_MESSAGES: Record<string, string> = {
-  parent_not_found: "Le dossier de destination n’existe plus.",
-  parent_not_folder: "Un document ne peut pas contenir d’autres éléments.",
-  cycle: "Un dossier ne peut pas être déplacé dans lui-même.",
-};
-
 async function actor() {
   const session = await getSession();
   if (!session?.user.id) throw new Error("Forbidden");
@@ -34,7 +28,7 @@ const TITLE_INVALID = "Le titre doit contenir entre 1 et 200 caractères.";
 function failure(error: unknown, fallback: string, invalid: string = fallback): Failure {
   const authorization = mapActionAuthorizationError(error);
   if (authorization) return authorization;
-  if (error instanceof SpecRuleError) return { ok: false, error: RULE_MESSAGES[error.code] ?? fallback };
+  if (error instanceof SpecRuleError) return { ok: false, error: error.message };
   if (error instanceof ZodError) return { ok: false, error: invalid };
   return { ok: false, error: fallback };
 }

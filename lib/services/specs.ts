@@ -17,12 +17,22 @@ import { rankBetween, rankFirst, rankLast } from "@/lib/tree/rank";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-export type SpecRuleCode = SpecMoveError | "conflict";
+export type SpecRuleCode = SpecMoveError | "conflict" | "folder_content";
 
-/** A tree rule refused the change; the action maps the code to a French message. */
+/** The user-facing message of each refused change, shared by the UI, the API and MCP. */
+export const SPEC_RULE_MESSAGES: Record<SpecRuleCode, string> = {
+  parent_not_found: "Le dossier de destination n’existe plus.",
+  parent_not_folder: "Un document ne peut pas contenir d’autres éléments.",
+  cycle: "Un dossier ne peut pas être déplacé dans lui-même.",
+  conflict: "Ce document a été modifié entre-temps.",
+  folder_content: "Un dossier n’a pas de contenu : créez un document.",
+};
+
+/** A tree rule refused the change; its message is the French explanation. */
 export class SpecRuleError extends Error {
   constructor(readonly code: SpecRuleCode) {
-    super(`Specification change refused: ${code}`);
+    super(SPEC_RULE_MESSAGES[code]);
+    this.name = "SpecRuleError";
   }
 }
 
@@ -30,8 +40,12 @@ export class SpecRuleError extends Error {
 export class SpecConflictError extends SpecRuleError {
   constructor(readonly current: { content: string; revision: Date }) {
     super("conflict");
+    this.name = "SpecConflictError";
   }
 }
+
+/** The longest document body, in characters (the API reads up to 1 MB). */
+export const SPEC_CONTENT_MAX = 1_000_000;
 
 const title = z.string().trim().min(1).max(SPEC_TITLE_MAX);
 
@@ -40,6 +54,8 @@ const createInput = z.object({
   parentId: z.uuid().nullable(),
   kind: z.enum(["folder", "document"]),
   title,
+  // A document may be created with its text (an agent writes it in one call).
+  content: z.string().max(SPEC_CONTENT_MAX).optional(),
 }).strict();
 const renameInput = z.object({ backlogId: z.uuid(), id: z.uuid(), title }).strict();
 const moveInput = z.object({
@@ -52,7 +68,7 @@ const moveInput = z.object({
 const contentInput = z.object({
   backlogId: z.uuid(),
   id: z.uuid(),
-  content: z.string().max(1_000_000),
+  content: z.string().max(SPEC_CONTENT_MAX),
   revision: z.coerce.date(),
 }).strict();
 const nodeInput = z.object({ backlogId: z.uuid(), id: z.uuid() }).strict();
@@ -153,6 +169,7 @@ async function journal(tx: Tx, actorId: string, rows: Journal[]) {
 
 export async function createSpecNode(input: unknown, actorId: string) {
   const data = createInput.parse(input);
+  if (data.kind === "folder" && data.content !== undefined) throw new SpecRuleError("folder_content");
   return db.transaction(async (tx) => {
     const nodes = await lockTree(tx, data.backlogId);
     const live = nodes.filter((n) => n.deletedAt === null);
@@ -168,7 +185,7 @@ export async function createSpecNode(input: unknown, actorId: string) {
       parentId: data.parentId,
       kind: data.kind,
       title: data.title,
-      content: data.kind === "document" ? "" : null,
+      content: data.kind === "document" ? data.content ?? "" : null,
       rank: rankLast(lastRank),
       createdBy: actorId,
       updatedBy: actorId,
