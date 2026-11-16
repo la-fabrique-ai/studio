@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FilterBar } from "@/components/shell/filter-bar";
 import { Sidebar } from "@/components/shell/sidebar";
@@ -126,7 +127,7 @@ describe("Sidebar", () => {
     );
   });
 
-  it("lists the specifications first, then Le point marked as a pilot", () => {
+  it("lists Le point first among the project views, marked as a pilot", () => {
     renderSidebar();
 
     const nav = screen.getByRole("navigation", { name: "Vues du projet" });
@@ -134,9 +135,7 @@ describe("Sidebar", () => {
     expect(pilot).toHaveAttribute("href", "/b/CASS/le-point");
     expect(pilot).not.toHaveAttribute("aria-current");
     expect(within(pilot).getByText("pilote")).toBeVisible();
-    const links = within(nav).getAllByRole("link");
-    expect(links[0]).toHaveAttribute("href", "/b/CASS/specs");
-    expect(links[1]).toBe(pilot);
+    expect(within(nav).getAllByRole("link")[0]).toBe(pilot);
   });
 
   it("lists the active backlog's specification folders and marks the open one", () => {
@@ -157,11 +156,34 @@ describe("Sidebar", () => {
       </SidebarStateProvider>,
     );
 
-    const nav = screen.getByRole("navigation", { name: "Vues du projet" });
-    expect(within(nav).getByRole("link", { name: "Brief" })).toHaveAttribute("href", "/b/CASS/specs/folder-brief");
-    expect(within(nav).getByRole("link", { name: "PRD" })).toHaveAttribute("aria-current", "page");
-    expect(within(nav).getByRole("link", { name: "Spécifications" })).not.toHaveAttribute("aria-current");
-    expect(within(nav).queryByRole("link", { name: "Ailleurs" })).not.toBeInTheDocument();
+    const specs = screen.getByRole("region", { name: "Spécifications" });
+    expect(within(specs).getByRole("link", { name: "Brief" })).toHaveAttribute("href", "/b/CASS/specs/folder-brief");
+    expect(within(specs).getByRole("link", { name: "PRD" })).toHaveAttribute("aria-current", "page");
+    expect(within(specs).queryByRole("link", { name: "Ailleurs" })).not.toBeInTheDocument();
+  });
+
+  it("groups the sidebar in sections that fold away and remember it", async () => {
+    window.localStorage.clear();
+    const view = renderSidebar();
+    const tickets = screen.getByRole("region", { name: "Gestion des tickets" });
+    expect(within(tickets).getByRole("navigation", { name: "Vues du projet" })).toBeInTheDocument();
+    expect(within(tickets).getByRole("link", { name: /Mes items/ })).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "Pilotage" })).getByText("À venir")).toBeInTheDocument();
+    // No folders yet: the section still leads to the specifications.
+    expect(within(screen.getByRole("region", { name: "Spécifications" })).getByRole("link", { name: "Tous les documents" }))
+      .toHaveAttribute("href", "/b/CASS/specs");
+
+    const toggle = within(tickets).getByRole("button", { name: "Gestion des tickets" });
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("link", { name: /Mes items/ })).not.toBeInTheDocument();
+
+    view.unmount();
+    renderSidebar();
+    const again = within(screen.getByRole("region", { name: "Gestion des tickets" })).getByRole("button", { name: "Gestion des tickets" });
+    await waitFor(() => expect(again).toHaveAttribute("aria-expanded", "false"));
+    window.localStorage.clear();
   });
 
   it("keeps the project of the page on Le point (JIR-107)", () => {
@@ -237,7 +259,6 @@ describe("Sidebar", () => {
     const nav = screen.getByRole("navigation", { name: "Vues du projet" });
     const links = within(nav).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
-      "Spécifications",
       "Le pointpilote",
       "Backlog",
       "Board",
