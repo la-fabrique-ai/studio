@@ -4,6 +4,7 @@ import { listBacklogsWithStarsForUser } from "@/lib/services/backlogs";
 import { listVisibleViews } from "@/lib/services/views";
 import { unreadCount, listRecentNotifications } from "@/lib/services/notifications";
 import { getShellCounts } from "@/lib/services/shell";
+import { listRootSpecFolders } from "@/lib/services/specs";
 import { AppShell } from "@/components/shell/app-shell";
 import { DraftsSession } from "@/components/shell/drafts-session";
 import { Sidebar } from "@/components/shell/sidebar";
@@ -24,6 +25,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       checkPermission({ actorId: session.user.id, permission, scope: { type: "global" } }),
     )),
   ]);
+  // Only for backlogs the user can see: the list above is already filtered.
+  const specFolders = await listRootSpecFolders(backlogs.map((backlog) => backlog.id));
   const role = (session.user as { role?: string }).role ?? "viewer";
   return (
     // Around the whole shell: the topbar's bell listens too.
@@ -38,6 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             canAdminister={adminDecisions.some((decision) => decision.allowed)}
             adminHref={adminDecisions[0]?.allowed || adminDecisions[2]?.allowed ? "/admin" : "/admin?tab=users"}
             counts={counts}
+            specFolders={specFolders}
           />
         }
         topbar={

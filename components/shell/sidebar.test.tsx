@@ -126,7 +126,7 @@ describe("Sidebar", () => {
     );
   });
 
-  it("lists Le point first among the project views, marked as a pilot", () => {
+  it("lists the specifications first, then Le point marked as a pilot", () => {
     renderSidebar();
 
     const nav = screen.getByRole("navigation", { name: "Vues du projet" });
@@ -134,7 +134,34 @@ describe("Sidebar", () => {
     expect(pilot).toHaveAttribute("href", "/b/CASS/le-point");
     expect(pilot).not.toHaveAttribute("aria-current");
     expect(within(pilot).getByText("pilote")).toBeVisible();
-    expect(within(nav).getAllByRole("link")[0]).toBe(pilot);
+    const links = within(nav).getAllByRole("link");
+    expect(links[0]).toHaveAttribute("href", "/b/CASS/specs");
+    expect(links[1]).toBe(pilot);
+  });
+
+  it("lists the active backlog's specification folders and marks the open one", () => {
+    mocks.pathname = "/b/CASS/specs/folder-prd";
+    mocks.search = "";
+    render(
+      <SidebarStateProvider>
+        <ViewUrlStateProvider initialEntries={[]}>
+          <Sidebar
+            {...props}
+            specFolders={[
+              { id: "folder-brief", backlogId: props.backlogs[0]!.id, title: "Brief" },
+              { id: "folder-prd", backlogId: props.backlogs[0]!.id, title: "PRD" },
+              { id: "elsewhere", backlogId: "another-backlog", title: "Ailleurs" },
+            ]}
+          />
+        </ViewUrlStateProvider>
+      </SidebarStateProvider>,
+    );
+
+    const nav = screen.getByRole("navigation", { name: "Vues du projet" });
+    expect(within(nav).getByRole("link", { name: "Brief" })).toHaveAttribute("href", "/b/CASS/specs/folder-brief");
+    expect(within(nav).getByRole("link", { name: "PRD" })).toHaveAttribute("aria-current", "page");
+    expect(within(nav).getByRole("link", { name: "Spécifications" })).not.toHaveAttribute("aria-current");
+    expect(within(nav).queryByRole("link", { name: "Ailleurs" })).not.toBeInTheDocument();
   });
 
   it("keeps the project of the page on Le point (JIR-107)", () => {
@@ -210,6 +237,7 @@ describe("Sidebar", () => {
     const nav = screen.getByRole("navigation", { name: "Vues du projet" });
     const links = within(nav).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
+      "Spécifications",
       "Le pointpilote",
       "Backlog",
       "Board",

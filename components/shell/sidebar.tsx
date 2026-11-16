@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  BookText,
   CalendarDays,
   ChartColumn,
   ChartGantt,
   Compass,
+  Folder,
   FolderKanban,
   Layers,
   List,
@@ -39,6 +41,7 @@ import {
 } from "@/lib/items/shell";
 import { showAllBacklogItemsParams } from "@/lib/items/views";
 import type { ShellCounts } from "@/lib/services/shell";
+import type { SpecRootFolder } from "@/lib/services/specs";
 import { cn } from "@/lib/utils";
 
 type Backlog = { id: string; key: string; name: string; color: string; starred?: boolean };
@@ -71,6 +74,7 @@ export function Sidebar({
   canAdminister,
   adminHref = "/admin",
   counts,
+  specFolders = [],
 }: {
   backlogs: Backlog[];
   views: SidebarViewRow[];
@@ -79,6 +83,8 @@ export function Sidebar({
   canAdminister: boolean;
   adminHref?: string;
   counts: ShellCounts;
+  /** Root folders of the specification trees (Brief, PRD, UX by default). */
+  specFolders?: SpecRootFolder[];
 }) {
   const { collapsed: desktopCollapsed, mobile } = useSidebarState();
   const collapsed = mobile ? false : desktopCollapsed;
@@ -139,6 +145,12 @@ export function Sidebar({
       current = false;
     };
   }, [activeBacklogId, pathname, activeView]);
+  const specsHref = activeBacklog ? `/b/${encodeURIComponent(activeBacklog.key)}/specs` : null;
+  const onSpecs = specsHref !== null
+    && (pathname.toUpperCase() === specsHref.toUpperCase() || pathname.toUpperCase().startsWith(`${specsHref.toUpperCase()}/`));
+  const activeSpecFolders = activeBacklog
+    ? specFolders.filter((folder) => folder.backlogId === activeBacklog.id)
+    : [];
   const canOpenSettings =
     activeBacklogId !== undefined &&
     settingsAccess?.backlogId === activeBacklogId &&
@@ -201,6 +213,35 @@ export function Sidebar({
 
       {activeBacklog && (
         <nav aria-label="Vues du projet" className="mt-2 flex flex-col gap-0.5">
+          {/* The BMAD specifications (brief, PRD, UX), above the tickets as in the design. */}
+          {specsHref && (
+            <>
+              <NavLink
+                href={specsHref}
+                active={onSpecs && !activeSpecFolders.some((folder) => pathname.endsWith(`/specs/${folder.id}`))}
+                ariaLabel={collapsed ? "Spécifications" : undefined}
+                collapsed={collapsed}
+                title={collapsed ? "Spécifications" : undefined}
+              >
+                <BookText className="size-4" aria-hidden="true" />
+                <span className={collapsed ? "sr-only" : "min-w-0 flex-1 truncate"}>
+                  Spécifications
+                </span>
+              </NavLink>
+              {!collapsed && activeSpecFolders.map((folder) => (
+                <NavLink
+                  key={folder.id}
+                  href={`${specsHref}/${folder.id}`}
+                  active={pathname.endsWith(`/specs/${folder.id}`)}
+                  collapsed={false}
+                >
+                  <Folder className="ml-4 size-4" aria-hidden="true" />
+                  <span className="min-w-0 flex-1 truncate">{folder.title}</span>
+                </NavLink>
+              ))}
+              <div aria-hidden="true" className="my-1 border-t border-border" />
+            </>
+          )}
           {PROJECT_VIEWS.map((view) => {
             const Icon = PROJECT_VIEW_ICONS[view.id];
             const itemView = view.kind === "item";

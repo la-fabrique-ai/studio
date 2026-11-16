@@ -83,6 +83,22 @@ export async function listSpecNodes(backlogId: string): Promise<SpecListNode[]> 
     .orderBy(asc(specNodes.rank), asc(specNodes.id));
 }
 
+export type SpecRootFolder = { id: string; backlogId: string; title: string };
+
+/** Root folders of these backlogs, in tree order (the sidebar lists them). */
+export async function listRootSpecFolders(backlogIds: string[]): Promise<SpecRootFolder[]> {
+  if (backlogIds.length === 0) return [];
+  return db.select({ id: specNodes.id, backlogId: specNodes.backlogId, title: specNodes.title })
+    .from(specNodes)
+    .where(and(
+      inArray(specNodes.backlogId, backlogIds),
+      isNull(specNodes.parentId),
+      eq(specNodes.kind, "folder"),
+      isNull(specNodes.deletedAt),
+    ))
+    .orderBy(asc(specNodes.rank), asc(specNodes.id));
+}
+
 export type SpecDocument = SpecListNode & {
   content: string;
   updatedByName: string | null;
