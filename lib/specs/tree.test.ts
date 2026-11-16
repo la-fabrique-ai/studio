@@ -5,6 +5,8 @@ import {
   checkSpecMove,
   DEFAULT_SPEC_FOLDERS,
   descendantIds,
+  findSpecByPath,
+  flattenSpecTree,
   type SpecTreeNode,
 } from "./tree";
 
@@ -84,5 +86,43 @@ describe("checkSpecMove", () => {
 describe("DEFAULT_SPEC_FOLDERS", () => {
   it("are the BMAD folders, in order", () => {
     expect(DEFAULT_SPEC_FOLDERS).toEqual(["Brief", "PRD", "UX"]);
+  });
+});
+
+describe("flattenSpecTree and spec paths", () => {
+  it("lists nodes in tree order with their slash-separated path", () => {
+    expect(flattenSpecTree(nodes).map((n) => [n.id, n.path])).toEqual([
+      ["brief", "brief"],
+      ["context", "brief/context"],
+      ["research", "brief/research"],
+      ["interviews", "brief/research/interviews"],
+      ["prd", "prd"],
+    ]);
+  });
+});
+
+describe("findSpecByPath", () => {
+  const titled = [
+    node("b", null, "a0"), node("p", null, "a1"),
+    { ...node("s", "p", "a0"), title: "Stories" },
+    { ...node("d", "s", "a0", "document"), title: "Story 1" },
+  ].map((n) => (n.id === "b" ? { ...n, title: "Brief" } : n.id === "p" ? { ...n, title: "PRD" } : n));
+
+  it("follows titles from the root, ignoring case, spaces and slashes at the ends", () => {
+    expect(findSpecByPath(titled, "PRD/Stories/Story 1")).toEqual({ ok: true, id: "d" });
+    expect(findSpecByPath(titled, " /prd/ stories /")).toEqual({ ok: true, id: "s" });
+  });
+
+  it("says when nothing or several nodes match", () => {
+    expect(findSpecByPath(titled, "PRD/Nope")).toEqual({ ok: false, reason: "not_found" });
+    expect(findSpecByPath(titled, "")).toEqual({ ok: false, reason: "not_found" });
+    // Two titles match « story 1 » without any exact match: no guess.
+    const twins = [...titled, { ...node("d2", "s", "a1", "document"), title: "STORY 1" }];
+    expect(findSpecByPath(twins, "PRD/Stories/story 1")).toEqual({ ok: false, reason: "ambiguous" });
+  });
+
+  it("prefers an exact title over a case-insensitive one", () => {
+    const twins = [...titled, { ...node("d2", "s", "a1", "document"), title: "story 1" }];
+    expect(findSpecByPath(twins, "PRD/Stories/story 1")).toEqual({ ok: true, id: "d2" });
   });
 });
