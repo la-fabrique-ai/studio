@@ -15,6 +15,7 @@ import {
   permissionGrants,
   permissionSchemes,
   projectRoles,
+  specNodes,
   statuses,
 } from "@/lib/db/schema/domain";
 import {
@@ -128,6 +129,13 @@ describeDb("createBacklog authorization provisioning", () => {
         schemeKey: `backlog-${backlog.id}-permission-scheme`,
       });
       privateSchemeId = config!.schemeId;
+
+      const folders = await db
+        .select({ title: specNodes.title, kind: specNodes.kind, parentId: specNodes.parentId })
+        .from(specNodes)
+        .where(eq(specNodes.backlogId, backlog.id))
+        .orderBy(asc(specNodes.rank));
+      expect(folders).toEqual(["Brief", "PRD", "UX"].map((title) => ({ title, kind: "folder", parentId: null })));
 
       const occupancy = await db
         .select({ roleKey: projectRoles.key, userId: backlogRoleActors.userId })

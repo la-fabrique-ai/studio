@@ -9,6 +9,7 @@ import { nextItemKey } from "@/lib/items/key";
 import { buildPath, childDepth } from "@/lib/tree/path";
 import { rankLast } from "@/lib/tree/rank";
 import { seedAuthorizationDefaults } from "@/lib/services/authorization-seed";
+import { seedDefaultSpecFolders } from "@/lib/services/specs";
 
 const STATUS_SEED = [
   { id: "todo", name: "À faire", color: "#858ba0" },
@@ -74,6 +75,7 @@ async function main() {
         )
         .returning();
       const todo = insertedStatuses.find((s) => s.order === 0)!;
+      await seedDefaultSpecFolders(tx, backlog!.id);
 
       // Rank is a single global order per backlog, so the demo items get distinct, increasing
       // ranks chained in depth-first order (root → epic → tache).
