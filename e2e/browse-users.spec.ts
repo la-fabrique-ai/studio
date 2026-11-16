@@ -98,9 +98,9 @@ test.describe("browsing users by default and its removal", () => {
   test.beforeAll(async ({}, info) => {
     expect(info.config.workers, "This global-setting spec must run with one worker").toBe(1);
     const accounts = await db.select({ id: user.id, name: user.name, email: user.email }).from(user)
-      .where(inArray(user.email, ["platform-admin@jiroo.local", "member@jiroo.local"]));
-    admin = accounts.find((account) => account.email === "platform-admin@jiroo.local")!;
-    member = accounts.find((account) => account.email === "member@jiroo.local")!;
+      .where(inArray(user.email, ["platform-admin@studio.local", "member@studio.local"]));
+    admin = accounts.find((account) => account.email === "platform-admin@studio.local")!;
+    member = accounts.find((account) => account.email === "member@studio.local")!;
     const [backlog] = await db.select({ id: backlogs.id }).from(backlogs).where(eq(backlogs.key, "CASS"));
     const [role] = await db.select({ id: projectRoles.id }).from(projectRoles).where(eq(projectRoles.key, "members"));
     if (!admin || !member || !backlog || !role) throw new Error("Missing isolated assignment fixtures.");
@@ -166,7 +166,7 @@ test.describe("browsing users by default and its removal", () => {
     } finally { await restoreEveryone(); }
   });
 
-  test("distinguishes backlog administrators from Jiroo administrators", async ({ pair: { adminPage } }) => {
+  test("distinguishes backlog administrators from Studio administrators", async ({ pair: { adminPage } }) => {
     await navigate(adminPage, "/b/CASS/settings/access");
     await expect(adminPage.getByRole("region", { name: "Administrateur du backlog", exact: true })).toBeVisible();
     await adminPage.getByRole("button", { name: `Profil de ${admin.name}`, exact: true }).click();

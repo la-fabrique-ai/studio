@@ -43,12 +43,12 @@ import { generateTotp } from "../test-utils/totp";
 const PASSWORD = process.env.JIROO_PLAYWRIGHT_PASSWORD ?? "Audit-Local-2026!";
 
 const ACCOUNTS = [
-  { key: "admin", email: "platform-admin@jiroo.local", name: "Administrateur E2E", role: "admin" as const, path: ".playwright/.auth/platform-admin.json" },
-  { key: "member", email: "member@jiroo.local", name: "Membre E2E", role: "contributor" as const, path: ".playwright/.auth/member.json" },
-  { key: "specialist", email: "specialist@jiroo.local", name: "Spécialiste E2E", role: "contributor" as const, path: ".playwright/.auth/specialist.json" },
-  { key: "editor", email: "editor-releases@jiroo.local", name: "Éditeur Releases E2E", role: "contributor" as const, path: ".playwright/.auth/editor.json" },
-  { key: "reader", email: "reader@jiroo.local", name: "Lecteur E2E", role: "viewer" as const, path: ".playwright/.auth/reader.json" },
-  { key: "noAccess", email: "no-access@jiroo.local", name: "Sans accès E2E", role: "contributor" as const, path: ".playwright/.auth/no-access.json" },
+  { key: "admin", email: "platform-admin@studio.local", name: "Administrateur E2E", role: "admin" as const, path: ".playwright/.auth/platform-admin.json" },
+  { key: "member", email: "member@studio.local", name: "Membre E2E", role: "contributor" as const, path: ".playwright/.auth/member.json" },
+  { key: "specialist", email: "specialist@studio.local", name: "Spécialiste E2E", role: "contributor" as const, path: ".playwright/.auth/specialist.json" },
+  { key: "editor", email: "editor-releases@studio.local", name: "Éditeur Releases E2E", role: "contributor" as const, path: ".playwright/.auth/editor.json" },
+  { key: "reader", email: "reader@studio.local", name: "Lecteur E2E", role: "viewer" as const, path: ".playwright/.auth/reader.json" },
+  { key: "noAccess", email: "no-access@studio.local", name: "Sans accès E2E", role: "contributor" as const, path: ".playwright/.auth/no-access.json" },
 ] as const;
 
 type AccountKey = (typeof ACCOUNTS)[number]["key"];

@@ -143,7 +143,7 @@ export async function createItemTemplate(
   try {
     return await db.transaction(async (tx) => {
       // One creation at a time per backlog, so the limit holds under concurrency.
-      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`jiroo:item-templates:${data.backlogId}`}))`);
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`studio:item-templates:${data.backlogId}`}))`);
       const [stored] = await tx.select({ total: count() }).from(itemTemplates)
         .where(eq(itemTemplates.backlogId, data.backlogId));
       if ((stored?.total ?? 0) >= ITEM_TEMPLATES_PER_BACKLOG_MAX) throw new Error(TEMPLATE_LIMIT_MESSAGE);

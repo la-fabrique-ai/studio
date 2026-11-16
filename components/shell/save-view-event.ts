@@ -2,7 +2,7 @@
  * The sidebar's « + Enregistrer une vue » line asks the mounted view actions
  * (item views only) to open their « Enregistrer sous… » dialog.
  */
-export const OPEN_SAVE_VIEW_EVENT = "jiroo:open-save-view";
+export const OPEN_SAVE_VIEW_EVENT = "studio:open-save-view";
 
 /** A request made while the page was still loading waits this long. */
 const PENDING_TTL_MS = 10_000;

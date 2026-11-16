@@ -62,7 +62,7 @@ async function openFirstBacklogRow(page: Page) {
 /** A fresh task of the CASS backlog, so description edits stay isolated. */
 async function fixtureTask(title: string, description: string) {
   const [admin] = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   const [backlog] = await db.select({ id: backlogs.id }).from(backlogs)
     .where(eq(backlogs.key, "CASS"));
   if (!admin || !backlog) throw new Error("Fixtures E2E introuvables.");

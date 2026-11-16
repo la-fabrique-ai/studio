@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 /** JIR-70: Jira-style keyboard shortcuts, their « ? » dialog and the off switch. */
 test.use({ viewport: { width: 1440, height: 900 } });
 
-const SHORTCUTS_KEY = "jiroo-shortcuts-enabled";
+const SHORTCUTS_KEY = "studio-shortcuts-enabled";
 
 /** Keys must reach the page, not a focused field or control. */
 async function blurFocus(page: Page) {

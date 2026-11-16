@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ authenticate: vi.fn(), reserve: vi.fn() }));
 vi.mock("server-only", () => ({}));
-vi.mock("@/lib/api/authenticate", () => ({ authenticateBearer: mocks.authenticate, bearerChallenge: (reason: string) => reason === "missing" ? 'Bearer realm="jiroo"' : 'Bearer realm="jiroo", error="invalid_token"' }));
+vi.mock("@/lib/api/authenticate", () => ({ authenticateBearer: mocks.authenticate, bearerChallenge: (reason: string) => reason === "missing" ? 'Bearer realm="studio"' : 'Bearer realm="studio", error="invalid_token"' }));
 vi.mock("@/lib/api/rate-limit", () => ({ reserveApiRequest: mocks.reserve }));
 vi.mock("@/lib/services/api-tokens", () => ({ scopeAllows: (granted: string, required: string) => granted === "write" || required === "read" }));
 import { withApiAuth } from "./handler";

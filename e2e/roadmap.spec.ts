@@ -57,9 +57,9 @@ const test = base.extend<{ pair: { editor: Page; reader: Page } }>({
 
 async function fixture(scenario: string) {
   const [admin] = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   const accounts = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "reader@jiroo.local"));
+    .where(eq(user.email, "reader@studio.local"));
   const [backlog] = await db.select({ id: backlogs.id }).from(backlogs).where(eq(backlogs.key, "CASS"));
   if (!admin || !accounts[0] || !backlog) throw new Error("Missing isolated Roadmap fixtures.");
   expect(admin.id).not.toBe(accounts[0].id);
@@ -212,6 +212,6 @@ test.describe("planning on the Roadmap", () => {
     await expect(editor.getByRole("button", { name: "Trimestres", exact: true })).toHaveAttribute("aria-pressed", "true");
     await openRoadmap(editor, true);
     await expect(editor.getByRole("button", { name: "Trimestres", exact: true })).toHaveAttribute("aria-pressed", "true");
-    expect(await editor.evaluate(() => localStorage.getItem("jiroo.roadmap.zoom"))).toBe("quarters");
+    expect(await editor.evaluate(() => localStorage.getItem("studio.roadmap.zoom"))).toBe("quarters");
   });
 });

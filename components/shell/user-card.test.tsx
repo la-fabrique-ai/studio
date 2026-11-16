@@ -104,7 +104,7 @@ describe("UserCard", () => {
 
     await interaction.click(compact);
     expect(compact).toBeChecked();
-    expect(localStorage.getItem("jiroo-density")).toBe("compact");
+    expect(localStorage.getItem("studio-density")).toBe("compact");
   });
 
   it("keeps sign-out and login redirection intact", async () => {

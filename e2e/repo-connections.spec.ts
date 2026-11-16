@@ -10,7 +10,7 @@ import { createItem } from "../lib/services/items";
 // Développement settings, deliver signed webhooks, and read the references
 // in the item drawer's Développement panel.
 
-const ADMIN_EMAIL = "platform-admin@jiroo.local";
+const ADMIN_EMAIL = "platform-admin@studio.local";
 const RUN_ID = process.env.JIROO_E2E_RUN_ID ?? String(Date.now());
 /** Optional directory for the review screenshots (outside the repository). */
 const SCREENSHOT_DIR = process.env.JIROO_E2E_SCREENSHOT_DIR;
@@ -107,7 +107,7 @@ test.describe("connexion de dépôts GitHub / GitLab (JIR-95)", () => {
     const gitlabTask = await fixtureTask("JIR-95 GitLab");
     const key = githubTask.key;
     const branch = `feature/${key.toLowerCase()}-webhooks`;
-    const repository = { full_name: "e2e-org/jiroo-webhooks", html_url: "https://github.com/e2e-org/jiroo-webhooks" };
+    const repository = { full_name: "e2e-org/studio-webhooks", html_url: "https://github.com/e2e-org/studio-webhooks" };
 
     await page.goto("/b/CASS/settings/development");
     await expect(page.getByRole("heading", { level: 1, name: "Développement — Cour de cassation" })).toBeVisible();
@@ -115,8 +115,8 @@ test.describe("connexion de dépôts GitHub / GitLab (JIR-95)", () => {
     await expect(page.getByText(/Aucun dépôt connecté/)).toBeVisible();
     await screenshot(page, "settings-empty");
 
-    const github = await connectRepository(page, { provider: "GitHub", path: "https://github.com/E2E-Org/Jiroo-Webhooks.git" }, "secret-once");
-    const githubRow = page.getByRole("listitem", { name: "GitHub e2e-org/jiroo-webhooks" });
+    const github = await connectRepository(page, { provider: "GitHub", path: "https://github.com/E2E-Org/Studio-Webhooks.git" }, "secret-once");
+    const githubRow = page.getByRole("listitem", { name: "GitHub e2e-org/studio-webhooks" });
     await expect(githubRow).toContainText("En attente d’un premier événement");
     // The row keeps the full webhook URL to copy again; never the secret.
     await expect(githubRow).toContainText(github.url);
@@ -178,7 +178,7 @@ test.describe("connexion de dépôts GitHub / GitLab (JIR-95)", () => {
     await expect(panel.getByRole("group", { name: "Pull requests" }).getByText("Fusionnée")).toBeVisible();
     await expect(panel.getByRole("group", { name: "Branches" }).getByRole("link", { name: branch })).toHaveAttribute(
       "href",
-      `https://github.com/e2e-org/jiroo-webhooks/tree/${branch}`,
+      `https://github.com/e2e-org/studio-webhooks/tree/${branch}`,
     );
     const commits = panel.getByRole("group", { name: "Commits (1)" });
     await expect(commits.getByRole("link", { name: `1a2b3c4 ${key} add webhook support` })).toBeVisible();
@@ -253,7 +253,7 @@ test.describe("connexion de dépôts GitHub / GitLab (JIR-95)", () => {
     await screenshot(page, "settings-connections");
 
     // Clean up: deleting a connection keeps the references.
-    for (const name of ["GitHub e2e-org/jiroo-webhooks", "GitLab e2e/greffe/api"]) {
+    for (const name of ["GitHub e2e-org/studio-webhooks", "GitLab e2e/greffe/api"]) {
       await page.getByRole("listitem", { name }).getByRole("button", { name: "Supprimer" }).click();
       await page.getByRole("dialog", { name: "Supprimer la connexion ?" }).getByRole("button", { name: "Supprimer" }).click();
       await expect(page.getByRole("listitem", { name })).toHaveCount(0);

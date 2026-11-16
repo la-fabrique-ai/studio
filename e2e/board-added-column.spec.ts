@@ -35,7 +35,7 @@ function uniqueKey() {
 
 async function adminId() {
   const [admin] = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   if (!admin) throw new Error("Compte administrateur Playwright introuvable.");
   return admin.id;
 }

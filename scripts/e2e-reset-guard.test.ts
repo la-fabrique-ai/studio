@@ -119,7 +119,7 @@ describe("assertE2eResetAllowed", () => {
   it("conserve les paramètres TLS sans effet sur la destination", () => {
     expect(assertE2eResetAllowed({
       allowReset: "1",
-      databaseUrl: `${LOCAL_DATABASE_URL}?sslmode=require&application_name=jiroo-e2e`,
+      databaseUrl: `${LOCAL_DATABASE_URL}?sslmode=require&application_name=studio-e2e`,
     })).toEqual({
       databaseName: "jiroo_e2e",
       hostname: "localhost",

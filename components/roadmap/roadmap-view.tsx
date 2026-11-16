@@ -12,7 +12,7 @@ import {
 } from "react";
 import { ChartGantt, ChevronRight } from "lucide-react";
 import { TypeIcon } from "@/components/icons/type-icon";
-import { ItemKey } from "@/components/jiroo/item-key";
+import { ItemKey } from "@/components/studio/item-key";
 import { PageToolbar } from "@/components/shell/page-toolbar";
 import { useViewUrlState } from "@/components/shell/view-url-state";
 import { Button } from "@/components/ui/button";
@@ -61,7 +61,7 @@ const ZOOM_LABELS: Record<Zoom, string> = {
   months: "Mois",
   quarters: "Trimestres",
 };
-const ZOOM_STORAGE_KEY = "jiroo.roadmap.zoom";
+const ZOOM_STORAGE_KEY = "studio.roadmap.zoom";
 const DEFAULT_ZOOM: Zoom = "months";
 /** The fixed label column: narrower on a phone, so the calendar keeps room. */
 const LABEL_COLUMN = "[--roadmap-label:10.5rem] sm:[--roadmap-label:20rem]";

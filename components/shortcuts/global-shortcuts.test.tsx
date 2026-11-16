@@ -87,7 +87,7 @@ describe("GlobalShortcuts", () => {
 
   it("asks the search palette to open with /", () => {
     const listener = vi.fn();
-    window.addEventListener("jiroo:open-search", listener);
+    window.addEventListener("studio:open-search", listener);
     renderShortcuts();
 
     const notCancelled = fireEvent.keyDown(document.body, { key: "/", cancelable: true });
@@ -95,7 +95,7 @@ describe("GlobalShortcuts", () => {
     expect(listener).toHaveBeenCalledTimes(1);
     // Firefox would otherwise open its quick find bar.
     expect(notCancelled).toBe(false);
-    window.removeEventListener("jiroo:open-search", listener);
+    window.removeEventListener("studio:open-search", listener);
   });
 
   it("moves through the view's items with j / k and opens one with o", () => {

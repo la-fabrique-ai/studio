@@ -225,7 +225,7 @@ export type AdministeredApiTokenRow = ApiTokenRow & { ownerName: string; ownerEm
 const TOKEN_ADMINISTRATION = { permission: "administer_jiroo", scope: { type: "global" } } as const;
 
 async function requireTokenAdministrator(actorId: string): Promise<void> {
-  // Same gate as the account recoveries: only a Jiroo administrator (JIR-161).
+  // Same gate as the account recoveries: only a Studio administrator (JIR-161).
   await requirePermissionWithoutBypassAudit({ actorId, ...TOKEN_ADMINISTRATION });
 }
 

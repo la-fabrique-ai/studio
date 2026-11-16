@@ -15,7 +15,7 @@ const principal = { actorId: "user-1", tokenId: "token-1", scope: "read" as cons
 const secret = `jiroo_pat_${"a".repeat(43)}`;
 
 function request(authorization?: string) {
-  return new Request("https://jiroo.test/api/v1/backlogs", {
+  return new Request("https://studio.test/api/v1/backlogs", {
     headers: authorization === undefined ? {} : { authorization },
   });
 }
@@ -42,7 +42,7 @@ describe("authenticateBearer", () => {
     await expect(authenticateBearer(request(""))).resolves.toEqual({ ok: false, reason: "missing" });
     await expect(authenticateBearer(request("Basic dXNlcjpwYXNz"))).resolves.toEqual({ ok: false, reason: "invalid" });
     await expect(authenticateBearer(request("Bearer"))).resolves.toEqual({ ok: false, reason: "invalid" });
-    await expect(authenticateBearer(request("Bearer not-a-jiroo-token"))).resolves.toEqual({ ok: false, reason: "invalid" });
+    await expect(authenticateBearer(request("Bearer not-a-studio-token"))).resolves.toEqual({ ok: false, reason: "invalid" });
     expect(mocks.authenticateApiToken).not.toHaveBeenCalled();
   });
 
@@ -52,7 +52,7 @@ describe("authenticateBearer", () => {
   });
 
   it("builds the WWW-Authenticate challenge for each failure", () => {
-    expect(bearerChallenge("missing")).toBe('Bearer realm="jiroo"');
-    expect(bearerChallenge("invalid")).toBe('Bearer realm="jiroo", error="invalid_token"');
+    expect(bearerChallenge("missing")).toBe('Bearer realm="studio"');
+    expect(bearerChallenge("invalid")).toBe('Bearer realm="studio", error="invalid_token"');
   });
 });

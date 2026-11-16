@@ -828,9 +828,9 @@ export function HelpGuide() {
             Les adresses ci-dessous sont celles de l’instance de développement.
             Remplacez-les par l’adresse de votre instance si vous en utilisez une autre.
           </p>
-          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`claude mcp add --transport http jiroo https://jiroo-dev.vercel.app/api/mcp \\
+          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`claude mcp add --transport http studio https://jiroo-dev.vercel.app/api/mcp \\
   --header "Authorization: Bearer $JIROO_TOKEN"`}</code></pre>
-          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`[mcp_servers.jiroo]
+          <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`[mcp_servers.studio]
 url = "https://jiroo-dev.vercel.app/api/mcp"
 bearer_token_env_var = "JIROO_TOKEN"`}</code></pre>
           <p className="t-body">

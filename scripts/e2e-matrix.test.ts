@@ -128,7 +128,7 @@ describe("pure matrix planning", () => {
   });
 
   it("allows the real inventory guard to finalize all project manifests together", async () => {
-    temporaryDirectory = await mkdtemp(join(tmpdir(), "jiroo-matrix-"));
+    temporaryDirectory = await mkdtemp(join(tmpdir(), "studio-matrix-"));
     const root = temporaryDirectory;
     await mkdir(join(root, ".playwright/reports"), { recursive: true });
     const plan = planMatrixRuns([], START);

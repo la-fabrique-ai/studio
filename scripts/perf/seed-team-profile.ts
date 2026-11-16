@@ -36,7 +36,7 @@ export async function seedTeamProfile(): Promise<TeamProfile> {
   const { db, databasePool } = await import("@/lib/db");
   const lock = await databasePool.connect();
   try {
-    await lock.query("select pg_advisory_lock(hashtext('jiroo:team-profile-seed'))");
+    await lock.query("select pg_advisory_lock(hashtext('studio:team-profile-seed'))");
     const actual = await lock.query<{ name: string }>("select current_database() as name");
     if (actual.rows[0]?.name !== new URL(process.env.DATABASE_URL!).pathname.slice(1)) throw new TeamProfileSeedError("Unexpected database target.");
     const occupied = await db.select({ id: user.id }).from(user).limit(1);
@@ -46,10 +46,10 @@ export async function seedTeamProfile(): Promise<TeamProfile> {
       import("@/lib/services/items"), import("@/lib/services/bootstrap-admin"), import("@/lib/services/users"), import("@/lib/services/backlogs"),
       import("@/lib/services/authorization-admin"), import("@/lib/services/sprints"), import("@/lib/services/sprint-lifecycle"), import("@/lib/services/releases"),
     ]);
-    const admin = await bootstrapAdministrator({ email: "person00@perf.jiroo.local", name: "Performance administrator", password });
-    const people = [{ id: admin.userId, email: "person00@perf.jiroo.local" }];
+    const admin = await bootstrapAdministrator({ email: "person00@perf.studio.local", name: "Performance administrator", password });
+    const people = [{ id: admin.userId, email: "person00@perf.studio.local" }];
     for (let i = 1; i < 50; i++) {
-      const email = `person${String(i).padStart(2, "0")}@perf.jiroo.local`;
+      const email = `person${String(i).padStart(2, "0")}@perf.studio.local`;
       const person = await createUser({ name: `Performance member ${String(i).padStart(2, "0")}`, email, password });
       people.push({ id: person.id, email });
     }
@@ -155,7 +155,7 @@ export async function seedTeamProfile(): Promise<TeamProfile> {
     await lock.query("analyze");
     return result;
   } finally {
-    await lock.query("select pg_advisory_unlock(hashtext('jiroo:team-profile-seed'))").catch(() => {});
+    await lock.query("select pg_advisory_unlock(hashtext('studio:team-profile-seed'))").catch(() => {});
     lock.release();
   }
 }

@@ -2,10 +2,10 @@ import { createMcpHandler } from "mcp-handler";
 import { authenticateBearer, bearerChallenge } from "@/lib/api/authenticate";
 import { PayloadTooLargeError, readBoundedText } from "@/lib/api/http";
 import { reserveApiRequest } from "@/lib/api/rate-limit";
-import { authInfoFor, registerJirooTools, SERVER_INFO } from "@/lib/mcp/server";
+import { authInfoFor, registerStudioTools, SERVER_INFO } from "@/lib/mcp/server";
 
 /**
- * The Jiroo MCP server (JIR-158): Streamable HTTP, stateless, authenticated
+ * The Studio MCP server (JIR-158): Streamable HTTP, stateless, authenticated
  * by a personal access token in `Authorization: Bearer …`. There is no OAuth
  * server to discover, so the 401 challenge names none: the client is
  * configured with the header (docs/mcp.md). The verified principal travels
@@ -16,7 +16,7 @@ import { authInfoFor, registerJirooTools, SERVER_INFO } from "@/lib/mcp/server";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const mcp = createMcpHandler((server) => registerJirooTools(server), { serverInfo: SERVER_INFO });
+const mcp = createMcpHandler((server) => registerStudioTools(server), { serverInfo: SERVER_INFO });
 
 const BEARER = /^\s*bearer\s+(\S+)\s*$/i;
 

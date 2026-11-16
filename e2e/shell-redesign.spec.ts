@@ -148,11 +148,11 @@ test("capture le shell en clair, en sombre et sur téléphone", async ({ page },
   await expect(page.getByRole("heading", { level: 1, name: "Backlog", exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("jir74-desktop-light.png") });
 
-  await page.evaluate(() => localStorage.setItem("jiroo-theme", "dark"));
+  await page.evaluate(() => localStorage.setItem("studio-theme", "dark"));
   await page.reload();
   await expect(page.locator("html")).toHaveClass(/dark/);
   await page.screenshot({ path: testInfo.outputPath("jir74-desktop-dark.png") });
-  await page.evaluate(() => localStorage.removeItem("jiroo-theme"));
+  await page.evaluate(() => localStorage.removeItem("studio-theme"));
 
   await page.setViewportSize(PHONE);
   await page.reload();

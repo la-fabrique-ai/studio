@@ -85,7 +85,7 @@ describe("AdminPage read authorization", () => {
     expect(mocks.listPermissionSchemes).not.toHaveBeenCalled();
   });
 
-  it("shows every account's tokens to a Jiroo administrator only, without hashes", async () => {
+  it("shows every account's tokens to a Studio administrator only, without hashes", async () => {
     mocks.checkPermission.mockResolvedValue({ allowed: true });
     mocks.listAllLiveApiTokens.mockResolvedValue([{
       id: "token-1",
@@ -195,13 +195,13 @@ describe("AdminPage read authorization", () => {
   });
 
   it.each([
-    { administerJiroo: true, expected: true },
-    { administerJiroo: false, expected: false },
+    { administerStudio: true, expected: true },
+    { administerStudio: false, expected: false },
   ])(
-    "exposes account recovery on the users tab only to Jiroo administrators ($administerJiroo)",
-    async ({ administerJiroo, expected }) => {
+    "exposes account recovery on the users tab only to Studio administrators ($administerStudio)",
+    async ({ administerStudio, expected }) => {
       mocks.checkPermission.mockImplementation(async ({ permission }) => ({
-        allowed: permission === "administer_jiroo" ? administerJiroo : true,
+        allowed: permission === "administer_jiroo" ? administerStudio : true,
       }));
       mocks.listAdminUsers.mockResolvedValue([
         { id: "u1", name: "Ada", email: "ada@example.test", role: "contributor" },

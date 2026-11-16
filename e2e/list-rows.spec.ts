@@ -23,7 +23,7 @@ async function context() {
   const [admin] = await db
     .select({ id: user.id })
     .from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   const [backlog] = await db
     .select({ id: backlogs.id })
     .from(backlogs)

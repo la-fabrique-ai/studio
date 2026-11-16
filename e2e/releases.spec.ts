@@ -50,10 +50,10 @@ const AUTH = {
 } as const;
 
 const EMAIL = {
-  admin: "platform-admin@jiroo.local",
-  specialist: "specialist@jiroo.local",
-  editor: "editor-releases@jiroo.local",
-  reader: "reader@jiroo.local",
+  admin: "platform-admin@studio.local",
+  specialist: "specialist@studio.local",
+  editor: "editor-releases@studio.local",
+  reader: "reader@studio.local",
 } as const;
 
 type Capture = {

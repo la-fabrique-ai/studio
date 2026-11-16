@@ -22,7 +22,7 @@ let globalBefore: typeof permissionGrants.$inferSelect[];
 describeDb("Le point demo seed on a disposable database", () => {
   beforeAll(async () => {
     assertDemoSeedAllowed(process.env);
-    if (new URL(process.env.DATABASE_URL!).port !== "5434") throw new Error("Use the disposable local Jiroo instance on port 5434 for this suite.");
+    if (new URL(process.env.DATABASE_URL!).port !== "5434") throw new Error("Use the disposable local Studio instance on port 5434 for this suite.");
     const name = await db.execute<{ name: string }>(sql`select current_database() as name`);
     if (!/^jir107_seed_[a-f0-9]+$/.test(name.rows[0]!.name)) throw new Error("Use a fresh disposable jir107_seed_<hex> database for this suite.");
     expect(await db.select().from(backlogs).where(inArray(backlogs.key, ["DEMO", "DEMOX"]))).toHaveLength(0);

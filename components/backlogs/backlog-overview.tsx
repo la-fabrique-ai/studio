@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FolderKanban } from "lucide-react";
 import { BacklogStarButton } from "@/components/backlogs/backlog-star-button";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LABEL_HUES, type LabelHue } from "@/lib/design/constants";
 import { formatPoints, frenchPlural, pointsLabel } from "@/lib/format/plural";

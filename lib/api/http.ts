@@ -28,6 +28,8 @@ function headersFor(mediaType: string, supplied?: HeadersInit): Headers {
 export function jsonOk(data: unknown, status = 200, headers?: HeadersInit): Response {
   return new Response(JSON.stringify(data), { status, headers: headersFor("application/json", headers) });
 }
+// Problem type URIs are part of the public API v1 contract: they keep the
+// pre-rename "jiroo.dev" base so existing clients matching on `type` still work.
 export function problem(code: ProblemCode, options: { detail?: string; errors?: unknown; headers?: HeadersInit } = {}): Response {
   const [status, title] = problems[code];
   return new Response(JSON.stringify({ type: `https://jiroo.dev/problems/${code}`, title, status,

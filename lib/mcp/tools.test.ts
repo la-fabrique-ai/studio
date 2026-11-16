@@ -47,7 +47,7 @@ vi.mock("@/lib/use-cases/items", () => ({
 }));
 
 import { currentActivitySource } from "@/lib/auth/actor-context";
-import { JIROO_TOOLS, runTool, type ToolDefinition } from "@/lib/mcp/tools";
+import { STUDIO_TOOLS, runTool, type ToolDefinition } from "@/lib/mcp/tools";
 
 const reader = { actorId: "user-1", tokenId: "token-1", scope: "read" as const };
 const writer = { actorId: "user-1", tokenId: "token-2", scope: "write" as const };
@@ -56,7 +56,7 @@ const itemRow = { id: "item-1", key: "CASS-12", description: "Détails", backlog
 const summary = { id: "item-1", key: "CASS-12", title: "Rédiger" };
 
 function tool(name: string): ToolDefinition {
-  const found = JIROO_TOOLS.find((candidate) => candidate.name === name);
+  const found = STUDIO_TOOLS.find((candidate) => candidate.name === name);
   if (!found) throw new Error(`unknown tool ${name}`);
   return found as ToolDefinition;
 }
@@ -81,7 +81,7 @@ beforeEach(() => {
 
 describe("the tool catalogue", () => {
   it("exposes the item, label and dependency tools with their scopes", () => {
-    expect(JIROO_TOOLS.map((t) => [t.name, t.scope])).toEqual([
+    expect(STUDIO_TOOLS.map((t) => [t.name, t.scope])).toEqual([
       ["list_backlogs", "read"],
       ["list_statuses", "read"],
       ["search_items", "read"],

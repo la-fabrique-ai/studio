@@ -5,7 +5,7 @@ import type { Day } from "@/lib/le-point/model";
  * visits, kept on the device in a cookie, so the page needs no migration. The
  * cookie reads `previous.current`; either may be empty.
  */
-export const VISIT_COOKIE = "jiroo-le-point-visit";
+export const VISIT_COOKIE = "studio-le-point-visit";
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 

@@ -12,7 +12,7 @@ import { GET as list, POST as createLabel } from "@/app/api/v1/backlogs/[key]/la
 import { PUT as add, DELETE as remove } from "@/app/api/v1/items/[key]/labels/[labelId]/route";
 import { POST as createItem } from "@/app/api/v1/items/route";
 import { GET as detail } from "@/app/api/v1/items/[key]/route";
-import { JIROO_TOOLS, runTool } from "@/lib/mcp/tools";
+import { STUDIO_TOOLS, runTool } from "@/lib/mcp/tools";
 
 const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 describeDb("labels across REST and MCP with real permissions", () => {
@@ -22,7 +22,7 @@ describeDb("labels across REST and MCP with real permissions", () => {
   let global: typeof labels.$inferSelect; let foreignId: string; let localId: string;
   const request = (method = "GET", body?: unknown, bearer = token) => new Request("http://localhost/api/v1", { method, headers: { authorization: `Bearer ${bearer}` }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   const context = (key: string, labelId?: string) => ({ params: Promise.resolve({ key, labelId: labelId! }) });
-  const tool = (name: string, input: unknown, principal = writer) => runTool(JIROO_TOOLS.find((entry) => entry.name === name)!, input, principal);
+  const tool = (name: string, input: unknown, principal = writer) => runTool(STUDIO_TOOLS.find((entry) => entry.name === name)!, input, principal);
   beforeAll(async () => {
     fixture = await createReadVisibilityFixture("API labels");
     await db.update(user).set({ twoFactorEnabled: true }).where(inArray(user.id, [fixture.actorA, fixture.actorB]));

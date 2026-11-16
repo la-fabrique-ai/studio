@@ -3,8 +3,8 @@
  * Shortcuts): on by default, stored on this device like the theme and density.
  */
 
-export const SHORTCUTS_ENABLED_STORAGE_KEY = "jiroo-shortcuts-enabled";
-const CHANGE_EVENT = "jiroo:shortcuts-preference";
+export const SHORTCUTS_ENABLED_STORAGE_KEY = "studio-shortcuts-enabled";
+const CHANGE_EVENT = "studio:shortcuts-preference";
 
 /** Set only when storage refused a write, so the choice holds for this page. */
 let memoryOverride: boolean | null = null;

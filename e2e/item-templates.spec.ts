@@ -35,8 +35,8 @@ test("an administrator shares a template, a member applies it, and management re
   const output = (name: string) => testInfo.outputPath(name);
   const [backlog] = await db.select({ id: backlogs.id }).from(backlogs).where(eq(backlogs.key, "CASS"));
   if (!backlog) throw new Error("CASS fixture missing.");
-  const [administrator] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@jiroo.local"));
-  const [memberActor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "member@jiroo.local"));
+  const [administrator] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@studio.local"));
+  const [memberActor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "member@studio.local"));
   const [memberRole] = await db.select({ id: projectRoles.id }).from(projectRoles).where(eq(projectRoles.key, "members"));
   if (!administrator || !memberActor || !memberRole) throw new Error("Member role fixture missing.");
   // The shared fixture gives this account a specialised delivery role, not Member.
@@ -133,7 +133,7 @@ test("an administrator shares a template, a member applies it, and management re
       await createDialog.getByRole("button", { name: "Créer", exact: true }).click();
       await expect(createDialog).toBeHidden();
       const [created] = await db.select().from(items).where(and(eq(items.backlogId, backlog.id), eq(items.title, title)));
-      const [actor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "member@jiroo.local"));
+      const [actor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "member@studio.local"));
       expect(created).toMatchObject({ type: "tache", kind: "bug", priority: 3, reporterId: actor!.id });
       expect(created?.description).toContain(description);
       const [unchanged] = await db.select().from(itemTemplates).where(eq(itemTemplates.id, stored!.id));

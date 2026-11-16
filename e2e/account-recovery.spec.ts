@@ -37,7 +37,7 @@ function uniqueSuffix(): string {
 /** Creates a user and enrolls TOTP through Better Auth's HTTP API. */
 async function provisionEnrolledUser(baseURL: string, label: string): Promise<EnrolledUser> {
   const suffix = uniqueSuffix();
-  const email = `recovery-${label}-${suffix}@jiroo.local`;
+  const email = `recovery-${label}-${suffix}@studio.local`;
   const name = `Récupération ${label} ${suffix}`;
   const created = await createUser({ email, name, password: ORIGINAL_PASSWORD });
 

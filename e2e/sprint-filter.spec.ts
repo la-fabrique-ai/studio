@@ -25,7 +25,7 @@ const EPIC = "Filtre sprint — epic";
 
 async function seed() {
   const [actor] = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   const [backlog] = await db.select({ id: backlogs.id }).from(backlogs)
     .where(eq(backlogs.key, "LABS"));
   if (!actor || !backlog) throw new Error("Fixture LABS incomplète.");

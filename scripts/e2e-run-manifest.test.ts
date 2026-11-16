@@ -10,7 +10,7 @@ import {
 let workingDirectory: string;
 
 beforeEach(async () => {
-  workingDirectory = await mkdtemp(join(tmpdir(), "jiroo-e2e-manifest-"));
+  workingDirectory = await mkdtemp(join(tmpdir(), "studio-e2e-manifest-"));
 });
 
 afterEach(async () => {

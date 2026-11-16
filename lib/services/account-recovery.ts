@@ -12,7 +12,7 @@ import { securityAuditEvents } from "@/lib/db/schema/domain";
 import { revokeAllTokensForUser } from "@/lib/services/api-tokens";
 import { resetUserPasswordInput, resetUserTwoFactorInput } from "@/lib/items/users";
 
-// Administrator-driven account recovery (JIR-61). Jiroo sends no e-mail, so an
+// Administrator-driven account recovery (JIR-61). Studio sends no e-mail, so an
 // administrator sets a temporary password or clears the second factor; the
 // target's sessions are revoked and the change is written to the security
 // audit log in the same transaction. Secrets never reach the audit payload.

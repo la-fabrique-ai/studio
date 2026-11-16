@@ -10,7 +10,7 @@ import { createReadVisibilityFixture, deleteReadVisibilityFixture, type ReadVisi
 vi.mock("@/lib/realtime/publish", () => ({ publishBacklogChange: vi.fn(), notifyUsers: vi.fn() }));
 import { POST } from "@/app/api/v1/items/route";
 import { publishBacklogChange } from "@/lib/realtime/publish";
-import { JIROO_TOOLS, runTool } from "@/lib/mcp/tools";
+import { STUDIO_TOOLS, runTool } from "@/lib/mcp/tools";
 const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.skip;
 describeDb("durable item creation requests across REST and MCP", () => {
   let f: ReadVisibilityFixture;
@@ -21,7 +21,7 @@ describeDb("durable item creation requests across REST and MCP", () => {
   }));
   const mcp = (body: ReturnType<typeof command>, idempotencyKey?: string, principal = writer) => {
     const { backlogKey, ...fields } = body;
-    return runTool(JIROO_TOOLS.find((t) => t.name === "create_item")!, { ...fields, backlog: backlogKey, ...(idempotencyKey === undefined ? {} : { idempotencyKey }) }, principal);
+    return runTool(STUDIO_TOOLS.find((t) => t.name === "create_item")!, { ...fields, backlog: backlogKey, ...(idempotencyKey === undefined ? {} : { idempotencyKey }) }, principal);
   };
   const reservation = async (key: string) => (await db.select().from(itemCreationRequests).where(and(eq(itemCreationRequests.actorId, f.actorA), eq(itemCreationRequests.backlogId, f.backlogA.id), eq(itemCreationRequests.key, key))))[0];
   const assertSingle = async (key: string, itemId: string) => {

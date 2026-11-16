@@ -31,7 +31,7 @@ const base = {
   schemes: [{ id: "22222222-2222-4222-8222-222222222222", name: "Schéma DEMO", version: 4, usageCount: 1 }],
   canManageMembers: true,
   canAdministerBacklog: true,
-  canAdministerJiroo: true,
+  canAdministerStudio: true,
   canBrowseUsers: true,
 };
 
@@ -151,7 +151,7 @@ describe("AccessAdmin", () => {
   });
 
   it("ne montre pas le lien d’administration globale sans administer_jiroo", () => {
-    render(<AccessAdmin {...base} canAdministerJiroo={false} access={{ ...base.access, mode: "advanced" }} />);
+    render(<AccessAdmin {...base} canAdministerStudio={false} access={{ ...base.access, mode: "advanced" }} />);
     expect(screen.queryByRole("link", { name: "Ouvrir la matrice" })).not.toBeInTheDocument();
   });
 

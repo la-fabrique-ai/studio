@@ -10,7 +10,7 @@ import { createItem } from "../lib/services/items";
 // JIR-71: the description is a Notion-like page edited in place and saved
 // automatically, with a « / » block menu and a bar over the selection.
 
-const ADMIN_EMAIL = "platform-admin@jiroo.local";
+const ADMIN_EMAIL = "platform-admin@studio.local";
 /** Review screenshots (JIR-71): JIROO_E2E_SHOTS_DIR or the test output. */
 function shotPath(testInfo: TestInfo, name: string) {
   const dir = process.env.JIROO_E2E_SHOTS_DIR;

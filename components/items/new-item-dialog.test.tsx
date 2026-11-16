@@ -458,13 +458,13 @@ describe("NewItemButton", () => {
   });
 
   it("ignores C when single-key shortcuts are turned off", () => {
-    window.localStorage.setItem("jiroo-shortcuts-enabled", "false");
+    window.localStorage.setItem("studio-shortcuts-enabled", "false");
     try {
       renderWithShortcuts(<NewItemButton {...dialogProps()} enableShortcut />);
       fireEvent.keyDown(window, { key: "c" });
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     } finally {
-      window.localStorage.removeItem("jiroo-shortcuts-enabled");
+      window.localStorage.removeItem("studio-shortcuts-enabled");
     }
   });
 

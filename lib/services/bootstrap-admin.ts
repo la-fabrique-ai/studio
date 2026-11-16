@@ -16,10 +16,10 @@ export class BootstrapAdminError extends Error {}
 export type BootstrapAdminOutcome = "created" | "already-administrator";
 
 /** One bootstrap at a time across processes: the check and the creation hold it. */
-const BOOTSTRAP_LOCK = "jiroo:bootstrap-admin";
+const BOOTSTRAP_LOCK = "studio:bootstrap-admin";
 
 /**
- * The first Jiroo administrator of a new installation (JIR-115), without the
+ * The first Studio administrator of a new installation (JIR-115), without the
  * demonstration backlog of `db:seed`. It refuses to add a second one (the
  * administration screen does that) and never changes an existing account,
  * its password included. The account gets the authorization defaults;

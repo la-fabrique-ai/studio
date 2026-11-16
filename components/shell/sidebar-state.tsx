@@ -38,7 +38,7 @@ export function SidebarStateProvider({ children }: { children: React.ReactNode }
       const next = !current;
       document.documentElement.dataset.sidebar = next ? "collapsed" : "open";
       try {
-        localStorage.setItem("jiroo-sidebar-collapsed", String(next));
+        localStorage.setItem("studio-sidebar-collapsed", String(next));
       } catch {}
       return next;
     });

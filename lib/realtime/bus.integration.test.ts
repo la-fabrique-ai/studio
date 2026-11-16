@@ -13,7 +13,7 @@ const describeDb = process.env.JIROO_RUN_DB_TESTS === "1" ? describe : describe.
 describeDb("RealtimeBus against Postgres", () => {
   const backlogId = randomUUID();
   // Tags this suite's listeners so it never touches another process's.
-  const applicationName = `jiroo-realtime-test-${backlogId.slice(0, 8)}`;
+  const applicationName = `studio-realtime-test-${backlogId.slice(0, 8)}`;
   let pool: Pool;
   let unsubscribe: (() => void) | null = null;
 

@@ -274,12 +274,12 @@ export async function seedDemoDataset(): Promise<string> {
     const svc = await loadServices();
     const lock = await svc.database.databasePool.connect();
     try {
-      const locked = await lock.query<{ ok: boolean }>("select pg_try_advisory_lock(hashtext('jiroo:demo-seed')) as ok");
+      const locked = await lock.query<{ ok: boolean }>("select pg_try_advisory_lock(hashtext('studio:demo-seed')) as ok");
       if (!locked.rows[0]?.ok) throw new DemoSeedError("Another demo seed is running on this database.");
       try {
         return await run(svc);
       } finally {
-        await lock.query("select pg_advisory_unlock(hashtext('jiroo:demo-seed'))").catch(() => undefined);
+        await lock.query("select pg_advisory_unlock(hashtext('studio:demo-seed'))").catch(() => undefined);
       }
     } finally {
       lock.release();

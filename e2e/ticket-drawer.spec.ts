@@ -11,7 +11,7 @@ import { keyPattern } from "./key-helpers";
 // JIR-73: the item drawer laid out like Jira's work item view, and the
 // « Nouvel item » dialog styled as Jira's create screen.
 
-const ADMIN_EMAIL = "platform-admin@jiroo.local";
+const ADMIN_EMAIL = "platform-admin@studio.local";
 const RUN_ID = process.env.JIROO_E2E_RUN_ID ?? String(Date.now());
 /** Optional directory for the review screenshots (outside the repository). */
 const SCREENSHOT_DIR = process.env.JIROO_E2E_SCREENSHOT_DIR;

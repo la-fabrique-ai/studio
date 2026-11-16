@@ -11,7 +11,7 @@ import {
 let workingDirectory: string;
 
 beforeEach(async () => {
-  workingDirectory = await mkdtemp(join(tmpdir(), "jiroo-audit-artifacts-"));
+  workingDirectory = await mkdtemp(join(tmpdir(), "studio-audit-artifacts-"));
 });
 
 afterEach(async () => {

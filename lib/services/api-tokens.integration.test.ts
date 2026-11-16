@@ -207,7 +207,7 @@ describeDb("api tokens (JIR-156)", () => {
       .rejects.toMatchObject({ name: "ZodError" });
   });
 
-  it("refuses a user who manages users and groups but does not administer Jiroo", async () => {
+  it("refuses a user who manages users and groups but does not administer Studio", async () => {
     const manager = { id: `api-token-manager-${randomUUID()}`, email: `${randomUUID()}@tokens.test`, name: "Gestion des comptes" };
     await db.insert(user).values({ ...manager, emailVerified: true, twoFactorEnabled: true, role: "contributor" });
     await db.insert(permissionGrants).values({ scope: "global", permissionKey: "manage_users_groups", principalType: "user", userId: manager.id });
@@ -222,7 +222,7 @@ describeDb("api tokens (JIR-156)", () => {
     }
   });
 
-  it("lets only a Jiroo administrator list and revoke every account's tokens, with an audit event", async () => {
+  it("lets only a Studio administrator list and revoke every account's tokens, with an audit event", async () => {
     const admin = { id: `api-token-admin-${randomUUID()}`, email: `${randomUUID()}@tokens.test`, name: "Admin jetons" };
     await db.insert(user).values({ ...admin, emailVerified: true, twoFactorEnabled: true, role: "admin" });
     await db.insert(permissionGrants).values({ scope: "global", permissionKey: "administer_jiroo", principalType: "user", userId: admin.id });

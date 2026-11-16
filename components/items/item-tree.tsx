@@ -20,8 +20,8 @@ import {
 import { LOAD_MORE_SHORTCUT_EVENT, shortcutItems } from "@/lib/shortcuts/list-navigation";
 import { TypeIcon } from "@/components/icons/type-icon";
 import { PrioIcon } from "@/components/icons/prio-icon";
-import { ItemKey } from "@/components/jiroo/item-key";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { ItemKey } from "@/components/studio/item-key";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { LabelPill } from "@/components/items/label-pill";
 import {
   NewItemButton,

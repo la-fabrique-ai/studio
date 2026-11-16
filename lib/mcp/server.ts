@@ -1,16 +1,16 @@
 import "server-only";
 import type { AuthInfo, McpServer } from "@modelcontextprotocol/server";
-import { JIROO_TOOLS, runTool, type ToolResult } from "@/lib/mcp/tools";
+import { STUDIO_TOOLS, runTool, type ToolResult } from "@/lib/mcp/tools";
 import type { ApiPrincipal } from "@/lib/services/api-tokens";
 import type { ApiTokenScope } from "@/lib/validation/api-token";
 
 /**
- * Wires the Jiroo tools onto an MCP server (JIR-158). The principal comes
+ * Wires the Studio tools onto an MCP server (JIR-158). The principal comes
  * from the bearer token `withMcpAuth` verified for this request; without it
  * every tool answers a refusal (the route requires authentication anyway).
  */
 
-export const SERVER_INFO = { name: "jiroo", version: "1.0.0" } as const;
+export const SERVER_INFO = { name: "studio", version: "1.0.0" } as const;
 
 /** Builds the `AuthInfo` the MCP layer carries for a verified token. */
 export function authInfoFor(bearer: string, principal: ApiPrincipal, expiresAt: Date | null): AuthInfo {
@@ -40,8 +40,8 @@ const UNAUTHENTICATED: ToolResult = {
   isError: true,
 };
 
-export function registerJirooTools(server: McpServer): void {
-  for (const tool of JIROO_TOOLS) {
+export function registerStudioTools(server: McpServer): void {
+  for (const tool of STUDIO_TOOLS) {
     server.registerTool(
       tool.name,
       {

@@ -136,7 +136,7 @@ describe("UserAdmin account recovery", () => {
     );
   }
 
-  it("hides recovery actions from administrators without Jiroo administration", () => {
+  it("hides recovery actions from administrators without Studio administration", () => {
     renderRecovery(false);
 
     expect(screen.queryByRole("button", { name: /Actions de compte/ })).not.toBeInTheDocument();

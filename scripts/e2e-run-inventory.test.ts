@@ -16,7 +16,7 @@ const roots: string[] = [];
 const execFileAsync = promisify(execFile);
 
 async function directory() {
-  const root = await mkdtemp(join(tmpdir(), "jiroo-inventory-"));
+  const root = await mkdtemp(join(tmpdir(), "studio-inventory-"));
   roots.push(root);
   return root;
 }

@@ -29,7 +29,7 @@ export default async function AccessPage({ params }: { params: Promise<{ key: st
     if (error instanceof ResourceNotFoundError) notFound();
     throw error;
   }
-  const [memberDecision, administerDecision, jirooDecision, browseUsersDecision, createBacklogsDecision] = await Promise.all([
+  const [memberDecision, administerDecision, studioDecision, browseUsersDecision, createBacklogsDecision] = await Promise.all([
     checkPermission({ actorId: session.user.id, permission: "manage_members", scope: { type: "backlog", backlogId: resource.backlogId } }),
     checkPermission({ actorId: session.user.id, permission: "administer_backlog", scope: { type: "backlog", backlogId: resource.backlogId } }),
     checkPermission({ actorId: session.user.id, permission: "administer_jiroo", scope: { type: "global" } }),
@@ -49,5 +49,5 @@ export default async function AccessPage({ params }: { params: Promise<{ key: st
   const groups = rawGroups.map(({ id, name }) => ({ id, name }));
   const schemes = rawSchemes.map(({ id, name, version, usageCount }) => ({ id, name, version, usageCount }));
 
-  return <div className="mx-auto max-w-4xl space-y-6 p-8"><Suspense fallback={null}><BacklogTopbarCreate userId={session.user.id} backlogKey={resource.backlogKey} /></Suspense><div className="space-y-1"><ShellBreadcrumb canOpenAdmin={createBacklogsDecision.allowed} /><h1 className="t-h1">Accès — {access.backlog.name}</h1><p className="text-sm text-muted-foreground">Utilisateurs, groupes, rôles et schéma de permissions.</p></div><BacklogSettingsNav backlogKey={resource.backlogKey} current="access" canAdministerBacklog={administerDecision.allowed} /><AccessAdmin access={access} users={users} groups={groups} schemes={schemes} canManageMembers={memberDecision.allowed} canAdministerBacklog={administerDecision.allowed} canAdministerJiroo={jirooDecision.allowed} canBrowseUsers={browseUsersDecision.allowed} />{administerDecision.allowed && browseUsersDecision.allowed && <PermissionHelper users={users} backlogs={[access.backlog]} />}</div>;
+  return <div className="mx-auto max-w-4xl space-y-6 p-8"><Suspense fallback={null}><BacklogTopbarCreate userId={session.user.id} backlogKey={resource.backlogKey} /></Suspense><div className="space-y-1"><ShellBreadcrumb canOpenAdmin={createBacklogsDecision.allowed} /><h1 className="t-h1">Accès — {access.backlog.name}</h1><p className="text-sm text-muted-foreground">Utilisateurs, groupes, rôles et schéma de permissions.</p></div><BacklogSettingsNav backlogKey={resource.backlogKey} current="access" canAdministerBacklog={administerDecision.allowed} /><AccessAdmin access={access} users={users} groups={groups} schemes={schemes} canManageMembers={memberDecision.allowed} canAdministerBacklog={administerDecision.allowed} canAdministerStudio={studioDecision.allowed} canBrowseUsers={browseUsersDecision.allowed} />{administerDecision.allowed && browseUsersDecision.allowed && <PermissionHelper users={users} backlogs={[access.backlog]} />}</div>;
 }

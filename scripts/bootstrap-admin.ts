@@ -2,7 +2,7 @@ import "dotenv/config";
 import { BootstrapAdminError, bootstrapAdministrator } from "@/lib/services/bootstrap-admin";
 
 /**
- * Creates the first Jiroo administrator of an installation (JIR-115):
+ * Creates the first Studio administrator of an installation (JIR-115):
  *   JIROO_ADMIN_EMAIL=… JIROO_ADMIN_NAME=… JIROO_ADMIN_PASSWORD=… pnpm db:bootstrap-admin
  * Pass the variables for this run only; never keep them in the application's
  * environment. Nothing else is created: no demonstration backlog or item.

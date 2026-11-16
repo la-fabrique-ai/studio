@@ -7,7 +7,7 @@ import { afterEach, expect, it } from "vitest";
 
 const roots: string[] = [];
 function fixture() {
-  const root = mkdtempSync(join(tmpdir(), "jiroo-env-"));
+  const root = mkdtempSync(join(tmpdir(), "studio-env-"));
   roots.push(root);
   mkdirSync(join(root, "scripts"));
   copyFileSync("scripts/setup-local-env.mjs", join(root, "scripts/setup-local-env.mjs"));

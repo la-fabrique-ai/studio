@@ -40,7 +40,7 @@ test.afterAll(async () => {
 });
 
 async function seedBoard() {
-  const [actor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@jiroo.local"));
+  const [actor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@studio.local"));
   if (!actor) throw new Error("Missing isolated platform administrator.");
   const suffix = Array.from({ length: 3 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join("");
   const backlog = await createBacklog({ key: `DRP${suffix}`, name: "Matrice des dépôts E2E", color: "#7c3aed" }, actor.id);

@@ -197,6 +197,8 @@ export function hierarchyOrder(): SQL[] {
  * without case or accents, « Œuvre » = « oeuvre ») and with `numeric: true`
  * (« -9 » before « -10 »), both on ICU's root rules like JavaScript's.
  */
+// Collations created by migration 0026, before the rename to Le Studio: their
+// names are database objects and stay as they are.
 const TITLE_COLLATION = "jiroo_base";
 const KEY_COLLATION = "jiroo_numeric";
 

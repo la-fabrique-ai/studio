@@ -58,9 +58,9 @@ const test = base.extend<{ pair: { author: Page; viewer: Page } }>({
 
 async function fixtureTask(scenario: string) {
   const [admin] = await db.select({ id: user.id }).from(user)
-    .where(eq(user.email, "platform-admin@jiroo.local"));
+    .where(eq(user.email, "platform-admin@studio.local"));
   const [reader] = await db.select({ id: user.id, name: user.name }).from(user)
-    .where(eq(user.email, "reader@jiroo.local"));
+    .where(eq(user.email, "reader@studio.local"));
   const [backlog] = await db.select({ id: backlogs.id }).from(backlogs)
     .where(eq(backlogs.key, "CASS"));
   if (!admin || !reader || !backlog) throw new Error("Missing realtime E2E accounts or backlog.");

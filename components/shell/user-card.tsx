@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CircleUserRound, KeyRound, LogOut, Plug, SlidersHorizontal } from "lucide-react";
-import { InitialsAvatar } from "@/components/jiroo/avatar";
+import { InitialsAvatar } from "@/components/studio/avatar";
 import { ChangePasswordDialog } from "@/components/shell/change-password-dialog";
 import { UserPreferencesDialog } from "@/components/shell/user-preferences-dialog";
 import { UserProfileDialog } from "@/components/shell/user-profile-dialog";

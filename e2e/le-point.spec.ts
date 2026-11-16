@@ -29,7 +29,7 @@ type Capture = { console: string[]; network: string[]; errors: string[] };
 type ObservedWrite = { actionId?: string; permissionArguments: boolean; method: string; path: string };
 
 async function seedProject() {
-  const [actor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@jiroo.local"));
+  const [actor] = await db.select({ id: user.id }).from(user).where(eq(user.email, "platform-admin@studio.local"));
   if (!actor) throw new Error("Missing isolated platform administrator.");
   const suffix = [...randomBytes(3)].map((value) => String.fromCharCode(65 + value % 26)).join("");
   const key = `LPT${suffix}`;

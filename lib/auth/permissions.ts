@@ -21,6 +21,8 @@ const backlogPermissionDefinition = (key: string, label: string) => ({
 });
 
 export const GLOBAL_PERMISSION_DEFINITIONS = {
+  // "administer_jiroo" predates the rename to Le Studio: the key is stored in
+  // permission_grants rows, so renaming it needs a data migration first.
   administer_jiroo: globalPermissionDefinition("administer_jiroo", "Administrer le Studio"),
   manage_users_groups: globalPermissionDefinition(
     "manage_users_groups",
