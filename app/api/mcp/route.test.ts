@@ -89,7 +89,7 @@ describe("POST /api/mcp", () => {
     expect(batch.status).toBe(400);
     expect(mocks.listBacklogsForUser).not.toHaveBeenCalled();
 
-    const huge = await POST(rpc({ jsonrpc: "2.0", id: 1, method: "tools/list", params: { pad: "x".repeat(70 * 1024) } }, "Bearer jiroo_pat_valid"));
+    const huge = await POST(rpc({ jsonrpc: "2.0", id: 1, method: "tools/list", params: { pad: "x".repeat(1100 * 1024) } }, "Bearer jiroo_pat_valid")); // above the 1 MB cap (documents)
     expect(huge.status).toBe(413);
     expect(mocks.reserveApiRequest).toHaveBeenCalledTimes(2);
 

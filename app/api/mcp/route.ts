@@ -1,6 +1,6 @@
 import { createMcpHandler } from "mcp-handler";
 import { authenticateBearer, bearerChallenge } from "@/lib/api/authenticate";
-import { PayloadTooLargeError, readBoundedText } from "@/lib/api/http";
+import { MAX_SPEC_JSON_BODY_BYTES, PayloadTooLargeError, readBoundedText } from "@/lib/api/http";
 import { reserveApiRequest } from "@/lib/api/rate-limit";
 import { authInfoFor, registerStudioTools, SERVER_INFO } from "@/lib/mcp/server";
 
@@ -54,7 +54,8 @@ async function handler(request: Request): Promise<Response> {
   if (request.method === "POST") {
     let text: string;
     try {
-      text = await readBoundedText(request);
+      // Up to 1 MB: create_spec and update_spec carry whole documents.
+      text = await readBoundedText(request, MAX_SPEC_JSON_BODY_BYTES);
     } catch (error) {
       if (error instanceof PayloadTooLargeError) return jsonRpcError(413, "Le corps de la requête est trop volumineux.");
       throw error;
