@@ -12,6 +12,7 @@ import {
   restoreSpecNode,
   trashSpecNode,
   updateSpecContent,
+  updateSpecNode,
 } from "@/lib/services/specs";
 
 // Specifications reuse the item permissions: whoever browses the backlog
@@ -75,7 +76,7 @@ export function renameSpecNodeUseCase(actor: Actor, input: { id: string; title: 
   return writeNode(actor, input.id, (backlogId) => renameSpecNode({ ...input, backlogId }, actor.actorId));
 }
 
-export function moveSpecNodeUseCase(actor: Actor, input: { id: string; parentId: string | null; afterId: string | null }) {
+export function moveSpecNodeUseCase(actor: Actor, input: { id: string; parentId: string | null; afterId?: string | null }) {
   return writeNode(actor, input.id, (backlogId) => moveSpecNode({ ...input, backlogId }, actor.actorId));
 }
 
@@ -87,6 +88,11 @@ export function updateSpecContentUseCase(actor: Actor, input: { id: string; cont
   return writeNode(actor, input.id, (backlogId) => updateSpecContent({ ...input, backlogId }, actor.actorId), {
     publishFromUi: false,
   });
+}
+
+/** Title and/or text at once, for the API and MCP (one transaction). */
+export function updateSpecNodeUseCase(actor: Actor, input: { id: string; title?: string; content?: string; revision?: string }) {
+  return writeNode(actor, input.id, (backlogId) => updateSpecNode({ ...input, backlogId }, actor.actorId));
 }
 
 export function trashSpecNodeUseCase(actor: Actor, input: { id: string }) {

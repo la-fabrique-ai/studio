@@ -45,8 +45,17 @@ export class SpecConflictError extends SpecRuleError {
   }
 }
 
-/** The longest document body, in characters (the API reads up to 1 MB). */
-export const SPEC_CONTENT_MAX = 1_000_000;
+/**
+ * The longest document body, in UTF-8 bytes: it must fit, with its JSON
+ * escaping, in a 1 MB API body and in a Server Action (1 MB by default).
+ */
+export const SPEC_CONTENT_MAX_BYTES = 800_000;
+
+/** A document's Markdown text, bounded in bytes (accents count double). */
+export const specContentSchema = z.string().refine(
+  (text) => Buffer.byteLength(text, "utf8") <= SPEC_CONTENT_MAX_BYTES,
+  { message: "Le document dépasse 800 Ko : découpez-le en plusieurs documents." },
+);
 
 const title = z.string().trim().min(1).max(SPEC_TITLE_MAX);
 
@@ -56,21 +65,28 @@ const createInput = z.object({
   kind: z.enum(["folder", "document"]),
   title,
   // A document may be created with its text (an agent writes it in one call).
-  content: z.string().max(SPEC_CONTENT_MAX).optional(),
+  content: specContentSchema.optional(),
 }).strict();
 const renameInput = z.object({ backlogId: z.uuid(), id: z.uuid(), title }).strict();
 const moveInput = z.object({
   backlogId: z.uuid(),
   id: z.uuid(),
   parentId: z.uuid().nullable(),
-  // The sibling the node goes right after; null puts it first.
-  afterId: z.uuid().nullable(),
+  // The sibling the node goes right after; null puts it first, absent last.
+  afterId: z.uuid().nullable().optional(),
 }).strict();
 const contentInput = z.object({
   backlogId: z.uuid(),
   id: z.uuid(),
-  content: z.string().max(SPEC_CONTENT_MAX),
+  content: specContentSchema,
   revision: z.coerce.date(),
+}).strict();
+const nodeUpdateInput = z.object({
+  backlogId: z.uuid(),
+  id: z.uuid(),
+  title: title.optional(),
+  content: specContentSchema.optional(),
+  revision: z.coerce.date().optional(),
 }).strict();
 const nodeInput = z.object({ backlogId: z.uuid(), id: z.uuid() }).strict();
 
@@ -222,26 +238,30 @@ export async function moveSpecNode(input: unknown, actorId: string) {
     const live = nodes.filter((n) => n.deletedAt === null);
     const node = liveNode(nodes, data.id);
     assertParent(live, data.id, data.parentId);
-    if (data.afterId !== null) {
-      const after = live.find((n) => n.id === data.afterId);
-      if (!after || after.parentId !== data.parentId || after.id === data.id) {
-        throw new ResourceNotFoundError("spec_node", data.afterId);
-      }
-    }
     // Trashed siblings keep their place too, as in createSpecNode, so a
     // restore never lands on the rank given to a moved node.
     const order = (a: { rank: string; id: string }, b: { rank: string; id: string }) =>
       a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : a.id < b.id ? -1 : 1;
     const liveSiblings = live.filter((n) => n.parentId === data.parentId).sort(order);
+    // No afterId: last, as a new node goes.
+    const afterId = data.afterId === undefined
+      ? liveSiblings.filter((n) => n.id !== data.id).at(-1)?.id ?? null
+      : data.afterId;
+    if (afterId !== null) {
+      const after = live.find((n) => n.id === afterId);
+      if (!after || after.parentId !== data.parentId || after.id === data.id) {
+        throw new ResourceNotFoundError("spec_node", afterId);
+      }
+    }
     if (node.parentId === data.parentId) {
       const position = liveSiblings.findIndex((n) => n.id === data.id);
       const before = position > 0 ? liveSiblings[position - 1]!.id : null;
-      if (before === data.afterId) return { changed: false };
+      if (before === afterId) return { changed: false };
     }
     const siblings = nodes
       .filter((n) => n.parentId === data.parentId && n.id !== data.id)
       .sort(order);
-    const index = data.afterId === null ? -1 : siblings.findIndex((n) => n.id === data.afterId);
+    const index = afterId === null ? -1 : siblings.findIndex((n) => n.id === afterId);
     const prev = index >= 0 ? siblings[index]!.rank : null;
     const next = siblings[index + 1]?.rank ?? null;
     const rank = prev === null
@@ -269,7 +289,8 @@ export async function updateSpecContent(input: unknown, actorId: string) {
       .from(specNodes)
       .where(and(eq(specNodes.backlogId, data.backlogId), eq(specNodes.id, data.id), isNull(specNodes.deletedAt)))
       .for("update");
-    if (!current || current.kind !== "document") throw new ResourceNotFoundError("spec_node", data.id);
+    if (!current) throw new ResourceNotFoundError("spec_node", data.id);
+    if (current.kind !== "document") throw new SpecRuleError("folder_content");
     if (current.updatedAt.getTime() !== data.revision.getTime()) {
       throw new SpecConflictError({ content: current.content ?? "", revision: current.updatedAt });
     }
@@ -281,6 +302,43 @@ export async function updateSpecContent(input: unknown, actorId: string) {
     // The body can be large: the journal records that it changed, not its text.
     await journal(tx, actorId, [{ nodeId: data.id, backlogId: data.backlogId, action: "update", field: "content" }]);
     return { revision: updated!.updatedAt };
+  });
+}
+
+/**
+ * Title and/or text of one node in a single transaction (API, MCP): a stale
+ * revision refuses the whole change, title included, and nothing is half done.
+ */
+export async function updateSpecNode(input: unknown, actorId: string) {
+  const data = nodeUpdateInput.parse(input);
+  return db.transaction(async (tx) => {
+    const [current] = await tx.select({ kind: specNodes.kind, title: specNodes.title, content: specNodes.content, updatedAt: specNodes.updatedAt })
+      .from(specNodes)
+      .where(and(eq(specNodes.backlogId, data.backlogId), eq(specNodes.id, data.id), isNull(specNodes.deletedAt)))
+      .for("update");
+    if (!current) throw new ResourceNotFoundError("spec_node", data.id);
+    const changes: Journal[] = [];
+    const set: Partial<typeof specNodes.$inferInsert> = {};
+    if (data.content !== undefined) {
+      if (current.kind !== "document") throw new SpecRuleError("folder_content");
+      if (!data.revision || current.updatedAt.getTime() !== data.revision.getTime()) {
+        throw new SpecConflictError({ content: current.content ?? "", revision: current.updatedAt });
+      }
+      if ((current.content ?? "") !== data.content) {
+        set.content = data.content;
+        changes.push({ nodeId: data.id, backlogId: data.backlogId, action: "update", field: "content" });
+      }
+    }
+    if (data.title !== undefined && data.title !== current.title) {
+      set.title = data.title;
+      changes.push({ nodeId: data.id, backlogId: data.backlogId, action: "update", field: "title", oldValue: current.title, newValue: data.title });
+    }
+    if (changes.length === 0) return { changed: false };
+    await tx.update(specNodes)
+      .set({ ...set, updatedBy: actorId, updatedAt: nextRevision() })
+      .where(eq(specNodes.id, data.id));
+    await journal(tx, actorId, changes);
+    return { changed: true };
   });
 }
 
