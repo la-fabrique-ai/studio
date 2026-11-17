@@ -5,7 +5,7 @@ import { activityAttribution } from "@/lib/auth/actor-context";
 import { ResourceNotFoundError } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema/auth";
-import { backlogs, specActivities, specNodes } from "@/lib/db/schema/domain";
+import { backlogs, specActivities, specCreationRequests, specNodes } from "@/lib/db/schema/domain";
 import {
   checkSpecMove,
   descendantIds,
@@ -17,7 +17,9 @@ import { rankBetween, rankFirst, rankLast } from "@/lib/tree/rank";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-export type SpecRuleCode = SpecMoveError | "conflict" | "folder_content" | "ambiguous_path";
+export type SpecRuleCode =
+  | SpecMoveError | "conflict" | "folder_content" | "ambiguous_path"
+  | "creation_key_reused" | "creation_key_trashed";
 
 /** The user-facing message of each refused change, shared by the UI, the API and MCP. */
 export const SPEC_RULE_MESSAGES: Record<SpecRuleCode, string> = {
@@ -27,6 +29,8 @@ export const SPEC_RULE_MESSAGES: Record<SpecRuleCode, string> = {
   conflict: "Ce document a été modifié entre-temps.",
   folder_content: "Un dossier n’a pas de contenu : créez un document.",
   ambiguous_path: "Plusieurs éléments portent ce titre à cet endroit : utilisez leur identifiant.",
+  creation_key_reused: "Cette clé de création a déjà été utilisée avec un contenu différent.",
+  creation_key_trashed: "L’élément créé avec cette clé a été supprimé. Restaurez-le s’il est dans la corbeille, ou utilisez une nouvelle clé pour une nouvelle création.",
 };
 
 /** A tree rule refused the change; its message is the French explanation. */
@@ -185,10 +189,61 @@ async function journal(tx: Tx, actorId: string, rows: Journal[]) {
 }
 
 export async function createSpecNode(input: unknown, actorId: string) {
+  return (await createSpecNodeTransaction(input, actorId)).node;
+}
+
+/** An API/MCP idempotency key and the fingerprint of the request it came with. */
+export type SpecCreationRequest = { key: string; requestHash: string };
+
+/**
+ * Creates a node once per key, like `createItemWithRequest`: a replay with
+ * the same key and request returns the node it created, without resolving
+ * its parent again (`prepare` runs only for a new creation).
+ */
+export async function createSpecNodeWithRequest(
+  backlogId: string,
+  request: SpecCreationRequest | undefined,
+  actorId: string,
+  prepare: () => Promise<unknown>,
+) {
+  if (request) {
+    const previous = await db.transaction(async (tx) => {
+      await lockTree(tx, backlogId);
+      return findCreationReplay(tx, backlogId, request, actorId);
+    });
+    if (previous) return { node: previous, replayed: true };
+  }
+  const input = createInput.parse(await prepare());
+  if (input.backlogId !== backlogId) throw new Error("Inconsistent creation backlog");
+  return createSpecNodeTransaction(input, actorId, request);
+}
+
+async function findCreationReplay(tx: Tx, backlogId: string, request: SpecCreationRequest, actorId: string) {
+  const [previous] = await tx.select().from(specCreationRequests).where(and(
+    eq(specCreationRequests.actorId, actorId),
+    eq(specCreationRequests.backlogId, backlogId),
+    eq(specCreationRequests.key, request.key),
+  ));
+  if (!previous) return null;
+  if (previous.requestHash !== request.requestHash) throw new SpecRuleError("creation_key_reused");
+  const [node] = previous.nodeId ? await tx.select({ ...treeColumns, deletedAt: specNodes.deletedAt })
+    .from(specNodes)
+    .where(and(eq(specNodes.backlogId, backlogId), eq(specNodes.id, previous.nodeId))) : [];
+  if (!node || node.deletedAt) throw new SpecRuleError("creation_key_trashed");
+  const { deletedAt: _deletedAt, ...live } = node;
+  void _deletedAt;
+  return live;
+}
+
+async function createSpecNodeTransaction(input: unknown, actorId: string, request?: SpecCreationRequest) {
   const data = createInput.parse(input);
   if (data.kind === "folder" && data.content !== undefined) throw new SpecRuleError("folder_content");
   return db.transaction(async (tx) => {
     const nodes = await lockTree(tx, data.backlogId);
+    // Checked again under the backlog lock: two concurrent requests with
+    // one key create a single node.
+    const previous = request ? await findCreationReplay(tx, data.backlogId, request, actorId) : null;
+    if (previous) return { node: previous, replayed: true };
     const live = nodes.filter((n) => n.deletedAt === null);
     const id = randomUUID();
     assertParent(live, id, data.parentId);
@@ -208,7 +263,12 @@ export async function createSpecNode(input: unknown, actorId: string) {
       updatedBy: actorId,
     }).returning(treeColumns);
     await journal(tx, actorId, [{ nodeId: id, backlogId: data.backlogId, action: "create", newValue: data.title }]);
-    return created!;
+    if (request) {
+      await tx.insert(specCreationRequests).values({
+        actorId, backlogId: data.backlogId, key: request.key, requestHash: request.requestHash, nodeId: id,
+      });
+    }
+    return { node: created!, replayed: false };
   });
 }
 

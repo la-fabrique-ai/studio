@@ -35,8 +35,10 @@ l'écrit pas : en revue, il signale ses constats dans son rapport.
   Source :
   [`docs/superpowers/specs/2026-11-16-studio-specifications-api-design.md`](superpowers/specs/2026-11-16-studio-specifications-api-design.md)
   (contenu complet). État : validé par le propriétaire en session ; PR #190
-  ouverte vers `main` (branche `lot-specs-api`), non fusionnée. Prochaine
-  action : créer le ticket dans Linear et y relier la PR.
+  fusionnée dans `main` le 16 novembre 2026 (branche `lot-specs-api`, commit
+  de fusion `b4e1dc6`, CI verte). Limite constatée : aucun outil Linear
+  disponible dans la session. Prochaine action : créer le ticket dans Linear et
+  y relier la PR.
 - **16 novembre 2026 — NON SYNCHRONISÉ — Mise à jour de sécurité Next.js
   16.4.1 → 16.4.6.** Cible prévue : projet P-JIR-36 « Plateforme, sécurité et
   déploiement », un ticket `Chore`. Source : `next dev` signale le 16 novembre
@@ -47,6 +49,20 @@ l'écrit pas : en revue, il signale ses constats dans son rapport.
   `lot-next-16-4-6-security`), aucune autre dépendance. État : PR #191
   fusionnée dans `main`. Limite constatée : aucun outil Linear disponible dans
   la session. Prochaine action : créer le ticket dans Linear et y relier la PR.
+- **17 novembre 2026 — NON SYNCHRONISÉ — Suites des spécifications : clé
+  d'idempotence et marque de la page de connexion.** Cible prévue : même projet
+  que les lots 1 et 2, un ticket `Improvement` (idempotence de `create_spec` et
+  `POST /api/v1/backlogs/{key}/specs`, sur le modèle des items) et un ticket
+  `Bug` (la carte de connexion affichait encore « Jiroo »). Source : choix du
+  propriétaire en session le 17 novembre 2026 ; la note datée du 17 novembre
+  dans
+  [`docs/superpowers/specs/2026-11-16-studio-specifications-api-design.md`](superpowers/specs/2026-11-16-studio-specifications-api-design.md)
+  sort l'idempotence des exclusions du lot 2. État : branche
+  `lot-specs-followups`, PR vers `main` à relire ; la migration
+  `0031_spec_creation_requests` est à appliquer (`pnpm db:migrate`) sur chaque
+  environnement après fusion. Limite constatée : aucun outil Linear disponible
+  dans la session. Prochaine action : créer les tickets dans Linear et y relier
+  la PR.
 
 ## Historique (clos)
 

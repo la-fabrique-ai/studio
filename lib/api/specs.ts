@@ -5,6 +5,7 @@ import type { Actor } from "@/lib/auth/actor-context";
 import { ResourceNotFoundError } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { backlogs } from "@/lib/db/schema/domain";
+import { idempotencyKeySchema } from "@/lib/items/creation-request";
 import { BACKLOG_KEY } from "@/lib/mcp/schemas";
 import { resolveApiBacklog } from "@/lib/services/api-read";
 import { getSpecNode, listSpecNodes, specContentSchema, SpecRuleError } from "@/lib/services/specs";
@@ -29,6 +30,9 @@ const createFields = {
   kind: z.enum(["folder", "document"]).describe("folder holds other nodes; document holds Markdown."),
   title,
   content: content.describe("Markdown text of a document.").optional(),
+  idempotencyKey: idempotencyKeySchema.optional().describe(
+    "Opaque, case-sensitive key (1–128 characters): resending the same request with it returns the node already created instead of a duplicate. Shared by this user and backlog across REST/MCP and token rotation; no expiration.",
+  ),
 };
 const oneParent = [
   (input: { parentId?: string | null; parentPath?: string }) => !(input.parentId && input.parentPath),

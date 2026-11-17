@@ -20,7 +20,6 @@ import type { ApiTokenScope } from "@/lib/validation/api-token";
 import {
   createSpecToolInput,
   findApiSpecIdByPath,
-  findSpecIdInBacklog,
   getApiSpec,
   getSpecToolInput,
   listApiSpecs,
@@ -29,10 +28,9 @@ import {
   specNodeToolInput,
   updateSpecToolInput,
 } from "@/lib/api/specs";
-import { resolveApiBacklog } from "@/lib/services/api-read";
 import { SpecConflictError } from "@/lib/services/specs";
+import { createExternalSpecUseCase } from "@/lib/use-cases/spec-creation";
 import {
-  createSpecNodeUseCase,
   moveSpecNodeUseCase,
   restoreSpecNodeUseCase,
   trashSpecNodeUseCase,
@@ -368,14 +366,12 @@ export const STUDIO_TOOLS = [
   define({
     name: "create_spec",
     title: "Create specification",
-    description: "Create a folder or a Markdown document in a backlog's specifications, at the root or in a parent folder (parentId or parentPath). A document may carry its content at once. Needs write scope and edit_items.",
+    description: "Create a folder or a Markdown document in a backlog's specifications, at the root or in a parent folder (parentId or parentPath). A document may carry its content at once. Pass an idempotencyKey to retry safely: the same request returns the node already created (replayed: true). Needs write scope and edit_items.",
     inputSchema: createSpecToolInput,
     scope: "write",
-    async handler({ backlog, parentId, parentPath, ...input }, actor) {
-      const resolved = await resolveApiBacklog(actor.actorId, backlog);
-      const parent = parentPath ? await findSpecIdInBacklog(resolved.backlogId, parentPath) : parentId ?? null;
-      const node = await createSpecNodeUseCase(actor, { ...input, parentId: parent, backlogId: resolved.backlogId });
-      return { node: await getApiSpec(actor, node.id, node.backlogId) };
+    async handler(input, actor) {
+      const { node, backlogId, replayed } = await createExternalSpecUseCase(actor, input);
+      return { node: await getApiSpec(actor, node.id, backlogId), replayed };
     },
   }),
   define({
