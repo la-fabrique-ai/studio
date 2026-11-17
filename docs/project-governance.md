@@ -11,7 +11,7 @@ existence. Les instructions directes de la session restent prioritaires.
 | Élément | Référence et état de vérification |
 | --- | --- |
 | Produit | Le Studio (anciennement Jiroo), gestionnaire de tickets en français pour une équipe de la Cour de cassation |
-| Dépôt vérifié | <https://github.com/DVLPR-Consulting/jiroo> ; branche de référence `main` |
+| Dépôt vérifié | <https://github.com/la-fabrique-ai/studio> ; branche de référence `main` |
 | Workspace Linear | [DVLPR](https://linear.app/dvlpr) — ID `f920de06-af47-4dd9-9118-b53ad1fe4f8f` |
 | Équipe Linear — point d'ancrage du produit | **Jiroo**, préfixe `JIR`, ID `42c9ba62-dfea-48ef-affc-296c093cd6d5` ; créée par le propriétaire le 2 octobre 2026 |
 | Projet historique P-JIR-33 | [Socle V1 — historique livré](https://linear.app/dvlpr/project/socle-v1-historique-livre-d1fb4ab5f3dc) |
