@@ -11,7 +11,7 @@ export function AuthCard({
     <div className="w-[400px] max-w-[calc(100vw-2rem)] rounded-[var(--radius-xl)] border border-border bg-[var(--surface)] p-8 shadow">
       <div className="mb-6 text-center">
         <p className="t-h1">
-          Jir<span className="text-[var(--primary)]">oo</span>
+          Le <span className="text-[var(--primary)]">Studio</span>
         </p>
         {subtitle ? (
           <p className="t-sm mt-1 text-muted-foreground">{subtitle}</p>
