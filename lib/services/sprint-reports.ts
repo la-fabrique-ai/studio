@@ -394,77 +394,113 @@ type ScopeMetricsRow = {
   scopeEventCount: number;
 };
 
-const activeParticipantCte = (
-  backlogId: string,
-  sprintId: string,
-  pagination?: { limit: number; offset: number },
-) => sql`
-  with membership_keys as (
+/**
+ * One row per item key that took part in the active sprint: every membership
+ * kept in the history (open, frozen at start, or referenced by an event) and
+ * every key named in the sprint journal. Memberships and events are each
+ * aggregated once per key, then combined with a full join, so the cost stays
+ * linear in the sprint's size whatever the planner's row estimates.
+ */
+const activeParticipantSummary = (backlogId: string, sprintId: string) => sql`
+  select
+    coalesce(memberships.item_key, journal.item_key) as "itemKey",
+    coalesce(memberships.item_title, journal.item_title) as "itemTitle",
+    memberships.item_id as "itemId",
+    memberships.item_type as "itemType",
+    memberships.item_kind as "itemKind",
+    coalesce(memberships.first_joined_at, journal.first_occurred_at) as "firstJoinedAt",
+    case when coalesce(memberships.has_open, false) then null
+      else coalesce(memberships.last_left_at, journal.last_removed_at)
+    end as "finalLeftAt",
+    coalesce(memberships.initial_commitment, false) as "initialCommitment",
+    coalesce(journal.added_after_start, false) as "addedAfterStart",
+    coalesce(journal.removed_after_start, false) as "removedAfterStart",
+    memberships.estimate_at_start as "estimateAtStart",
+    case when coalesce(memberships.has_open, false) then memberships.open_estimate
+      else journal.removed_estimate
+    end::double precision as "estimateAtFinalParticipation",
+    memberships.open_status_category as "statusCategory",
+    case
+      when not coalesce(memberships.has_open, false) then 'removed'
+      when memberships.open_status_category = 'done' then 'completed'
+      else 'incomplete'
+    end as outcome
+  from (
     select
-      si.id,
-      si.item_id,
-      source_item.key as item_key,
-      si.joined_at,
-      si.left_at,
-      si.estimate_at_start,
-      exists (
-        select 1 from sprint_events added_event
-        where added_event.sprint_id = si.sprint_id
-          and added_event.source_membership_id = si.id
-          and added_event.event_type = 'item_added'
-      ) as added,
-      exists (
-        select 1 from sprint_events removed_event
-        where removed_event.sprint_id = si.sprint_id
-          and removed_event.source_membership_id = si.id
-          and removed_event.event_type = 'item_removed'
-      ) as removed
-    from sprint_items si
-    join items source_item
-      on source_item.id = si.item_id and source_item.backlog_id = ${backlogId}
-    where si.sprint_id = ${sprintId}
-      and (
-        si.left_at is null
-        or si.estimate_at_start is not null
-        or exists (
-          select 1 from sprint_events participant_event
-          where participant_event.sprint_id = si.sprint_id
-            and participant_event.source_membership_id = si.id
+      membership.item_key,
+      (array_agg(membership.item_title order by membership.joined_at desc, membership.id desc)
+        filter (where membership.relevant))[1] as item_title,
+      (array_agg(
+        case when membership.deleted_at is null then membership.item_id end
+        order by membership.joined_at desc, membership.id desc
+      ) filter (where membership.relevant))[1] as item_id,
+      (array_agg(membership.item_type order by membership.joined_at desc, membership.id desc)
+        filter (where membership.relevant))[1] as item_type,
+      (array_agg(membership.item_kind order by membership.joined_at desc, membership.id desc)
+        filter (where membership.relevant))[1] as item_kind,
+      min(membership.joined_at) filter (where membership.relevant) as first_joined_at,
+      bool_or(membership.left_at is null) filter (where membership.relevant) as has_open,
+      max(membership.left_at) filter (where membership.relevant) as last_left_at,
+      bool_or(not membership.added) filter (where membership.relevant) as initial_commitment,
+      (array_agg(membership.estimate_at_start order by membership.joined_at, membership.id)
+        filter (where membership.relevant and not membership.added))[1] as estimate_at_start,
+      (array_agg(membership.current_estimate order by membership.joined_at desc, membership.id desc)
+        filter (where membership.relevant and membership.left_at is null))[1] as open_estimate,
+      (array_agg(membership.status_category order by membership.joined_at desc, membership.id desc)
+        filter (where membership.relevant and membership.left_at is null))[1] as open_status_category
+    from (
+      select
+        si.id,
+        si.item_id,
+        si.joined_at,
+        si.left_at,
+        si.estimate_at_start,
+        coalesce(membership_events.added, false) as added,
+        source_item.key as item_key,
+        source_item.title as item_title,
+        source_item.type as item_type,
+        source_item.kind as item_kind,
+        source_item.estimate_points as current_estimate,
+        source_item.deleted_at,
+        source_status.category as status_category,
+        source_status.id is not null as relevant
+      from sprint_items si
+      join items source_item
+        on source_item.id = si.item_id and source_item.backlog_id = ${backlogId}
+      left join statuses source_status
+        on source_status.id = source_item.status_id
+        and source_status.backlog_id = ${backlogId}
+      left join (
+        select
+          source_membership_id,
+          bool_or(event_type = 'item_added') as added
+        from sprint_events
+        where sprint_id = ${sprintId} and source_membership_id is not null
+        group by source_membership_id
+      ) membership_events on membership_events.source_membership_id = si.id
+      where si.sprint_id = ${sprintId}
+        and (
+          si.left_at is null
+          or si.estimate_at_start is not null
+          or membership_events.source_membership_id is not null
         )
-      )
-  ),
-  participant_keys as (
-    select item_key from membership_keys
-    union
-    select item_key from sprint_events
-    where backlog_id = ${backlogId} and sprint_id = ${sprintId} and item_key is not null
-  ),
-  selected_participant_keys as (
-    select item_key from participant_keys
-    order by item_key
-    ${pagination
-      ? sql`limit ${pagination.limit} offset ${pagination.offset}`
-      : sql``}
-  ),
-  relevant_memberships as (
+    ) membership
+    group by membership.item_key
+  ) memberships
+  full join (
     select
-      membership_keys.*,
-      source_item.title as item_title,
-      source_item.type as item_type,
-      source_item.kind as item_kind,
-      source_item.estimate_points as current_estimate,
-      source_item.deleted_at,
-      source_status.category as status_category
-    from membership_keys
-    join selected_participant_keys
-      on selected_participant_keys.item_key = membership_keys.item_key
-    join items source_item
-      on source_item.id = membership_keys.item_id
-      and source_item.backlog_id = ${backlogId}
-    join statuses source_status
-      on source_status.id = source_item.status_id
-      and source_status.backlog_id = ${backlogId}
-  )
+      item_key,
+      (array_agg(item_title order by occurred_at desc, sequence desc))[1] as item_title,
+      min(occurred_at) as first_occurred_at,
+      max(occurred_at) filter (where event_type = 'item_removed') as last_removed_at,
+      bool_or(event_type = 'item_added') as added_after_start,
+      bool_or(event_type = 'item_removed') as removed_after_start,
+      (array_agg(previous_estimate order by occurred_at desc, sequence desc)
+        filter (where event_type = 'item_removed'))[1] as removed_estimate
+    from sprint_events
+    where backlog_id = ${backlogId} and sprint_id = ${sprintId} and item_key is not null
+    group by item_key
+  ) journal on journal.item_key = memberships.item_key
 `;
 
 type ActiveParticipantRow = {
@@ -491,97 +527,11 @@ async function readActiveItems(
   page: number,
   pageSize: number,
 ): Promise<{ page: Page<SprintReportItem>; sections: SprintReportSections }> {
-  const summarySql = sql`
-    select
-      selected_participant_keys.item_key as "itemKey",
-      coalesce(
-        (select rm.item_title from relevant_memberships rm
-          where rm.item_key = selected_participant_keys.item_key
-          order by rm.joined_at desc, rm.id desc limit 1),
-        (select se.item_title from sprint_events se
-          where se.backlog_id = ${backlogId} and se.sprint_id = ${sprintId}
-            and se.item_key = selected_participant_keys.item_key
-          order by se.occurred_at desc, se.sequence desc limit 1)
-      ) as "itemTitle",
-      (select case when rm.deleted_at is null then rm.item_id else null end
-        from relevant_memberships rm
-        where rm.item_key = selected_participant_keys.item_key
-        order by rm.joined_at desc, rm.id desc limit 1) as "itemId",
-      (select rm.item_type from relevant_memberships rm
-        where rm.item_key = selected_participant_keys.item_key
-        order by rm.joined_at desc, rm.id desc limit 1) as "itemType",
-      (select rm.item_kind from relevant_memberships rm
-        where rm.item_key = selected_participant_keys.item_key
-        order by rm.joined_at desc, rm.id desc limit 1) as "itemKind",
-      coalesce(
-        (select min(rm.joined_at) from relevant_memberships rm
-          where rm.item_key = selected_participant_keys.item_key),
-        (select min(se.occurred_at) from sprint_events se
-          where se.backlog_id = ${backlogId} and se.sprint_id = ${sprintId}
-            and se.item_key = selected_participant_keys.item_key)
-      ) as "firstJoinedAt",
-      case when exists (
-        select 1 from relevant_memberships rm
-        where rm.item_key = selected_participant_keys.item_key and rm.left_at is null
-      ) then null else coalesce(
-        (select max(rm.left_at) from relevant_memberships rm
-          where rm.item_key = selected_participant_keys.item_key),
-        (select max(se.occurred_at) from sprint_events se
-          where se.backlog_id = ${backlogId} and se.sprint_id = ${sprintId}
-            and se.item_key = selected_participant_keys.item_key and se.event_type = 'item_removed')
-      ) end as "finalLeftAt",
-      exists (
-        select 1 from relevant_memberships rm
-        where rm.item_key = selected_participant_keys.item_key and not rm.added
-      ) as "initialCommitment",
-      exists (
-        select 1 from sprint_events se
-        where se.backlog_id = ${backlogId} and se.sprint_id = ${sprintId}
-          and se.item_key = selected_participant_keys.item_key and se.event_type = 'item_added'
-      ) as "addedAfterStart",
-      exists (
-        select 1 from sprint_events se
-        where se.backlog_id = ${backlogId} and se.sprint_id = ${sprintId}
-          and se.item_key = selected_participant_keys.item_key and se.event_type = 'item_removed'
-      ) as "removedAfterStart",
-      (select rm.estimate_at_start from relevant_memberships rm
-        where rm.item_key = selected_participant_keys.item_key and not rm.added
-        order by rm.joined_at, rm.id limit 1) as "estimateAtStart",
-      case when exists (
-        select 1 from relevant_memberships rm
-        where rm.item_key = selected_participant_keys.item_key and rm.left_at is null
-      ) then (
-        (select rm.current_estimate from relevant_memberships rm
-          where rm.item_key = selected_participant_keys.item_key and rm.left_at is null
-          order by rm.joined_at desc, rm.id desc limit 1)
-      ) else (
-        (select se.previous_estimate from sprint_events se
-          where se.backlog_id = ${backlogId} and se.sprint_id = ${sprintId}
-            and se.item_key = selected_participant_keys.item_key and se.event_type = 'item_removed'
-          order by se.occurred_at desc, se.sequence desc limit 1)
-      ) end::double precision as "estimateAtFinalParticipation",
-      (select rm.status_category from relevant_memberships rm
-        where rm.item_key = selected_participant_keys.item_key and rm.left_at is null
-        order by rm.joined_at desc, rm.id desc limit 1) as "statusCategory",
-      case
-        when not exists (select 1 from relevant_memberships rm
-          where rm.item_key = selected_participant_keys.item_key and rm.left_at is null)
-          then 'removed'
-        when (select rm.status_category from relevant_memberships rm
-          where rm.item_key = selected_participant_keys.item_key and rm.left_at is null
-          order by rm.joined_at desc, rm.id desc limit 1) = 'done'
-          then 'completed'
-        else 'incomplete'
-      end as outcome
-    from selected_participant_keys
-  `;
+  const summarySql = activeParticipantSummary(backlogId, sprintId);
   const pageResult = await tx.execute<ActiveParticipantRow>(sql`
-      ${activeParticipantCte(backlogId, sprintId, {
-        limit: pageSize,
-        offset: (page - 1) * pageSize,
-      })}
       ${summarySql}
       order by "itemKey"
+      limit ${pageSize} offset ${(page - 1) * pageSize}
     `);
   const countResult = await tx.execute<{
       total: number;
@@ -589,7 +539,7 @@ async function readActiveItems(
       incomplete: number;
       removed: number;
     }>(sql`
-      ${activeParticipantCte(backlogId, sprintId)}, participant_summary as (${summarySql})
+      with participant_summary as (${summarySql})
       select
         count(*)::int as total,
         count(*) filter (where outcome = 'completed')::int as completed,
