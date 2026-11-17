@@ -39,7 +39,7 @@ Aucune réponse ne contient le secret ni son empreinte.
 | `DELETE /items/{KEY}/dependencies/{id}` | write | 204 |
 | `GET /backlogs/{key}/specs` | read | `{ backlog, nodes: SpecListEntry[] }`, arborescence des spécifications dans l’ordre de l’arbre |
 | `GET /backlogs/{key}/specs/lookup?path=…` | read | `{ node: SpecNode }`, nœud désigné par son chemin de titres |
-| `POST /backlogs/{key}/specs` | write | 201 `{ node: SpecNode }` |
+| `POST /backlogs/{key}/specs` | write | 201 `{ node: SpecNode, replayed: false }` ; rejeu d’une clé d’idempotence : 200 avec `replayed: true` |
 | `GET /specs/{id}` | read | `{ node: SpecNode }` |
 | `PATCH /specs/{id}` | write | 200 `{ node: SpecNode }` ; révision périmée : 409 avec `currentRevision` |
 | `POST /specs/{id}/move` | write | 200 `{ node: SpecNode }` |
@@ -231,18 +231,21 @@ curl "$STUDIO_ORIGIN/api/v1/specs/{id}" -X PATCH \
 
 ## Création sans doublon et reprise après une réponse perdue
 
-Envoyez `Idempotency-Key` sur `POST /items` ; le champ JSON `idempotencyKey`
+Envoyez `Idempotency-Key` sur `POST /items` ou `POST /backlogs/{key}/specs` ; le champ JSON `idempotencyKey`
 reste accepté. S’ils sont tous deux fournis, ils doivent être identiques, sinon
 400. La clé est opaque, sensible à la casse, de 1 à 128 caractères, sans expiration.
 Elle appartient au couple **utilisateur + backlog**, commune à REST et MCP,
 même après renouvellement des jetons. **La même clé dans un autre backlog crée
-un autre item**, comme la même clé utilisée par un autre utilisateur.
+un autre item**, comme la même clé utilisée par un autre utilisateur. Les clés
+des items et celles des spécifications sont indépendantes.
 
 La première création répond 201 avec `replayed: false`. Répéter la même commande
 avec la même clé répond 200 avec `replayed: true` et **l’état actuel** de l’item,
-même s’il a été modifié. Deux appels simultanés identiques obtiennent le même
-item. Aucun rejeu n’ajoute d’activité. Les droits actuels et la portée `write`
-restent requis. Les anciennes références de création ne sont pas résolues au rejeu.
+même s’il a été modifié (pour une spécification, le nœud et son chemin actuels).
+Deux appels simultanés identiques obtiennent le même item ou nœud. Aucun rejeu n’ajoute d’activité. Les droits actuels et la portée `write`
+restent requis. Les anciennes références de création ne sont pas résolues au rejeu
+(un dossier parent renommé n’empêche pas le rejeu). Un nœud créé puis mis à la
+corbeille refuse le rejeu : restaurez-le ou utilisez une nouvelle clé.
 
 La comparaison porte sur les champs client validés, avant résolution et sans
 valeur par défaut ; les `labelIds` sont triés et dédupliqués et la clé est exclue.

@@ -3,18 +3,17 @@ import { jsonOk, MAX_SPEC_JSON_BODY_BYTES, parseJson, problem } from "@/lib/api/
 import {
   createSpecInput,
   findApiSpecIdByPath,
-  findSpecIdInBacklog,
   getApiSpec,
   listApiSpecs,
   moveSpecInput,
   SPEC_ID,
   updateSpecInput,
 } from "@/lib/api/specs";
+import { restIdempotencyKey } from "@/lib/items/creation-request";
 import { BACKLOG_KEY } from "@/lib/mcp/schemas";
-import { resolveApiBacklog } from "@/lib/services/api-read";
 import { SpecConflictError } from "@/lib/services/specs";
+import { createExternalSpecUseCase } from "@/lib/use-cases/spec-creation";
 import {
-  createSpecNodeUseCase,
   moveSpecNodeUseCase,
   restoreSpecNodeUseCase,
   trashSpecNodeUseCase,
@@ -42,13 +41,15 @@ export const getSpecByPath = withApiAuth<KeyParams>("read", async (request, acto
   return jsonOk({ node: await getApiSpec(actor, id, backlogId) });
 });
 
+/** 201 for a new node; 200 with `replayed: true` when an idempotency key was already used. */
 export const postSpec = withApiAuth<KeyParams>("write", async (request, actor, params) => {
-  const key = BACKLOG_KEY.parse(params.key);
-  const { parentPath, parentId, ...input } = await parseJson(request, createSpecInput, MAX_SPEC_JSON_BODY_BYTES);
-  const backlog = await resolveApiBacklog(actor.actorId, key);
-  const parent = parentPath ? await findSpecIdInBacklog(backlog.backlogId, parentPath) : parentId ?? null;
-  const node = await createSpecNodeUseCase(actor, { ...input, parentId: parent, backlogId: backlog.backlogId });
-  return jsonOk({ node: await getApiSpec(actor, node.id, node.backlogId) }, 201);
+  const backlog = BACKLOG_KEY.parse(params.key);
+  const fields = await parseJson(request, createSpecInput, MAX_SPEC_JSON_BODY_BYTES);
+  const idempotencyKey = restIdempotencyKey(request.headers.get("Idempotency-Key"), fields.idempotencyKey);
+  const { node, backlogId, replayed } = await createExternalSpecUseCase(actor, {
+    ...fields, backlog, ...(idempotencyKey === undefined ? {} : { idempotencyKey }),
+  });
+  return jsonOk({ node: await getApiSpec(actor, node.id, backlogId), replayed }, replayed ? 200 : 201);
 });
 
 export const getSpec = withApiAuth<IdParams>("read", async (_request, actor, params) =>

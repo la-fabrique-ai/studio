@@ -5,7 +5,7 @@ const published = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/realtime/publish", () => ({ publishBacklogChange: published, notifyUsers: vi.fn() }));
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema/auth";
-import { permissionGrants, securityAuditEvents, specActivities, specNodes } from "@/lib/db/schema/domain";
+import { permissionGrants, securityAuditEvents, specActivities, specCreationRequests, specNodes } from "@/lib/db/schema/domain";
 import { createApiToken, type ApiPrincipal } from "@/lib/services/api-tokens";
 import { createReadVisibilityFixture, deleteReadVisibilityFixture, type ReadVisibilityFixture } from "@/lib/services/read-visibility.integration-fixture";
 import { GET as listSpecs, POST as createSpec } from "@/app/api/v1/backlogs/[key]/specs/route";
@@ -168,5 +168,64 @@ describeDb("specifications across REST and MCP with real permissions", () => {
 
     const listed = await tool("list_specs", { backlog: fixture.backlogA.key });
     expect((listed.structuredContent as { nodes: { title: string }[] }).nodes.map((n) => n.title)).toContain("Brief v2");
+  });
+  it("creates once per idempotency key, across REST and MCP, even after the parent is renamed", async () => {
+    const keyed = (body: unknown, key?: string) => new Request("http://localhost/api/v1", {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, ...(key === undefined ? {} : { "Idempotency-Key": key }) },
+      body: JSON.stringify(body),
+    });
+    const folder = await createSpec(request("POST", { kind: "folder", title: "Idem" }), byKey(fixture.backlogA.key));
+    const folderId = (await folder.json()).node.id as string;
+    const body = { kind: "document", title: "Once", parentPath: "Idem", content: "# Une fois" };
+
+    const first = await createSpec(keyed(body, "spec-once"), byKey(fixture.backlogA.key));
+    expect(first.status).toBe(201);
+    const created = await first.json();
+    expect(created.replayed).toBe(false);
+    published.mockClear();
+
+    // The parent folder is renamed: the replay does not resolve its path again.
+    await patchSpec(request("PATCH", { title: "Idem renommé" }), byId(folderId));
+    published.mockClear();
+    const again = await createSpec(keyed(body, "spec-once"), byKey(fixture.backlogA.key.toLowerCase()));
+    expect(again.status).toBe(200);
+    expect(await again.json()).toMatchObject({ replayed: true, node: { id: created.node.id, path: "Idem renommé/Once" } });
+    const viaBody = await createSpec(keyed({ ...body, idempotencyKey: "spec-once" }), byKey(fixture.backlogA.key));
+    expect(viaBody.status).toBe(200);
+    const viaMcp = await tool("create_spec", { backlog: fixture.backlogA.key, ...body, idempotencyKey: "spec-once" });
+    expect(viaMcp.structuredContent).toMatchObject({ replayed: true, node: { id: created.node.id } });
+    expect(published).not.toHaveBeenCalled();
+    const copies = await db.select({ id: specNodes.id }).from(specNodes)
+      .where(and(eq(specNodes.backlogId, fixture.backlogA.id), eq(specNodes.title, "Once")));
+    expect(copies).toHaveLength(1);
+
+    const different = await createSpec(keyed({ ...body, content: "autre" }, "spec-once"), byKey(fixture.backlogA.key));
+    expect(different.ok).toBe(false);
+    expect((await different.json()).detail).toBe("Cette clé de création a déjà été utilisée avec un contenu différent.");
+    const mismatch = await createSpec(keyed({ ...body, idempotencyKey: "other" }, "spec-once"), byKey(fixture.backlogA.key));
+    expect(mismatch.status).toBe(400);
+
+    await deleteSpec(request("DELETE"), byId(created.node.id));
+    const trashed = await createSpec(keyed(body, "spec-once"), byKey(fixture.backlogA.key));
+    expect(trashed.ok).toBe(false);
+    expect((await trashed.json()).detail).toContain("a été supprimé");
+  });
+
+  it("creates a single node when two requests race with one key", async () => {
+    const send = () => createSpec(new Request("http://localhost/api/v1", {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "Idempotency-Key": "spec-race" },
+      body: JSON.stringify({ kind: "folder", title: "Race" }),
+    }), byKey(fixture.backlogA.key));
+    const statuses = (await Promise.all([send(), send(), send()])).map((response) => response.status).sort();
+    expect(statuses).toEqual([200, 200, 201]);
+    const rows = await db.select().from(specCreationRequests).where(and(
+      eq(specCreationRequests.backlogId, fixture.backlogA.id), eq(specCreationRequests.key, "spec-race"),
+    ));
+    expect(rows).toHaveLength(1);
+    const races = await db.select({ id: specNodes.id }).from(specNodes)
+      .where(and(eq(specNodes.backlogId, fixture.backlogA.id), eq(specNodes.title, "Race")));
+    expect(races).toEqual([{ id: rows[0]!.nodeId }]);
   });
 });

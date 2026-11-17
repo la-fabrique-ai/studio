@@ -892,10 +892,10 @@ bearer_token_env_var = "STUDIO_TOKEN"`}</code></pre>
 
         <GuideTopic
           title="Créer sans doublon après une interruption"
-          purpose="Retrouver le même item si un outil n’a pas reçu la réponse de création."
+          purpose="Retrouver le même item ou la même spécification si un outil n’a pas reçu la réponse de création."
           steps={[
-            <>Avant l’envoi, conservez une clé de création et les champs de la demande. En REST, envoyez la clé dans l’en-tête <code>Idempotency-Key</code> de <code>POST /api/v1/items</code>. En MCP, passez-la dans l’argument <code>idempotencyKey</code> de <code>create_item</code>.</>,
-            <>Si la réponse est perdue, renvoyez les mêmes champs avec la même clé. Le Studio crée l’item si le premier appel n’a rien enregistré, ou renvoie son état actuel avec <code>replayed: true</code> s’il existe déjà. Aucune activité de création supplémentaire n’est ajoutée.</>,
+            <>Avant l’envoi, conservez une clé de création et les champs de la demande. En REST, envoyez la clé dans l’en-tête <code>Idempotency-Key</code> de <code>POST /api/v1/items</code> ou de <code>POST /api/v1/backlogs/CASS/specs</code>. En MCP, passez-la dans l’argument <code>idempotencyKey</code> de <code>create_item</code> ou de <code>create_spec</code>.</>,
+            <>Si la réponse est perdue, renvoyez les mêmes champs avec la même clé. Le Studio crée l’item (ou la spécification) si le premier appel n’a rien enregistré, ou renvoie son état actuel avec <code>replayed: true</code> s’il existe déjà. Aucune activité de création supplémentaire n’est ajoutée.</>,
           ]}
         >
           <pre className="max-w-full overflow-x-auto rounded-[var(--radius-md)] border border-border bg-[var(--surface-2)] p-3 text-xs leading-relaxed"><code>{`create_item({
@@ -911,7 +911,7 @@ bearer_token_env_var = "STUDIO_TOKEN"`}</code></pre>
           <GuideNote>
             La clé fait de 1 à 128 caractères, distingue majuscules et minuscules et n’expire pas.
             Elle appartient au compte et au backlog : elle reste valable après un remplacement de jeton
-            et entre REST et MCP. La même clé dans un autre backlog crée un autre item.
+            et entre REST et MCP. La même clé dans un autre backlog crée un autre item ; les clés des items et des spécifications sont indépendantes.
             Les droits actuels du compte restent nécessaires.
           </GuideNote>
           <GuideNote>

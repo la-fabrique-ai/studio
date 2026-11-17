@@ -55,7 +55,7 @@ token), no `resource_metadata` and no authorization server to discover.
 | `remove_dependency` | write | `{ key, id }` → `{ removed: true }`, only a blocks relation belonging to that item. |
 | `list_specs` | read | `{ backlog }` → `{ backlog, nodes }`, the specification tree in tree order with title paths. |
 | `get_spec` | read | `{ id }` or `{ backlog, path }` → `{ node }`; a document has `content` and `revision`, a folder `children`. |
-| `create_spec` | write | `{ backlog, kind, title, content?, parentId? \| parentPath? }` → `{ node }`. |
+| `create_spec` | write | `{ backlog, kind, title, content?, parentId? \| parentPath?, idempotencyKey? }` → `{ node, replayed }`. |
 | `update_spec` | write | `{ id, title?, content?, revision? }` → `{ node }`; `content` needs the `revision` read. |
 | `move_spec` | write | `{ id, parentId, afterId? }` → `{ node }`; `parentId: null` for the root, no `afterId` for last. |
 | `delete_spec` | write | `{ id }` → `{ trashedIds }`, the node and its subtree go to the trash. |
@@ -128,14 +128,17 @@ update_spec({ id: "…", content: "# Problème\n\nVersion 2", revision: "2026-11
 
 ## Create without duplicates after a lost response
 
-Pass `idempotencyKey` to `create_item`: an opaque, case-sensitive string of 1–128
+Pass `idempotencyKey` to `create_item` or `create_spec`: an opaque, case-sensitive string of 1–128
 characters. The key belongs to **the user and backlog**, with no expiration. It
 is shared with REST (`Idempotency-Key` header or `idempotencyKey` body field) and
 survives token rotation. The same key in another backlog, or used by another
-user, creates another item. Without a key, every call creates an item.
+user, creates another item. Item and specification keys are independent.
+Without a key, every call creates an item or node.
 
 The result is `{ item, replayed }`: false at creation, true on replay, with the
-item's **current state**. Simultaneous identical requests return the same item.
+item's (or node's) **current state**. Simultaneous identical requests return
+the same item or node. A node created then trashed refuses the replay: restore
+it or use a new key.
 Current permissions and the write scope are required on every call. Replay skips
 resolution of the original mutable references and adds no activity.
 

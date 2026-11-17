@@ -1356,3 +1356,23 @@ export const specActivities = pgTable(
   },
   (t) => [index("spec_activities_node_at_idx").on(t.nodeId, t.at)],
 );
+
+// Idempotency keys of specification creations through the API and MCP, like
+// `item_creation_requests`: a replayed request returns the node it created.
+// A consumed key survives the node's purge and token rotation; there is no
+// expiration.
+export const specCreationRequests = pgTable(
+  "spec_creation_requests",
+  {
+    actorId: text("actor_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+    backlogId: uuid("backlog_id").notNull().references(() => backlogs.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    requestHash: text("request_hash").notNull(),
+    nodeId: uuid("node_id").references(() => specNodes.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.actorId, t.backlogId, t.key] }),
+    index("spec_creation_requests_node_idx").on(t.nodeId),
+  ],
+);

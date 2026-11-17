@@ -53,8 +53,11 @@ Le Studio applique le même principe avec la `revision` du document.
 
 ## Hors périmètre
 
-Agents BMAD, liens documents ↔ tickets, historique des versions, clé
-d'idempotence à la création (une création rejouée peut dupliquer).
+Agents BMAD, liens documents ↔ tickets, historique des versions.
+
+**Note du 17 novembre 2026 :** la clé d'idempotence à la création, d'abord hors
+périmètre, est ajoutée sur le modèle des items (`Idempotency-Key` /
+`idempotencyKey`, table `spec_creation_requests`, rejeu 200 `replayed: true`).
 
 ## Critères de validation
 
