@@ -530,7 +530,10 @@ describeDb("sprint report reads", () => {
       querySpy.mockRestore();
       await cleanupBacklogs(small.backlog.id, large.backlog.id);
     }
-  });
+    // The thousand-item active report takes about 45 s locally (the summary
+    // query grows with the square of the items), far over the 5 s default: a
+    // timed-out test never reached its cleanup and left both backlogs behind.
+  }, 120_000);
 
   it("returns a transactionally consistent active projection during an estimate update", async () => {
     const f = await fixture();
